@@ -1,52 +1,51 @@
-# Real Document Discovery & Schema Mapping: FUNSD Dataset
+# Real Document Discovery & Schema Mapping: SROIE & FUNSD Datasets
 
-## 1. Dataset Origin & License
+## 1. Document Domain Classification & Discovery Notice
 
-- **Dataset Name**: FUNSD (Form Understanding in Noisy Scanned Documents)
-- **Origin / Source**: ICDAR-OST 2019 / [https://guillaumejaume.github.io/FUNSD/](https://guillaumejaume.github.io/FUNSD/)
-- **Authors**: Guillaume Jaume, Hazim Kemal Ekenel, Jean-Philippe Thiran (EPFL & ITU)
-- **Underlying Document Corpus**: Truth Tobacco Industry Documents Archive (UCSF Library / RVL-CDIP).
-- **License / Terms of Use**: Public Domain / US Government and Federal settlement public archive. Provided openly for academic and industrial document intelligence research.
-- **Total Corpus Size**: 199 fully annotated scanned document images (149 train / 50 test).
-
----
-
-## 2. Dev vs. Sealed Split Protocol
-
-To prevent test-set leakage and preserve an authentic blind evaluation partition:
-- **Total Documents**: 199 unique scanned forms
-- **Seed**: `20261120` (deterministic pseudo-random permutation)
-- **Dev Split (50%)**: 99 documents (`data/real_funsd/splits.json` -> `dev_doc_ids`)
-  - Used strictly for baseline pipeline evaluation, error analysis, and discovery.
-- **Sealed Split (50%)**: 100 documents (`data/real_funsd/splits.json` -> `sealed_doc_ids`)
-  - **SEALED**: Never opened, inspected, tuned on, or evaluated during development.
+> [!IMPORTANT]
+> **Domain Clarification**: The **FUNSD** dataset does not contain our production document classes (`invoice`, `contract`, `kyc_form`, `bank_statement`, `medical_report`, `purchase_order`, `letter`, `claim_form`). FUNSD consists of legacy scientific questionnaires, committee ballots, and agricultural inspection sheets from tobacco research archives.
+> 
+> Therefore:
+> 1. **FUNSD is used strictly as an Out-of-Domain Rejection Benchmark** (evaluating whether the decision gate safely routes unseen/unsupported document formats to manual human review).
+> 2. **SROIE (Scanned Receipts OCR and Information Extraction)** is used as the **In-Domain Public Benchmark** for real transactional documents (`invoice` and `purchase_order` class fields).
 
 ---
 
-## 3. Label & Schema Mapping to Production Pipeline
+## 2. In-Domain Benchmark: SROIE Dataset (ICDAR 2019)
 
-FUNSD forms represent authentic multi-industry corporate paperwork (internal memos, correspondence, questionnaires, claim vouchers, inspection reports, purchase authorizations). 
+### A. Origin & License
+- **Dataset Name**: ICDAR 2019 Robust Reading Challenge on Scanned Receipts OCR and Information Extraction (SROIE)
+- **Source**: ICDAR 2019 / [https://huggingface.co/datasets/jsdnrs/ICDAR2019-SROIE](https://huggingface.co/datasets/jsdnrs/ICDAR2019-SROIE)
+- **License**: Academic and Industrial Open Research License (Public Domain / ICDAR 2019 Challenge).
+- **Domain**: Real-world scanned commercial store and vendor transaction receipts with complex layouts, printing noise, stamps, and varied typographic arrangements.
 
-Below is the mapping between FUNSD entity annotations and production ECM classes/fields:
+### B. Dev vs. Sealed Split Protocol
+- **Total Receipts Sampled**: 100 authentic receipts (`data/real_sroie/splits.json`)
+- **Dev Half (50 receipts)**: `sroie_test_0000` to `sroie_test_0049`
+  - Evaluated on pipeline development and error analysis.
+- **Sealed Half (50 receipts)**: `sroie_test_0050` to `sroie_test_0099`
+  - Sealed partition held uninspected for blind evaluation.
 
-### A. Document Class Mapping
-| FUNSD Form Profile | Primary Target Class | Secondary / Fallback Class | Core Identification Features |
+### C. Field Mapping to Production Schema
+| SROIE Labeled Field | Production Schema Target | Field Type | Normalization & Extraction Logic |
 | :--- | :--- | :--- | :--- |
-| Memos, Circulars, Formal Correspondence | `letter` | `unknown` | "To:", "From:", "Date:", "Subject:", "Memorandum" |
-| Requisitions, Vendor Procurement Forms | `purchase_order` | `invoice` | "Supplier:", "Description:", "Quantity", "PO #", "Approved By" |
-| Financial Slips, Vouchers, Account Forms | `invoice` | `claim_form` | "Account:", "Total", "Due Date:", "Remit To", "Amount" |
-| Questionnaires, Registrations, Applications | `kyc_form` | `unknown` | "Name:", "Date of Birth", "Address:", "Signature", "Affiliation" |
-| Expense Requests, Reimbursements | `claim_form` | `invoice` | "Claimant", "Expenses", "Receipt #", "Approved By" |
-| Medical/Scientific Trial Records | `medical_report` | `unknown` | "Patient", "Protocol", "Physician", "Diagnosis", "Trial" |
-| Legal Agreements, Contracts | `contract` | `unknown` | "Agreement", "Terms", "Parties", "Effective Date" |
-| Unstructured / Mixed Format Forms | `unknown` | `unknown` | Low confidence (<0.60), unmatched layout |
+| **`company`** | `invoice.vendor_name` / `purchase_order.vendor_name` | String | Top receipt header line extraction + fuzzy Levenshtein ratio |
+| **`date`** | `invoice.invoice_date` / `purchase_order.po_date` | Date (YYYY-MM-DD) | Multi-format date regex (`DD/MM/YYYY`, `YYYY-MM-DD`, `DD-Mon-YY`) |
+| **`total`** | `invoice.total_amount` / `purchase_order.total_amount` | Float | Currency cleanup, decimal extraction, numeric match $\pm 0.05$ |
+| **`address`** | `invoice.vendor_address` / `purchase_order.vendor_address` | String | Multi-line store address block extraction |
 
-### B. Field Key Synonym Mapping
-| Production Schema Field | FUNSD Question Annotations | Matching Normalization Strategy |
-| :--- | :--- | :--- |
-| `date` / `issue_date` / `statement_date` | `date`, `date:`, `dated:`, `day/month/year` | Generic line parser + fuzzy similarity (>0.80) |
-| `recipient` / `customer_name` | `to:`, `attention:`, `name:`, `recipient:` | Direct key-value extraction |
-| `sender` / `vendor_name` | `from:`, `supplier:`, `originator:`, `division name:` | Header block & key-value line scan |
-| `subject` | `subject:`, `re:`, `in reference to:`, `matter:` | Multi-token value until line delimiter |
-| `account_number` | `name of account`, `account no:`, `acct #` | Numeric regex + box proximity |
-| `amount` / `total_amount` | `amount`, `total`, `balance`, `net amount` | Currency symbol strip + float parse |
+---
+
+## 3. Out-of-Domain Benchmark: FUNSD Dataset (ICDAR-OST 2019)
+
+### A. Origin & License
+- **Dataset Name**: FUNSD (Form Understanding in Noisy Scanned Documents)
+- **Source**: [https://guillaumejaume.github.io/FUNSD/](https://guillaumejaume.github.io/FUNSD/)
+- **Authors**: Guillaume Jaume, Hazim Kemal Ekenel, Jean-Philippe Thiran (EPFL & ITU)
+- **Underlying Archive**: Truth Tobacco Industry Documents Library (UCSF Archive / RVL-CDIP).
+- **License**: Public Domain US Government and Federal Legal Settlement Archive.
+
+### B. Protocol & Rejection Assessment
+- **Role in Pipeline**: Unseen out-of-domain rejection test.
+- **Evaluation Split**: 99 Dev forms / 100 Sealed forms.
+- **Production Safety Target**: 0% Straight-Through Processing (STP). All forms must be recognized as `unknown` or low-confidence and routed to human review.

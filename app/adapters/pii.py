@@ -237,62 +237,120 @@ class PresidioPIIDetector(PIIDetector):
             score_threshold=0.65,
         )
 
-        boilerplate_persons = {
-            "commercial invoice", "master services", "know your customer", "official bank",
-            "financial institution", "medical examination", "official purchase", "notice of loss",
-            "insurance claim", "executive memorandum", "preliminary onboarding", "system architecture",
-            "payment schedule", "daily transaction", "cleared transactions", "clinical impression",
-            "attestation", "purchaser", "supplier", "dear", "sincerely", "management committee",
-            "operations directorate", "governance board", "corporate office", "united states",
-            "bank", "statement", "invoice", "hospital", "healthcare", "metro health", "summit valley",
-            "st. jude", "apex global", "sovereign trust", "horizon federal", "procurement officer",
-            "requisitioner", "consultant", "physician", "attending", "patient", "claimant",
-            "insured party", "vendor name", "applicant name", "full name", "member name",
-            "account holder", "customer support", "compliance profile", "node cluster",
-            "part a", "part b", "section 1", "ending balance", "starting balance", "opening balance",
-            "closing balance", "by and between", "hold all technical", "advised to continue",
-            "officially advise", "warehouse facility", "standard warranty", "balance summary",
-            "cleared transactions", "electronic transfer", "commercial mortgage", "primary applicant",
-            "identity record", "personal identity", "beneficiary profile"
+        ADMIN_NOUNS = {
+            "account", "number", "id", "ssn", "ein", "phone", "telephone", "date",
+            "total", "amount", "balance", "identifier", "slip", "dossier", "questionnaire",
+            "meeting", "registration", "review", "agreement", "notice", "statement",
+            "invoice", "report", "summary", "description", "code", "address", "email",
+            "policy", "regimen", "service", "services", "system", "management",
+            "officer", "customer", "order", "contract", "facility", "hospital", "office", "bank",
+            "commercial", "liabilities", "summary", "timestamp", "information", "regulations",
+            "terms", "conditions", "schedule", "period", "ledger", "entity", "profile",
+            "license", "protocols", "findings", "debits", "credits", "value", "reference",
+            "diligence", "verification", "advisory", "notification", "department",
+            "authorized", "inc", "llc", "corp", "ltd", "escrow", "operations", "directorate",
+            "claimed", "contact", "itemized", "clinician", "medical", "subject", "taxpayer",
+            "compensation", "direct", "tel", "memo", "memorandum", "guidance", "advance",
+            "covenants", "reporting", "interval", "depository", "treasury", "corporate",
+            "presented", "prescribed", "admitted", "evaluated", "diagnosed", "recommended",
+            "re", "attn", "attention", "practitioner", "physician", "staff", "administrator",
+            "representative", "agent"
         }
 
-        stop_words = {"and", "to", "for", "with", "the", "regarding", "between", "all", "shall", "under", "from", "of", "in", "on"}
+        # 8. Person Salutation & Role-Anchored Recognition
+        ROLE_LABEL_RE = re.compile(
+            r"(?:(?:\n|^|\b)(?:"
+            r"Dear|Attention|Attn|"
+            r"(?:Policyholder\s*/\s*Claimant|Policyholder|Claimant(?:\s*(?:Full\s*)?Name)?)|"
+            r"(?:Patient(?:\s*(?:Full\s*)?Name|\s*Identity)?|Subject\s*Patient)|"
+            r"(?:Account\s*(?:Holder|Name)|Primary\s*Beneficiary|Beneficiary)|"
+            r"(?:Authorized\s*(?:Signatory|Agent|Representative)|Attesting\s*Officer|Designated\s*Executive|Purchasing\s*Officer)|"
+            r"(?:Applicant(?:\s*(?:Complete\s*)?Name)?|Full\s*(?:Legal\s*|Identity\s*)?Name|Subject\s*Full\s*Legal\s*Name)|"
+            r"(?:Attending\s*(?:Physic[a-z]*|Clinician)|(?:Lead\s*)?Physician|Practitioner|Consultant)|"
+            r"(?:Recipient(?:\s*Customer|\s*/\s*To)?|Originator\s*/\s*From|Transmitted\s*By|Originating\s*Staff|Deliver\s*To)|"
+            r"(?:Procurement\s*Agent|Purchaser|Buyer\s*Representative|Requisitioner|Requisitioned\s*By|Member\s*Name|Billed\s*(?:To|Entity))|"
+            r"(?:Safety\s*Administrator|Prepared\s*For)|"
+            r"(?:From|To)"
+            r")\s*[:;\s.-]+)"
+            r"((?:(?:Mr\.|Mrs\.|Ms\.|Dr\.)\s+)?(?:[A-Z][a-z]+(?:[^\S\r\n]+[A-Za-z'`.-]+){1,3})(?:\s+(?:MD|PhD|Esq\.|DDS|DVM))?)"
+            r"(?=\s+[A-Za-z/ ]+:|,\s*[A-Z]|\s*[|;\n]|$)",
+            re.I
+        )
+
+        SALUTATION_RE = re.compile(
+            r"\b((?:Mr\.|Mrs\.|Ms\.|Dr\.)\s+[A-Z][a-z]+(?:[^\S\r\n]+[A-Za-z'`.-]+){1,2})\b"
+        )
+
+        for m in ROLE_LABEL_RE.finditer(text):
+            s, e = m.start(1), m.end(1)
+            cand = m.group(1).strip().strip("`'\"‘“”—-=[](){}:;,.")
+            words = cand.split()
+            valid = []
+            for w in words:
+                if w.lower() in ADMIN_NOUNS:
+                    break
+                valid.append(w)
+            if len(valid) < 2 or len(valid) > 4:
+                continue
+            cleaned = " ".join(valid)
+            if not _overlaps(s, e):
+                entities.append(
+                    PIIEntity(entity_type="PERSON", text=cleaned, start=s, end=e, score=0.96, sensitivity="medium")
+                )
+                existing_spans.add((s, e))
+
+        for m in SALUTATION_RE.finditer(text):
+            s, e = m.start(1), m.end(1)
+            cand = m.group(1).strip().strip("`'\"‘“”—-=[](){}:;,.")
+            words = cand.split()
+            if len(words) < 2 or len(words) > 3:
+                continue
+            if words[-1].lower() in ADMIN_NOUNS:
+                continue
+            cleaned = " ".join(words)
+            if not _overlaps(s, e):
+                entities.append(
+                    PIIEntity(entity_type="PERSON", text=cleaned, start=s, end=e, score=0.95, sensitivity="medium")
+                )
+                existing_spans.add((s, e))
 
         for res in presidio_results:
             s, e = res.start, res.end
             if _overlaps(s, e):
                 continue
             raw_ent = text[s:e].strip()
-            # If spaCy NER captured across newline, keep only the first line
             if "\n" in raw_ent:
                 raw_ent = raw_ent.split("\n")[0].strip()
                 e = s + len(raw_ent)
             ent_text = raw_ent
-            ent_lower = ent_text.lower().strip("`'\"‘“”—-=[](){}:;,.")
+            ent_clean = ent_text.strip("`'\"‘“”—-=[](){}:;,.")
 
-            # Filter noisy false-positive PERSON entities
+            # Filter noisy false-positive PERSON entities using generic linguistic rules
             if res.entity_type == "PERSON":
-                # Check boilerplate and length
-                if any(bp in ent_lower for bp in boilerplate_persons) or len(ent_text) < 4:
+                # Structural check: followed by colon or ends with colon (label pattern)
+                after = text[e:e+4]
+                if ":" in after or ent_clean.endswith(":"):
                     continue
-                # Reject digits, currency symbols
-                if re.search(r"[\d$#@%*+_=]", ent_text):
+                # Case check: proper nouns are not all-lowercase or all-uppercase headers
+                if ent_clean.islower() or (ent_clean.isupper() and (len(ent_clean) > 6 or " " in ent_clean)):
                     continue
-                # Reject OCR repetitive noise (e.g. HEHEHE, HHH, HAHAHA)
-                if re.search(r"\b(?:HEHEHE|HHH|HAHAHA|HAHAH|EE|BS|BR|Rh|Ul)\b", ent_text, re.I):
+                if re.search(r"[\d$#@%*+_=]", ent_clean):
                     continue
-                # Must be 1 to 4 word tokens without stopwords
-                words = ent_lower.split()
-                if len(words) > 4 or any(w in stop_words for w in words):
+                words = ent_clean.split()
+                if len(words) < 2 or len(words) > 3:
                     continue
-                if res.score < 0.75:
+                if words[-1].lower() in ADMIN_NOUNS or words[0].lower() in ADMIN_NOUNS:
+                    continue
+                if not all(w[0].isupper() for w in words):
+                    continue
+                if res.score < 0.80:
                     continue
 
             sensitivity = self._determine_sensitivity(res.entity_type)
             entities.append(
                 PIIEntity(
                     entity_type=res.entity_type,
-                    text=ent_text,
+                    text=ent_clean,
                     start=s,
                     end=e,
                     score=round(float(res.score), 4),
@@ -300,35 +358,6 @@ class PresidioPIIDetector(PIIDetector):
                 )
             )
             existing_spans.add((s, e))
-
-        # 8. Person Salutation / Label Augmentation (strictly single-line horizontal whitespace)
-        person_labeled_matches = re.finditer(
-            r"(?:Dear|To|TO|Attention|Attn|Applicant(?:\s*Name)?|Insured\s*Party|Ingured\s*Party|"
-            r"Patient(?:\s*Name)?|Account\s*Holder|Authorized\s*(?:Signatory|Agent)|Requisitioner|"
-            r"Member\s*Name|Customer|Client|Billed\s*To|Legal\s*Name|Logal\s*Name|Full\s*Name|"
-            r"Claimant(?:\s*Name)?|Beneficiary|Attending\s*Physic[a-z]*|Physician|Consut?ant)"
-            r"\s*[:;\s.-]+([A-Za-z'`.-]+(?:[^\S\r\n]+[A-Za-z'`.-]+){1,3})",
-            text, re.I
-        )
-        for m in person_labeled_matches:
-            s, e = m.start(1), m.end(1)
-            name_text = m.group(1).strip().strip("`'\"‘“”—-=[](){}:;,.")
-            name_lower = name_text.lower()
-            if not _overlaps(s, e) and len(name_text) >= 4:
-                # Exclude obvious non-person text, stopwords, digits, and noise
-                if any(bp in name_lower for bp in boilerplate_persons):
-                    continue
-                if re.search(r"\b(?:HEHEHE|HHH|HAHAHA|HAHAH|EE|BS|BR|Rh|Ul)\b", name_text, re.I):
-                    continue
-                if re.search(r"[\d\n\r$#@%*+_=]", name_text):
-                    continue
-                words = name_lower.split()
-                if any(w in stop_words for w in words):
-                    continue
-                entities.append(
-                    PIIEntity(entity_type="PERSON", text=name_text, start=s, end=e, score=0.96, sensitivity="medium")
-                )
-                existing_spans.add((s, e))
 
         return sorted(entities, key=lambda e: e.start)
 
