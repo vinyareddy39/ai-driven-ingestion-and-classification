@@ -1,0 +1,38 @@
+groups:
+  - name: ecm_pipeline_alerts
+    rules:
+      - alert: DeadLetterQueueSpike
+        expr: ecm_queue_depth{queue="dlq"} > 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Dead Letter Queue has unprocessed failed documents"
+          description: "DLQ queue has {{ $value }} messages. Check OCR, ClamAV, or ECM connection failures."
+
+      - alert: STPProcessingDrop
+        expr: ecm_pipeline_stp_rate < 60.0
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Straight-Through Processing rate dropped below 60%"
+          description: "Current STP rate is {{ $value }}%. Review queue volume may breach operator SLA."
+
+      - alert: HighStageLatency
+        expr: ecm_stage_latency_seconds{percentile="p95"} > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Stage p95 latency exceeds 500ms threshold"
+          description: "Stage {{ $labels.stage }} p95 latency is {{ $value }}s. Check worker concurrency or OCR bottleneck."
+
+      - alert: HighPipelineErrorRate
+        expr: ecm_pipeline_error_rate > 5.0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pipeline error rate exceeded 5%"
+          description: "Current error rate is {{ $value }}%. Immediate investigation required."

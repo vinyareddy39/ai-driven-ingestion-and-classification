@@ -1,9 +1,15 @@
 """Pytest configuration and shared test fixtures."""
 
 import os
+import sys
+from pathlib import Path
 import shutil
 import tempfile
 import pytest
+
+# Ensure workspace root is always in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from app.core.config import get_pipeline_config, load_pipeline_config
 from app.models.db import init_db
 from app.core.idempotency import get_idempotency_registry
