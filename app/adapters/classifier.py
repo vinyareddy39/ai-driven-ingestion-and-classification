@@ -131,7 +131,7 @@ class SklearnDocumentClassifier(Classifier):
         # If highest confidence is below uncertainty threshold, escalate to unknown
         if confidence < 0.40:
             best_class = "unknown"
-            confidence = max(0.60, prob_dict.get("unknown", 0.60))
+            confidence = float(prob_dict.get("unknown", confidence))
 
         return ClassificationResult(
             predicted_class=best_class,

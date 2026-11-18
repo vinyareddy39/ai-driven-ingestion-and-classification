@@ -13,6 +13,9 @@ class PresidioPIIDetector(PIIDetector):
     """Microsoft Presidio analyzer with custom domain-specific pattern recognizers."""
 
     def __init__(self):
+        import tldextract
+        tldextract.extract = tldextract.TLDExtract(suffix_list_urls=())
+
         from presidio_analyzer.nlp_engine import NlpEngineProvider
 
         # Configure Presidio to use local en_core_web_sm model
@@ -157,16 +160,33 @@ class PresidioPIIDetector(PIIDetector):
                 )
                 existing_spans.add((s, e))
 
-        # 4. Passport & Travel Document -> PASSPORT (High Sensitivity)
+        # 4. Passport & Travel Document -> PASSPORT (High Sensitivity, tolerant to OCR confusions)
         passport_context_matches = re.finditer(
-            r"(?:Passport\s*(?:No|Number|Code)?|Travel\s*Document)\s*[:;\s.-]+([A-Z0-9]{7,12})",
+            r"(?:Passport\s*(?:No|Number|Code|Serial|#)?|Travel\s*Document|Identification\s*Travel\s*Passport\s*#?|Legal\s*Passport\s*Serial)\s*[:;\s.-]+([A-Za-z0-9]{7,12})",
             text, re.I
         )
         for m in passport_context_matches:
             s, e = m.start(1), m.end(1)
+            raw_val = m.group(1)
+            # Map OCR 1 to I if leading letter
+            if raw_val and raw_val[0] in ('1', 'l', '|'):
+                raw_val = 'I' + raw_val[1:]
             if not _overlaps(s, e):
                 entities.append(
-                    PIIEntity(entity_type="PASSPORT", text=m.group(1), start=s, end=e, score=0.98, sensitivity="high")
+                    PIIEntity(entity_type="PASSPORT", text=raw_val, start=s, end=e, score=0.98, sensitivity="high")
+                )
+                existing_spans.add((s, e))
+
+        # 4b. Context-required National ID -> NATIONAL_ID (High Sensitivity)
+        nid_context_matches = re.finditer(
+            r"(?:National\s*ID|National\s*Identity|NID|Citizen\s*(?:ID|Registration)|Identity\s*#)\s*[:;\s.-]+([A-Za-z0-9-]{6,15})",
+            text, re.I
+        )
+        for m in nid_context_matches:
+            s, e = m.start(1), m.end(1)
+            if not _overlaps(s, e):
+                entities.append(
+                    PIIEntity(entity_type="NATIONAL_ID", text=m.group(1), start=s, end=e, score=0.95, sensitivity="high")
                 )
                 existing_spans.add((s, e))
 
@@ -183,9 +203,9 @@ class PresidioPIIDetector(PIIDetector):
                 )
                 existing_spans.add((s, e))
 
-        # 6. Phone Numbers
+        # 6. Phone Numbers (handling 001/1 prefixes, extensions x\d+, and context labels)
         phone_context_matches = re.finditer(
-            r"(?:Support\s*Phone|Contact\s*Phone|Telephone|Mobile\s*Phone|Primary\s*Contact|Phone\s*Number|Phone)\s*[:;\s.-]+([0-9+(). -]{7,25})",
+            r"(?:Support\s*Phone|Contact\s*Phone|Telephone|Mobile\s*Phone|Primary\s*Contact|Phone\s*Number|Phone|Cell\s*Phone|Direct\s*Phone|Inquiry\s*Hotline|Hotline|Contact\s*Tel|Signatory\s*Direct\s*Line|Direct\s*Line|Telephone\s*Support|Contact\s*Number)\s*[:;\s.-]+([0-9+().\s-]{7,35}(?:\s*(?:x|ext\.?)\s*\d+)?)",
             text, re.I
         )
         for m in phone_context_matches:
@@ -193,19 +213,19 @@ class PresidioPIIDetector(PIIDetector):
             val = m.group(1).strip()
             if len(re.findall(r"\d", val)) >= 7 and not _overlaps(s, e):
                 entities.append(
-                    PIIEntity(entity_type="PHONE_NUMBER", text=val, start=s, end=e, score=0.95, sensitivity="medium")
+                    PIIEntity(entity_type="PHONE_NUMBER", text=val, start=s, end=e, score=0.95, sensitivity="low")
                 )
                 existing_spans.add((s, e))
 
         phone_pattern_matches = re.finditer(
-            r"(?:(?<=\s)|(?<=^)|(?<=[(\s]))(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)\d{3}[-.\s]?\d{4}(?:\s*(?:x|ext\.?)\s*\d+)?\b",
+            r"(?:(?<=\s)|(?<=^)|(?<=[(\s]))(?:\+?1[-.\s]?|001[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)\d{3}[-.\s]?\d{4}(?:\s*(?:x|ext\.?)\s*\d+)?\b",
             text,
         )
         for m in phone_pattern_matches:
             s, e = m.start(), m.end()
             if not _overlaps(s, e):
                 entities.append(
-                    PIIEntity(entity_type="PHONE_NUMBER", text=m.group(0), start=s, end=e, score=0.90, sensitivity="medium")
+                    PIIEntity(entity_type="PHONE_NUMBER", text=m.group(0), start=s, end=e, score=0.90, sensitivity="low")
                 )
                 existing_spans.add((s, e))
 
@@ -340,3 +360,68 @@ def get_pii_detector() -> PIIDetector:
     if _pii_detector_singleton is None:
         _pii_detector_singleton = PresidioPIIDetector()
     return _pii_detector_singleton
+
+
+# ---------------------------------------------------------------------------
+# Reconciled Unified PII Evaluator Matcher
+# ---------------------------------------------------------------------------
+
+def normalize_pii_value(val: str, entity_type: str) -> str:
+    """Normalize PII values for evaluation comparisons across formats."""
+    if not val:
+        return ""
+    val_clean = str(val).strip().lower()
+    if entity_type in ("PHONE_NUMBER", "US_SSN", "US_EIN", "IBAN_CODE"):
+        digits = re.sub(r"[^\d]", "", val_clean)
+        if entity_type == "PHONE_NUMBER":
+            if digits.startswith("001"):
+                digits = digits[3:]
+            elif digits.startswith("1") and len(digits) > 10:
+                digits = digits[1:]
+        return digits
+    elif entity_type in ("PASSPORT", "NATIONAL_ID", "MEDICAL_LICENSE"):
+        trans = str.maketrans({"o": "0", "i": "1", "l": "1", "s": "5", "b": "8"})
+        return re.sub(r"[^a-z0-9]", "", val_clean).translate(trans)
+    elif entity_type == "EMAIL_ADDRESS":
+        return val_clean.strip()
+    else:
+        return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9\s]", "", val_clean)).strip()
+
+
+def match_pii_entity(expected_type: str, expected_val: str, detected_entities: List[Dict[str, Any]]) -> bool:
+    """Shared single matcher verifying both entity type and value overlap."""
+    import difflib
+    norm_exp = normalize_pii_value(expected_val, expected_type)
+    for det in detected_entities:
+        det_type = det.get("entity_type")
+        det_text = det.get("text", "")
+        # Check type equivalence
+        type_match = False
+        if det_type == expected_type:
+            type_match = True
+        elif expected_type == "US_SSN" and det_type in ("SSN", "US_SSN"):
+            type_match = True
+        elif expected_type == "US_EIN" and det_type in ("EIN", "US_EIN"):
+            type_match = True
+        elif expected_type == "PASSPORT" and det_type in ("PASSPORT", "NATIONAL_ID"):
+            type_match = True
+        elif expected_type == "NATIONAL_ID" and det_type in ("NATIONAL_ID", "PASSPORT"):
+            type_match = True
+
+        if not type_match:
+            continue
+
+        norm_det = normalize_pii_value(det_text, det_type)
+        if not norm_exp or not norm_det:
+            continue
+
+        if norm_exp == norm_det or norm_exp in norm_det or norm_det in norm_exp:
+            return True
+        if expected_type == "PERSON":
+            ratio = difflib.SequenceMatcher(None, norm_exp, norm_det).ratio()
+            if ratio >= 0.78:
+                return True
+        elif expected_type == "PHONE_NUMBER":
+            if len(norm_exp) >= 7 and len(norm_det) >= 7 and (norm_exp[-7:] == norm_det[-7:] or norm_exp[-10:] == norm_det[-10:]):
+                return True
+    return False

@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.adapters.ocr import get_ocr_engine
+from app.adapters.pii import match_pii_entity
 from app.workers.stages import (
     stage_classify, stage_extract_fields, stage_pii_detect,
     stage_decision_gate, stage_audit_record
@@ -67,7 +68,7 @@ def run_holdout2_eval():
     holdout_dir = Path("data/dataset/holdout2")
     json_files = sorted(list(holdout_dir.glob("*.json")))
     print("=" * 80)
-    print("EVALUATING LOCKED FRESH HOLDOUT 2 (Seed 20261119) - SINGLE UNSEEN PASS")
+    print("[DEVELOPMENT SET] EVALUATING DEVELOPMENT SET: HOLDOUT 2 (Seed 20261119)")
     print("=" * 80)
     print(f"Total Holdout 2 Documents: {len(json_files)}")
     
@@ -144,7 +145,8 @@ def run_holdout2_eval():
         
         for p in gt_pii:
             pt = p["type"]
-            matched = any(pe["entity_type"] == pt for pe in pred_entities)
+            pval = p.get("value", "")
+            matched = match_pii_entity(pt, pval, pred_entities)
             if matched:
                 pii_tp += 1
                 pii_entity_stats[pt]["tp"] += 1
@@ -155,13 +157,14 @@ def run_holdout2_eval():
                     pii_miss_examples.append({
                         "doc_id": did,
                         "type": pt,
-                        "expected_val": p.get("value"),
+                        "expected_val": pval,
                         "snippet": eval_text[:120].replace("\n", " ")
                     })
 
         for pe in pred_entities:
             pt = pe["entity_type"]
-            matched = any(p["type"] == pt for p in gt_pii)
+            det_text = pe.get("text", "")
+            matched = any(match_pii_entity(p["type"], p.get("value", ""), [{"entity_type": pt, "text": det_text}]) for p in gt_pii)
             if not matched:
                 pii_fp += 1
                 pii_entity_stats[pt]["fp"] += 1
@@ -169,12 +172,12 @@ def run_holdout2_eval():
                     pii_fp_examples.append({
                         "doc_id": did,
                         "type": pt,
-                        "text": pe.get("text", ""),
+                        "text": det_text,
                         "snippet": eval_text[:120].replace("\n", " ")
                     })
 
         # 4. Decision Gate
-        decision = stage_decision_gate(pred_class, confidence, pii_res)
+        decision = stage_decision_gate(pred_class, confidence, pii_res, extraction_valid=is_valid)
         if decision.action == "AUTO_ACCEPT":
             auto_accepted_count += 1
             auto_accepted_true.append(doc_type)

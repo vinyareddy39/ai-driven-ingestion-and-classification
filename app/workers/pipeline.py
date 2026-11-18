@@ -195,7 +195,7 @@ def process_document_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     # 9. Stage: Decision Gate
     t0 = time.time()
-    decision = stage_decision_gate(predicted_class, confidence, pii_res)
+    decision = stage_decision_gate(predicted_class, confidence, pii_res, extraction_valid=is_valid_schema)
     STAGE_LATENCY_METRICS["decision_gate"].append(time.time() - t0)
     registry.commit_stage(sha256_hash, "decision_gate", decision.model_dump())
 

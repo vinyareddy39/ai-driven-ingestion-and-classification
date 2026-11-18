@@ -26,6 +26,7 @@ def main():
         "val": Path("data/dataset/val"),
         "holdout2": Path("data/dataset/holdout2"),
         "holdout3": Path("data/dataset/holdout3"),
+        "holdout4": Path("data/dataset/holdout4"),
     }
     
     data = {}

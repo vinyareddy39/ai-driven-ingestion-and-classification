@@ -21,8 +21,10 @@ install_tesseract.py
 # Environment variables and secrets
 .env
 .venv/
+.venv311/
 env/
 venv/
+scratch/
 
 # System and logs
 *.log

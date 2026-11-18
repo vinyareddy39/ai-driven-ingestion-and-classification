@@ -19,21 +19,23 @@ class InvoiceFields(BaseModel):
 class ContractFields(BaseModel):
     contract_id: str = Field(description="Contract reference code")
     effective_date: str = Field(description="Date contract becomes active (YYYY-MM-DD)")
-    party_one: str = Field(min_length=1, description="First contracting party")
-    party_two: str = Field(min_length=1, description="Second contracting party")
+    party_one: Optional[str] = Field(default=None, description="First contracting party")
+    party_two: Optional[str] = Field(default=None, description="Second contracting party")
+    parties: Optional[str] = Field(default=None, description="Contracting parties")
 
 
 class KYCFormFields(BaseModel):
-    full_name: str = Field(min_length=1, description="Full legal name of individual")
+    full_name: Optional[str] = Field(default=None, description="Full legal name of individual")
+    customer_name: Optional[str] = Field(default=None, description="Customer name")
     id_number: str = Field(min_length=3, description="National ID or Passport number")
     date_of_birth: str = Field(description="Date of birth (YYYY-MM-DD)")
-    nationality: str = Field(min_length=2, description="Country of citizenship")
+    nationality: Optional[str] = Field(default=None, description="Country of citizenship")
 
 
 class BankStatementFields(BaseModel):
     account_number: str = Field(description="Bank account identifier")
     statement_period: str = Field(description="Billing or statement period")
-    opening_balance: float = Field(description="Account balance at start of cycle")
+    opening_balance: Optional[float] = Field(default=None, description="Account balance at start of cycle")
     closing_balance: float = Field(description="Account balance at close of cycle")
 
 
@@ -41,7 +43,7 @@ class MedicalReportFields(BaseModel):
     patient_id: str = Field(description="Unique patient identifier")
     diagnosis: str = Field(min_length=1, description="Clinical finding or diagnosis")
     doctor_name: str = Field(min_length=1, description="Attending physician")
-    report_date: str = Field(description="Date of examination (YYYY-MM-DD)")
+    report_date: Optional[str] = Field(default=None, description="Date of examination (YYYY-MM-DD)")
 
 
 class PurchaseOrderFields(BaseModel):

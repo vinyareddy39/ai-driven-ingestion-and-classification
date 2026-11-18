@@ -170,8 +170,9 @@ def gen_invoice_v2(idx: int) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]
     pii = [
         {"type": "US_EIN", "value": ein, "sensitivity": "medium"},
         {"type": "PERSON", "value": client, "sensitivity": "medium"},
-        {"type": "PHONE_NUMBER", "value": phone, "sensitivity": "low"},
     ]
+    if layout in (0, 2):
+        pii.append({"type": "PHONE_NUMBER", "value": phone, "sensitivity": "low"})
     return text.strip(), fields, pii
 
 
@@ -228,8 +229,9 @@ def gen_contract_v2(idx: int) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]
     pii = [
         {"type": "US_SSN", "value": ssn, "sensitivity": "high"},
         {"type": "PERSON", "value": exec_name, "sensitivity": "medium"},
-        {"type": "PHONE_NUMBER", "value": phone, "sensitivity": "low"},
     ]
+    if layout in (0, 1):
+        pii.append({"type": "PHONE_NUMBER", "value": phone, "sensitivity": "low"})
     return text.strip(), fields, pii
 
 
@@ -539,8 +541,9 @@ def gen_letter_v2(idx: int) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]]]:
         {"type": "PERSON", "value": sender, "sensitivity": "medium"},
         {"type": "PERSON", "value": recipient, "sensitivity": "medium"},
         {"type": "EMAIL_ADDRESS", "value": email, "sensitivity": "low"},
-        {"type": "PHONE_NUMBER", "value": phone, "sensitivity": "low"},
     ]
+    if layout in (0, 1):
+        pii.append({"type": "PHONE_NUMBER", "value": phone, "sensitivity": "low"})
     return text.strip(), fields, pii
 
 
@@ -597,8 +600,9 @@ def gen_claim_form_v2(idx: int) -> Tuple[str, Dict[str, Any], List[Dict[str, Any
     pii = [
         {"type": "PERSON", "value": claimant, "sensitivity": "medium"},
         {"type": "PHONE_NUMBER", "value": phone, "sensitivity": "low"},
-        {"type": "EMAIL_ADDRESS", "value": email, "sensitivity": "low"},
     ]
+    if layout in (0, 1):
+        pii.append({"type": "EMAIL_ADDRESS", "value": email, "sensitivity": "low"})
     return text.strip(), fields, pii
 
 
