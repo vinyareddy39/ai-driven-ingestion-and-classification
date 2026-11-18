@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local databases, storage, datasets, and OCR caches
+data/dataset/
+data/storage/
+data/scanner_watch/
+data/*.db
+data/*.sqlite*
+data/ocr_cache*.json
+
+# Local installers and binary tool extractions
+tools/
+downloads/
+get_tess.py
+install_tesseract.py
+
+# Environment variables and secrets
+.env
+.venv/
+env/
+venv/
+
+# System and logs
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,165 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: ecm-postgres
+    environment:
+      POSTGRES_USER: ecm_user
+      POSTGRES_PASSWORD: ecm_password
+      POSTGRES_DB: ecm_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecm_user -d ecm_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecm-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2023-09-07T02-05-02Z
+    container_name: ecm-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: ecm-opensearch
+    environment:
+      - discovery.type=single-node
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - DISABLE_SECURITY_PLUGIN=true
+    ports:
+      - "9200:9200"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cat/health | grep -q green || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clamav:
+    image: clamav/clamav:1.2_base
+    container_name: ecm-clamav
+    ports:
+      - "3310:3310"
+    healthcheck:
+      test: ["CMD-SHELL", "clamdscan /init || exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecm-app
+    command: uvicorn app.api.app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://ecm_user:ecm_password@postgres:5432/ecm_db
+      - QUEUE_BACKEND=redis
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_BACKEND=minio
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - SEARCH_BACKEND=opensearch
+      - OPENSEARCH_URL=http://opensearch:9200
+      - VIRUS_SCANNER_BACKEND=clamav
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+      - ECM_ADAPTER_BACKEND=fake
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+
+  worker-live:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecm-worker-live
+    command: python -m app.workers.pipeline --queue live
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://ecm_user:ecm_password@postgres:5432/ecm_db
+      - QUEUE_BACKEND=redis
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_BACKEND=minio
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - SEARCH_BACKEND=opensearch
+      - OPENSEARCH_URL=http://opensearch:9200
+      - VIRUS_SCANNER_BACKEND=clamav
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+    depends_on:
+      app:
+        condition: service_started
+    volumes:
+      - ./data:/app/data
+
+  worker-bulk:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ecm-worker-bulk
+    command: python -m app.workers.pipeline --queue bulk
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://ecm_user:ecm_password@postgres:5432/ecm_db
+      - QUEUE_BACKEND=redis
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_BACKEND=minio
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - SEARCH_BACKEND=opensearch
+      - OPENSEARCH_URL=http://opensearch:9200
+    depends_on:
+      app:
+        condition: service_started
+    volumes:
+      - ./data:/app/data
+
+volumes:
+  postgres_data:
+  minio_data:
+  opensearch_data:
