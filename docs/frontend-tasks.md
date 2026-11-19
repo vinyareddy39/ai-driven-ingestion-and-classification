@@ -143,7 +143,23 @@
 
 ---
 
-## 6. API Client Regeneration Note
+## 6. Screen 5: Batch Ingestion Progress & Results (`/batches/:batchId`)
+
+### UI Layout & Interactions:
+- Visual progress bar showing aggregated completion: Done (green), Needs Review (amber), Quarantined (red), Processing (blue).
+- Document type breakdown pills (`Invoice: 12`, `Receipt: 5`, `KYC: 2`).
+- Filterable table of items in the batch with filename, status badge, confidence, and action links.
+
+### API Endpoints Called:
+1. `GET /api/v1/batches/{batch_id}`
+   - Header: `Authorization: Bearer <access_token>`
+   - Success: `200 OK` $\rightarrow$ Render batch progress metrics, counts_by_type, and file table.
+   - Polling: Poll every 3 seconds while `progress.processing > 0` or `progress.queued > 0`.
+   - Error `404 Not Found` $\rightarrow$ Show *"Batch not found or unauthorized"*.
+
+---
+
+## 7. API Client Regeneration Note
 
 After merging the backend routes, please run:
 ```bash

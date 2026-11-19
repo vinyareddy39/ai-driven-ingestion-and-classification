@@ -1392,6 +1392,81 @@
         }
       }
     },
+    "/api/v1/batches/{batch_id}": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Batch Detail",
+        "description": "Retrieve batch progress, status breakdown, and document list with user isolation.",
+        "operationId": "get_batch_detail_api_v1_batches__batch_id__get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/documents": {
       "get": {
         "tags": [
@@ -4209,6 +4284,149 @@
         ],
         "title": "AuthUserResponse"
       },
+      "BatchDetailResponse": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "title": "Batch Id"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/BatchProgressCounts"
+          },
+          "counts_by_type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts By Type"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BatchFileItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "progress",
+          "counts_by_type",
+          "items"
+        ],
+        "title": "BatchDetailResponse",
+        "description": "Aggregated batch status, progress breakdown, per-type counts, and per-file items."
+      },
+      "BatchFileItem": {
+        "properties": {
+          "uid": {
+            "type": "string",
+            "title": "Uid"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "doc_type": {
+            "type": "string",
+            "title": "Doc Type"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "error_detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Detail"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "uid",
+          "file_name",
+          "doc_type",
+          "review_status",
+          "confidence",
+          "created_at"
+        ],
+        "title": "BatchFileItem",
+        "description": "Individual document summary in a batch detail response."
+      },
+      "BatchProgressCounts": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "default": 0
+          },
+          "queued": {
+            "type": "integer",
+            "title": "Queued",
+            "default": 0
+          },
+          "processing": {
+            "type": "integer",
+            "title": "Processing",
+            "default": 0
+          },
+          "done": {
+            "type": "integer",
+            "title": "Done",
+            "default": 0
+          },
+          "needs_review": {
+            "type": "integer",
+            "title": "Needs Review",
+            "default": 0
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed",
+            "default": 0
+          },
+          "quarantined": {
+            "type": "integer",
+            "title": "Quarantined",
+            "default": 0
+          },
+          "duplicate": {
+            "type": "integer",
+            "title": "Duplicate",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "BatchProgressCounts",
+        "description": "Aggregated status counts for documents in a batch."
+      },
       "Body_ingest_bulk_files_ingest_bulk_post": {
         "properties": {
           "files": {
@@ -6247,6 +6465,18 @@
             "title": "Low Risk Floor",
             "description": "Immutable threshold floor for low-risk classes",
             "default": 0.85
+          },
+          "max_upload_mb": {
+            "type": "integer",
+            "title": "Max Upload Mb",
+            "description": "Maximum upload size in MB",
+            "default": 10
+          },
+          "allowed_file_types": {
+            "type": "string",
+            "title": "Allowed File Types",
+            "description": "Allowed upload MIME types",
+            "default": "image/jpeg,image/png,application/pdf"
           },
           "timestamp": {
             "type": "string",
