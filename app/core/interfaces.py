@@ -28,6 +28,7 @@ class OCRResult(BaseModel):
     searchable_pdf_bytes: Optional[bytes] = None
     engine_name: str
     engine_version: str
+    page_methods: List[str] = Field(default_factory=list)
 
 
 class PIIEntity(BaseModel):

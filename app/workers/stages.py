@@ -165,6 +165,7 @@ def stage_ocr(file_bytes: bytes, file_name: str) -> Dict[str, Any]:
         "bounding_boxes_count": len(res.bounding_boxes),
         "engine_name": res.engine_name,
         "engine_version": res.engine_version,
+        "page_methods": res.page_methods,
     }
 
 
