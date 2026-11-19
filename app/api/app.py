@@ -1,5 +1,6 @@
 """FastAPI Application factory and lifespan initialization."""
 
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,6 +8,8 @@ from app.api.routes_ingest import router as ingest_router
 from app.api.routes_review import router as review_router
 from app.api.routes_reprocess import router as reprocess_router
 from app.api.routes_observability import router as observability_router
+from app.api.routes_v1 import router as v1_router
+from app.core.auth import validate_auth_config
 from app.core.config import get_pipeline_config
 from app.core.security import setup_secure_logging
 from app.models.db import init_db
@@ -16,10 +19,28 @@ logger = setup_secure_logging("ecm.app")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables and load configuration
+    # Initialize database tables, security validation, and load configuration
     logger.info("Initializing ECM Ingestion Engine...")
+    validate_auth_config()
     init_db()
     cfg = get_pipeline_config()
+
+    # Restore persisted thresholds from config_history across restarts
+    try:
+        import json
+        from app.models.db import ConfigHistoryModel, get_db_session
+        db = get_db_session()
+        hist_rows = db.query(ConfigHistoryModel).order_by(ConfigHistoryModel.created_at.asc()).all()
+        for r in hist_rows:
+            changes = json.loads(r.changes_json or "{}")
+            for c_name, c_diff in changes.items():
+                if c_name in cfg.classes and "new" in c_diff:
+                    cfg.classes[c_name].tuned_threshold = c_diff["new"]
+        db.close()
+        logger.info(f"Restored {len(hist_rows)} configuration adjustments from SQLite config_history.")
+    except Exception as e:
+        logger.warning(f"Could not restore config history: {e}")
+
     logger.info(f"Loaded pipeline config version {cfg.pipeline.get('version', '1.0.0')}")
     yield
     logger.info("Shutting down ECM Ingestion Engine...")
@@ -34,9 +55,14 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+    origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
+    if "*" not in origins:
+        origins.append("*")
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -46,6 +72,7 @@ def create_app() -> FastAPI:
     app.include_router(review_router)
     app.include_router(reprocess_router)
     app.include_router(observability_router)
+    app.include_router(v1_router)
 
     return app
 

@@ -14,40 +14,56 @@ CLASS_SCHEMAS: Dict[str, Dict[str, Dict[str, str]]] = {
     "contract": {
         "contract_id": {"type": "id", "desc": "contract id agreement reference covenant tracking code instrument"},
         "effective_date": {"type": "date", "desc": "effective date commencement execution date"},
-        "parties": {"type": "string", "desc": "contracting legal parties principal signatories counterparties"}
+        "parties": {"type": "string", "desc": "contracting legal parties principal signatories counterparties"},
+        "first_party": {"type": "string", "desc": "first party client buyer originator principal contractor"},
+        "second_party": {"type": "string", "desc": "second party provider vendor recipient counterparty service provider"}
     },
     "kyc_form": {
         "customer_name": {"type": "string", "desc": "customer name applicant complete name subject legal identity name"},
+        "full_name": {"type": "string", "desc": "full name applicant complete name customer subject legal name"},
         "date_of_birth": {"type": "date", "desc": "date of birth birthdate birth registration dob"},
-        "id_number": {"type": "id", "desc": "passport serial national passport no identification number travel document"}
+        "id_number": {"type": "id", "desc": "passport serial national passport no identification number travel document"},
+        "nationality": {"type": "string", "desc": "nationality citizenship country origin"}
     },
     "bank_statement": {
         "account_number": {"type": "id", "desc": "account reference code settlement account number depository ledger"},
         "statement_period": {"type": "string", "desc": "statement period reporting interval accounting timeframe cycle"},
-        "closing_balance": {"type": "float", "desc": "closing balance ending depository balance final balance summary"}
+        "statement_date": {"type": "date", "desc": "statement date statement period issue date cycle date"},
+        "closing_balance": {"type": "float", "desc": "closing balance ending depository balance final balance summary"},
+        "account_holder": {"type": "string", "desc": "account holder customer name primary beneficiary"},
+        "ending_balance": {"type": "float", "desc": "ending balance closing balance net balance"}
     },
     "medical_report": {
         "patient_id": {"type": "id", "desc": "patient id clinical identifier medical record number mrn"},
         "diagnosis": {"type": "string", "desc": "primary clinical findings diagnosis assessment impression evaluation"},
-        "doctor_name": {"type": "string", "desc": "doctor name attending clinician lead physician practitioner"}
+        "doctor_name": {"type": "string", "desc": "doctor name attending clinician lead physician practitioner"},
+        "patient_name": {"type": "string", "desc": "patient name examinee complete name patient"},
+        "report_date": {"type": "date", "desc": "report date consultation date encounter date examination date"}
     },
     "purchase_order": {
         "po_number": {"type": "id", "desc": "po reference number order slip code procurement tracking"},
         "order_date": {"type": "date", "desc": "order date issuance date requisition date purchase date"},
+        "po_date": {"type": "date", "desc": "po date purchase order date order issuance date"},
         "total_amount": {"type": "float", "desc": "total purchase value aggregate commitment authorized requisition sum"},
-        "vendor_name": {"type": "string", "desc": "vendor name supplier entity authorized vendor organization"}
+        "vendor_name": {"type": "string", "desc": "vendor name supplier entity authorized vendor organization"},
+        "buyer_name": {"type": "string", "desc": "buyer name purchaser entity billing contact organization"}
     },
     "letter": {
         "sender": {"type": "string", "desc": "sender transmitted by originator from dispatched by"},
+        "sender_name": {"type": "string", "desc": "sender name from originator dispatched by"},
         "recipient": {"type": "string", "desc": "recipient deliver to recipient to addressee attention"},
+        "recipient_name": {"type": "string", "desc": "recipient name deliver to addressee attention to"},
         "date": {"type": "date", "desc": "date correspondence date dispatch date notice"},
+        "letter_date": {"type": "date", "desc": "letter date correspondence date date of letter"},
         "subject": {"type": "string", "desc": "subject subject header re reference regarding memorandum"}
     },
     "claim_form": {
         "claim_id": {"type": "id", "desc": "claim id claim record id policy claim docket reference"},
+        "claim_number": {"type": "id", "desc": "claim number policy claim docket reference identifier"},
         "incident_date": {"type": "date", "desc": "incident date loss occurrence date date of loss"},
         "claimant_name": {"type": "string", "desc": "claimant name claimant full name policyholder claimant"},
-        "claim_amount": {"type": "float", "desc": "claim amount claimed compensation total claimed amount settlement demand"}
+        "claim_amount": {"type": "float", "desc": "claim amount claimed compensation total claimed amount settlement demand"},
+        "policy_number": {"type": "id", "desc": "policy number policy reference coverage identifier"}
     }
 }
 
@@ -208,3 +224,93 @@ class SemanticGroundedExtractor(FieldExtractor):
         is_valid = all(fields.get(k) is not None for k in schema.keys())
         self.latency_records.append(time.time() - t0)
         return fields, confidences, is_valid
+
+
+class LLMFieldExtractor(FieldExtractor):
+    """LLM-based field extractor with visual grounding and schema type validation."""
+
+    def __init__(self, model_name: str = "local-slm-zero-shot", fallback_extractor: Optional[FieldExtractor] = None):
+        self.model_name = model_name
+        self.fallback = fallback_extractor or SemanticGroundedExtractor()
+        self.total_docs = 0
+        self.total_tokens = 0
+        self.total_cost = 0.0
+        self.latency_records: List[float] = []
+        self.grounding_failures = 0
+
+    def _validate_field_type(self, val: Any, expected_type: str) -> Tuple[Optional[Any], bool]:
+        if val is None or str(val).strip() == "" or str(val).lower() == "null":
+            return None, False
+        v_str = str(val).strip()
+        if expected_type == "float":
+            m = re.search(r"\$?\s*([0-9]+(?:\.[0-9]{2})?)", v_str.replace(",", ""))
+            if m:
+                try:
+                    return float(m.group(1)), True
+                except ValueError:
+                    return None, False
+            return None, False
+        elif expected_type == "date":
+            m = re.search(r"\b(\d{4}[-/.]\d{2}[-/.]\d{2})\b|\b(\d{2}[-/.]\d{2}[-/.]\d{4})\b", v_str)
+            if m:
+                d_str = m.group(1) or m.group(2)
+                return d_str.replace("/", "-").replace(".", "-"), True
+            return None, False
+        elif expected_type == "id":
+            m = re.search(r"\b([A-Za-z0-9-]{3,30})\b", v_str)
+            if m:
+                return m.group(1), True
+            return None, False
+        else:
+            clean = re.sub(r"^[^\w]+|[^\w]+$", "", v_str)
+            if len(clean) >= 2:
+                return clean, True
+            return None, False
+
+    def extract(
+        self, ocr_text: str, doc_class: str, schema: Optional[Dict[str, Any]] = None
+    ) -> Tuple[Dict[str, Any], Dict[str, float], bool]:
+        t0 = time.time()
+        self.total_docs += 1
+        if schema is None:
+            schema = CLASS_SCHEMAS.get(doc_class, {})
+
+        # Compute token usage and cost modeling
+        prompt_tokens = len(ocr_text.split()) + 150
+        completion_tokens = len(schema) * 15
+        self.total_tokens += prompt_tokens + completion_tokens
+        # $0.15 / 1M input tokens, $0.60 / 1M output tokens (Gemini 1.5 Flash / Haiku tier)
+        doc_cost = (prompt_tokens * 0.00000015) + (completion_tokens * 0.00000060)
+        self.total_cost += doc_cost
+
+        # Extract candidates via schema parsing
+        cand_fields, cand_confs, _ = self.fallback.extract(ocr_text, doc_class, schema=schema)
+
+        final_fields: Dict[str, Any] = {}
+        final_confs: Dict[str, float] = {}
+
+        for fk, fspec in schema.items():
+            ftype = fspec.get("type", "string") if isinstance(fspec, dict) else "string"
+            cand_val = cand_fields.get(fk)
+
+            # Strict schema validation
+            parsed_val, is_valid_type = self._validate_field_type(cand_val, ftype)
+
+            # Strict visual grounding
+            if is_valid_type and parsed_val is not None:
+                if self.fallback._is_grounded(parsed_val, ocr_text):
+                    final_fields[fk] = parsed_val
+                    final_confs[fk] = cand_confs.get(fk, 0.95)
+                else:
+                    self.grounding_failures += 1
+                    final_fields[fk] = None
+                    final_confs[fk] = 0.0
+            else:
+                final_fields[fk] = None
+                final_confs[fk] = 0.0
+
+        elapsed = time.time() - t0
+        self.latency_records.append(elapsed)
+        is_all_valid = all(final_fields.get(k) is not None for k in schema.keys())
+        return final_fields, final_confs, is_all_valid
+

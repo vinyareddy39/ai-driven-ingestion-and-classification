@@ -1,0 +1,4193 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ECM Document Ingestion and Classification Pipeline",
+    "description": "Reference implementation of AI-driven document ingestion, Presidio PII tagging, and Nuxeo ECM routing",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/ingest": {
+      "post": {
+        "tags": [
+          "Ingestion"
+        ],
+        "summary": "Ingest Single File",
+        "description": "Upload a single file (PDF, TIFF, JPG, PNG, DOCX, EML).",
+        "operationId": "ingest_single_file_ingest_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ingest_single_file_ingest_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ingest/bulk": {
+      "post": {
+        "tags": [
+          "Ingestion"
+        ],
+        "summary": "Ingest Bulk Files",
+        "description": "Upload multiple documents in a single bulk operation.",
+        "operationId": "ingest_bulk_files_ingest_bulk_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ingest_bulk_files_ingest_bulk_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IngestResponse"
+                  },
+                  "title": "Response Ingest Bulk Files Ingest Bulk Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ingest/scanner_watch_trigger": {
+      "post": {
+        "tags": [
+          "Ingestion"
+        ],
+        "summary": "Trigger Scanner Folder",
+        "description": "Poll watched scanner directory and ingest new files.",
+        "operationId": "trigger_scanner_folder_ingest_scanner_watch_trigger_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review": {
+      "get": {
+        "tags": [
+          "Review UI"
+        ],
+        "summary": "Get Review Queue Page",
+        "description": "Render HTMX Review Queue UI.",
+        "operationId": "get_review_queue_page_review_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/{document_uid}": {
+      "get": {
+        "tags": [
+          "Review UI"
+        ],
+        "summary": "Get Document Review Detail",
+        "description": "Render HTMX document verification panel.",
+        "operationId": "get_document_review_detail_review__document_uid__get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/{document_uid}/action": {
+      "post": {
+        "tags": [
+          "Review UI"
+        ],
+        "summary": "Process Review Action",
+        "description": "Process human confirmation or correction.",
+        "operationId": "process_review_action_review__document_uid__action_post",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/export/training_data.jsonl": {
+      "get": {
+        "tags": [
+          "Review UI"
+        ],
+        "summary": "Export Verified Training Jsonl",
+        "description": "Export human-verified corrections as labeled JSONL training data.",
+        "operationId": "export_verified_training_jsonl_review_export_training_data_jsonl_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reprocess": {
+      "post": {
+        "tags": [
+          "Reprocessing"
+        ],
+        "summary": "Reprocess Documents By Query",
+        "description": "Query OpenSearch for candidate documents and enqueue for rate-limited bulk reprocessing.",
+        "operationId": "reprocess_documents_by_query_reprocess_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReprocessRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReprocessResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "summary": "Get Prometheus Metrics",
+        "description": "Export standard Prometheus metrics covering queues, latency, STP rate, and errors.",
+        "operationId": "get_prometheus_metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/live": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "summary": "Liveness Check",
+        "description": "Kubernetes / Docker liveness probe.",
+        "operationId": "liveness_check_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "summary": "Readiness Check",
+        "description": "Readiness probe validating DB, queue, and config status.",
+        "operationId": "readiness_check_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit/{uid}": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "summary": "Get Asset Audit Report",
+        "description": "Retrieve full audit record and compliance history for asset.",
+        "operationId": "get_asset_audit_report_audit__uid__get",
+        "parameters": [
+          {
+            "name": "uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/info": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get System Info",
+        "description": "Retrieve operational mode and pipeline metadata for the application shell.",
+        "operationId": "get_system_info_api_v1_system_info_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemInfoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Auth Me",
+        "description": "Return active authenticated user session.",
+        "operationId": "get_auth_me_api_v1_auth_me_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/queue": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Review Queue",
+        "description": "Retrieve paginated, filterable review queue.",
+        "operationId": "get_review_queue_api_v1_review_queue_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "risk",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "doc_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Doc Type"
+            }
+          },
+          {
+            "name": "risk_level",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Risk Level"
+            }
+          },
+          {
+            "name": "pii_sensitivity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pii Sensitivity"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewQueueResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/{document_uid}": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Review Detail",
+        "description": "Retrieve full review detail for a document including OCR text and bounding boxes.",
+        "operationId": "get_review_detail_api_v1_review__document_uid__get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review/{document_uid}/action": {
+      "post": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Process Review Action",
+        "description": "Confirm, correct, or reject a document classification with human-verified field tracking.",
+        "operationId": "process_review_action_api_v1_review__document_uid__action_post",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Documents List",
+        "description": "Retrieve paginated documents matching search and filter parameters.",
+        "operationId": "get_documents_list_api_v1_documents_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "doc_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Doc Type"
+            }
+          },
+          {
+            "name": "min_confidence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Confidence"
+            }
+          },
+          {
+            "name": "max_confidence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Max Confidence"
+            }
+          },
+          {
+            "name": "model_version",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model Version"
+            }
+          },
+          {
+            "name": "review_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Review Status"
+            }
+          },
+          {
+            "name": "pii_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pii Type"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{document_uid}/status": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Document Status",
+        "description": "Fast polling endpoint for ingestion status.",
+        "operationId": "get_document_status_api_v1_documents__document_uid__status_get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{document_uid}/compliance": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Document Compliance Detail",
+        "description": "Retrieve complete compliance record and explainability details.",
+        "operationId": "get_document_compliance_detail_api_v1_documents__document_uid__compliance_get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentComplianceDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{document_uid}": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Document Compliance Detail",
+        "description": "Retrieve complete compliance record and explainability details.",
+        "operationId": "get_document_compliance_detail_api_v1_documents__document_uid__get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentComplianceDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{document_uid}/audit-trail": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Document Audit Trail",
+        "description": "Retrieve full audit event timeline for a document.",
+        "operationId": "get_document_audit_trail_api_v1_documents__document_uid__audit_trail_get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditTrailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{document_uid}/audit": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Document Audit Trail",
+        "description": "Retrieve full audit event timeline for a document.",
+        "operationId": "get_document_audit_trail_api_v1_documents__document_uid__audit_get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditTrailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{document_uid}/pages/{page_num}/image": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Page Image",
+        "description": "Render and serve an authenticated page as a PNG image, with optional thumbnail resizing.",
+        "operationId": "get_page_image_api_v1_documents__document_uid__pages__page_num__image_get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "page_num",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Page Num"
+            }
+          },
+          {
+            "name": "width",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 4096,
+                  "minimum": 16
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Width"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{document_uid}/pii/reveal": {
+      "post": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Reveal Pii Entity",
+        "description": "Record an audit trail event for unmasking a PII entity without logging the secret value.",
+        "operationId": "reveal_pii_entity_api_v1_documents__document_uid__pii_reveal_post",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PIIRevealRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PIIRevealResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reprocess/preview": {
+      "post": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Preview Reprocess Query",
+        "description": "Dry-run preview: calculates matched documents and flags human-verified field conflicts.",
+        "operationId": "preview_reprocess_query_api_v1_reprocess_preview_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReprocessPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReprocessPreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reprocess/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Reprocess Job Status",
+        "description": "Retrieve execution status for a reprocess job.",
+        "operationId": "get_reprocess_job_status_api_v1_reprocess_jobs__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReprocessJobStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reprocess": {
+      "post": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Execute Reprocess",
+        "description": "Execute reprocessing on matched documents while strictly preserving human-verified fields.",
+        "operationId": "execute_reprocess_api_v1_reprocess_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReprocessExecutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReprocessExecutionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dashboard/metrics": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Dashboard Metrics",
+        "description": "Retrieve operational metrics computed from the database and pipeline telemetry.",
+        "operationId": "get_dashboard_metrics_api_v1_dashboard_metrics_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardMetricsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/config": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Admin Config",
+        "description": "Retrieve current class thresholds, floor constraints, and routing policy.",
+        "operationId": "get_admin_config_api_v1_admin_config_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminConfigResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Update Admin Config",
+        "description": "Update class thresholds with strict server-side validation against compliance floors.",
+        "operationId": "update_admin_config_api_v1_admin_config_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminConfigUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminConfigUpdateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/config/history": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get Config History",
+        "description": "Retrieve historical log of configuration modifications from database.",
+        "operationId": "get_config_history_api_v1_admin_config_history_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigHistoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdminConfigResponse": {
+        "properties": {
+          "classes": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ClassThresholdConfig"
+            },
+            "type": "object",
+            "title": "Classes"
+          },
+          "routing_rules": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Routing Rules"
+          },
+          "pii_policy": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Pii Policy"
+          },
+          "high_risk_floor": {
+            "type": "number",
+            "title": "High Risk Floor",
+            "default": 0.92
+          },
+          "low_risk_floor": {
+            "type": "number",
+            "title": "Low Risk Floor",
+            "default": 0.85
+          }
+        },
+        "type": "object",
+        "required": [
+          "classes",
+          "routing_rules",
+          "pii_policy"
+        ],
+        "title": "AdminConfigResponse",
+        "description": "Current threshold settings, floor limits, and PII sensitivity mapping."
+      },
+      "AdminConfigUpdateRequest": {
+        "properties": {
+          "updated_by": {
+            "type": "string",
+            "title": "Updated By"
+          },
+          "class_thresholds": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Class Thresholds"
+          },
+          "pii_policy": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pii Policy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "updated_by",
+          "class_thresholds"
+        ],
+        "title": "AdminConfigUpdateRequest",
+        "description": "Proposed updates to class thresholds with floor validation."
+      },
+      "AdminConfigUpdateResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "effective_config": {
+            "$ref": "#/components/schemas/AdminConfigResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "effective_config"
+        ],
+        "title": "AdminConfigUpdateResponse",
+        "description": "Result of configuration change application."
+      },
+      "AuditEventItem": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "document_uid": {
+            "type": "string",
+            "title": "Document Uid"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "stage_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "document_uid",
+          "event_type",
+          "status"
+        ],
+        "title": "AuditEventItem",
+        "description": "Individual audit event in the document history timeline."
+      },
+      "AuditTrailResponse": {
+        "properties": {
+          "document_uid": {
+            "type": "string",
+            "title": "Document Uid"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/AuditEventItem"
+            },
+            "type": "array",
+            "title": "Events"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_uid",
+          "events"
+        ],
+        "title": "AuditTrailResponse",
+        "description": "Complete chronological audit trail for a document."
+      },
+      "Body_ingest_bulk_files_ingest_bulk_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "type": "string",
+              "contentMediaType": "application/octet-stream"
+            },
+            "type": "array",
+            "title": "Files"
+          }
+        },
+        "type": "object",
+        "required": [
+          "files"
+        ],
+        "title": "Body_ingest_bulk_files_ingest_bulk_post"
+      },
+      "Body_ingest_single_file_ingest_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_ingest_single_file_ingest_post"
+      },
+      "ClassThresholdConfig": {
+        "properties": {
+          "class_name": {
+            "type": "string",
+            "title": "Class Name"
+          },
+          "risk": {
+            "type": "string",
+            "title": "Risk"
+          },
+          "current_threshold": {
+            "type": "number",
+            "title": "Current Threshold"
+          },
+          "default_threshold": {
+            "type": "number",
+            "title": "Default Threshold"
+          },
+          "floor_threshold": {
+            "type": "number",
+            "title": "Floor Threshold"
+          },
+          "retention_class": {
+            "type": "string",
+            "title": "Retention Class"
+          },
+          "acl": {
+            "type": "string",
+            "title": "Acl"
+          },
+          "target_workflow": {
+            "type": "string",
+            "title": "Target Workflow"
+          }
+        },
+        "type": "object",
+        "required": [
+          "class_name",
+          "risk",
+          "current_threshold",
+          "default_threshold",
+          "floor_threshold",
+          "retention_class",
+          "acl",
+          "target_workflow"
+        ],
+        "title": "ClassThresholdConfig",
+        "description": "Configuration and floor constraints for a single document class."
+      },
+      "ConfigHistoryItem": {
+        "properties": {
+          "change_id": {
+            "type": "string",
+            "title": "Change Id"
+          },
+          "updated_by": {
+            "type": "string",
+            "title": "Updated By"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "changes": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Changes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "change_id",
+          "updated_by",
+          "timestamp",
+          "changes"
+        ],
+        "title": "ConfigHistoryItem",
+        "description": "Audit entry recording historical configuration changes."
+      },
+      "ConfigHistoryResponse": {
+        "properties": {
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ConfigHistoryItem"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "history"
+        ],
+        "title": "ConfigHistoryResponse",
+        "description": "Audit history of configuration adjustments."
+      },
+      "DashboardMetricsResponse": {
+        "properties": {
+          "has_data": {
+            "type": "boolean",
+            "title": "Has Data"
+          },
+          "total_ingested": {
+            "type": "integer",
+            "title": "Total Ingested"
+          },
+          "queue_depth": {
+            "type": "integer",
+            "title": "Queue Depth"
+          },
+          "review_queue_size": {
+            "type": "integer",
+            "title": "Review Queue Size"
+          },
+          "stp_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stp Rate"
+          },
+          "error_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Rate"
+          },
+          "stage_latencies_ms": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/StageLatencyMetric"
+            },
+            "type": "object",
+            "title": "Stage Latencies Ms"
+          },
+          "per_class_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Per Class Counts"
+          },
+          "dead_letter_count": {
+            "type": "integer",
+            "title": "Dead Letter Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "has_data",
+          "total_ingested",
+          "queue_depth",
+          "review_queue_size"
+        ],
+        "title": "DashboardMetricsResponse",
+        "description": "High-level operational metrics dashboard."
+      },
+      "DocumentComplianceDetailResponse": {
+        "properties": {
+          "uid": {
+            "type": "string",
+            "title": "Uid"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "file_size": {
+            "type": "integer",
+            "title": "File Size"
+          },
+          "doc_type": {
+            "type": "string",
+            "title": "Doc Type"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "retention_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention Class"
+          },
+          "acl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Acl"
+          },
+          "decision_rule": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Rule"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
+          },
+          "target_workflow": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Workflow"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "classifier_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classifier Model"
+          },
+          "classifier_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classifier Version"
+          },
+          "ocr_engine": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ocr Engine"
+          },
+          "ocr_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ocr Version"
+          },
+          "pii_detected": {
+            "type": "boolean",
+            "title": "Pii Detected"
+          },
+          "pii_entities": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Pii Entities"
+          },
+          "pii_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pii Types"
+          },
+          "extracted_fields": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Extracted Fields"
+          },
+          "human_verified_fields": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Human Verified Fields"
+          },
+          "field_confidences": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Field Confidences"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "uid",
+          "sha256",
+          "file_name",
+          "file_size",
+          "doc_type",
+          "confidence",
+          "review_status",
+          "pii_detected"
+        ],
+        "title": "DocumentComplianceDetailResponse",
+        "description": "Detailed compliance view showing AIClassification record, retention rules, and ACL."
+      },
+      "DocumentListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentSummaryItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "Total Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "total_pages"
+        ],
+        "title": "DocumentListResponse",
+        "description": "Paginated list of documents with metadata filters."
+      },
+      "DocumentStatusResponse": {
+        "properties": {
+          "uid": {
+            "type": "string",
+            "title": "Uid"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "doc_type": {
+            "type": "string",
+            "title": "Doc Type"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "is_link": {
+            "type": "boolean",
+            "title": "Is Link"
+          },
+          "linked_to_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked To Uid"
+          },
+          "quarantine_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quarantine Reason"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "uid",
+          "file_name",
+          "review_status",
+          "doc_type",
+          "confidence",
+          "is_link"
+        ],
+        "title": "DocumentStatusResponse",
+        "description": "Lightweight document status polling payload."
+      },
+      "DocumentSummaryItem": {
+        "properties": {
+          "uid": {
+            "type": "string",
+            "title": "Uid"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "file_size": {
+            "type": "integer",
+            "title": "File Size"
+          },
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type"
+          },
+          "doc_type": {
+            "type": "string",
+            "title": "Doc Type"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "pii_detected": {
+            "type": "boolean",
+            "title": "Pii Detected"
+          },
+          "pii_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Pii Types"
+          },
+          "classifier_version": {
+            "type": "string",
+            "title": "Classifier Version"
+          },
+          "is_link": {
+            "type": "boolean",
+            "title": "Is Link"
+          },
+          "linked_to_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linked To Uid"
+          },
+          "quarantine_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quarantine Reason"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "uid",
+          "file_name",
+          "file_size",
+          "mime_type",
+          "doc_type",
+          "confidence",
+          "review_status",
+          "pii_detected",
+          "classifier_version",
+          "is_link"
+        ],
+        "title": "DocumentSummaryItem",
+        "description": "Summary item for documents list and search results."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IngestResponse": {
+        "properties": {
+          "uid": {
+            "type": "string",
+            "title": "Uid"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "queue": {
+            "type": "string",
+            "title": "Queue"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "uid",
+          "sha256",
+          "file_name",
+          "status",
+          "queue",
+          "message"
+        ],
+        "title": "IngestResponse",
+        "description": "Response returned upon successful document ingestion."
+      },
+      "OCRWordBox": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "x0": {
+            "type": "number",
+            "title": "X0"
+          },
+          "y0": {
+            "type": "number",
+            "title": "Y0"
+          },
+          "x1": {
+            "type": "number",
+            "title": "X1"
+          },
+          "y1": {
+            "type": "number",
+            "title": "Y1"
+          },
+          "page_num": {
+            "type": "integer",
+            "title": "Page Num",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "x0",
+          "y0",
+          "x1",
+          "y1"
+        ],
+        "title": "OCRWordBox",
+        "description": "Bounding box coordinates for an OCR detected word or token."
+      },
+      "PIIRevealRequest": {
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "title": "Entity Type"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entity_type"
+        ],
+        "title": "PIIRevealRequest",
+        "description": "Audit request to reveal a masked PII entity."
+      },
+      "PIIRevealResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "entity_type": {
+            "type": "string",
+            "title": "Entity Type"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "event_id",
+          "entity_type",
+          "message"
+        ],
+        "title": "PIIRevealResponse",
+        "description": "Audit confirmation of PII reveal."
+      },
+      "ReprocessExecutionRequest": {
+        "properties": {
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query"
+          },
+          "target_types": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Types"
+          },
+          "min_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Confidence"
+          },
+          "classifier_version_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classifier Version Filter"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ReprocessExecutionRequest",
+        "description": "Execution request to reprocess documents matching criteria."
+      },
+      "ReprocessExecutionResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "reprocessed_count": {
+            "type": "integer",
+            "title": "Reprocessed Count"
+          },
+          "conflicts_preserved_count": {
+            "type": "integer",
+            "title": "Conflicts Preserved Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "matched_count",
+          "reprocessed_count",
+          "conflicts_preserved_count"
+        ],
+        "title": "ReprocessExecutionResponse",
+        "description": "Response from executing a reprocess run."
+      },
+      "ReprocessJobStatusResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "processed_count": {
+            "type": "integer",
+            "title": "Processed Count"
+          },
+          "skipped_count": {
+            "type": "integer",
+            "title": "Skipped Count"
+          },
+          "error_count": {
+            "type": "integer",
+            "title": "Error Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "matched_count",
+          "processed_count",
+          "skipped_count",
+          "error_count"
+        ],
+        "title": "ReprocessJobStatusResponse",
+        "description": "Progress status of an active or completed reprocess job."
+      },
+      "ReprocessPreviewRequest": {
+        "properties": {
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query"
+          },
+          "classifier_version_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classifier Version Filter"
+          },
+          "min_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Confidence"
+          },
+          "target_types": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Types"
+          }
+        },
+        "type": "object",
+        "title": "ReprocessPreviewRequest",
+        "description": "Criteria to preview documents targeted for reprocessing."
+      },
+      "ReprocessPreviewResponse": {
+        "properties": {
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "human_verified_conflict_count": {
+            "type": "integer",
+            "title": "Human Verified Conflict Count"
+          },
+          "sample_documents": {
+            "items": {
+              "$ref": "#/components/schemas/ReprocessSampleItem"
+            },
+            "type": "array",
+            "title": "Sample Documents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "matched_count",
+          "human_verified_conflict_count",
+          "sample_documents"
+        ],
+        "title": "ReprocessPreviewResponse",
+        "description": "Dry-run preview metrics for a proposed reprocess job."
+      },
+      "ReprocessRequest": {
+        "properties": {
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query"
+          },
+          "classifier_version_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Classifier Version Filter"
+          },
+          "min_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Confidence"
+          },
+          "target_types": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Types"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ReprocessRequest",
+        "description": "Query payload for reprocess-by-query endpoint."
+      },
+      "ReprocessResponse": {
+        "properties": {
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "queued_count": {
+            "type": "integer",
+            "title": "Queued Count"
+          },
+          "skipped_count": {
+            "type": "integer",
+            "title": "Skipped Count"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run"
+          },
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "matched_count",
+          "queued_count",
+          "skipped_count",
+          "dry_run",
+          "job_id"
+        ],
+        "title": "ReprocessResponse",
+        "description": "Response from reprocess endpoint."
+      },
+      "ReprocessSampleItem": {
+        "properties": {
+          "uid": {
+            "type": "string",
+            "title": "Uid"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "current_doc_type": {
+            "type": "string",
+            "title": "Current Doc Type"
+          },
+          "current_confidence": {
+            "type": "number",
+            "title": "Current Confidence"
+          },
+          "classifier_version": {
+            "type": "string",
+            "title": "Classifier Version"
+          },
+          "has_human_verified_fields": {
+            "type": "boolean",
+            "title": "Has Human Verified Fields"
+          },
+          "human_verified_field_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Human Verified Field Names"
+          }
+        },
+        "type": "object",
+        "required": [
+          "uid",
+          "file_name",
+          "current_doc_type",
+          "current_confidence",
+          "classifier_version",
+          "has_human_verified_fields"
+        ],
+        "title": "ReprocessSampleItem",
+        "description": "Sample document matching reprocess criteria."
+      },
+      "ReviewActionRequest": {
+        "properties": {
+          "reviewer_id": {
+            "type": "string",
+            "title": "Reviewer Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "CONFIRM, CORRECT, or REJECT"
+          },
+          "corrected_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrected Type"
+          },
+          "corrected_fields": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrected Fields"
+          },
+          "review_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reviewer_id",
+          "action"
+        ],
+        "title": "ReviewActionRequest",
+        "description": "Review action payload submitted by reviewer."
+      },
+      "ReviewActionResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "document_uid": {
+            "type": "string",
+            "title": "Document Uid"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "doc_type": {
+            "type": "string",
+            "title": "Doc Type"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "document_uid",
+          "review_status",
+          "doc_type",
+          "message"
+        ],
+        "title": "ReviewActionResponse",
+        "description": "Result of human review decision."
+      },
+      "ReviewDetailResponse": {
+        "properties": {
+          "document_uid": {
+            "type": "string",
+            "title": "Document Uid"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "predicted_type": {
+            "type": "string",
+            "title": "Predicted Type"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "model_version": {
+            "type": "string",
+            "title": "Model Version"
+          },
+          "ocr_engine": {
+            "type": "string",
+            "title": "Ocr Engine"
+          },
+          "ocr_version": {
+            "type": "string",
+            "title": "Ocr Version"
+          },
+          "decision_reason": {
+            "type": "string",
+            "title": "Decision Reason"
+          },
+          "review_status": {
+            "type": "string",
+            "title": "Review Status"
+          },
+          "assigned_reviewer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned Reviewer"
+          },
+          "extracted_fields": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Extracted Fields"
+          },
+          "human_verified_fields": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Human Verified Fields"
+          },
+          "field_confidences": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Field Confidences"
+          },
+          "pii_entities": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Pii Entities"
+          },
+          "ocr_text": {
+            "type": "string",
+            "title": "Ocr Text",
+            "default": ""
+          },
+          "ocr_words": {
+            "items": {
+              "$ref": "#/components/schemas/OCRWordBox"
+            },
+            "type": "array",
+            "title": "Ocr Words"
+          },
+          "page_count": {
+            "type": "integer",
+            "title": "Page Count",
+            "default": 1
+          },
+          "page_image_url": {
+            "type": "string",
+            "title": "Page Image Url",
+            "default": ""
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_uid",
+          "task_id",
+          "file_name",
+          "predicted_type",
+          "confidence",
+          "model_name",
+          "model_version",
+          "ocr_engine",
+          "ocr_version",
+          "decision_reason",
+          "review_status"
+        ],
+        "title": "ReviewDetailResponse",
+        "description": "Full review detail payload with page image, OCR text, and field confidences."
+      },
+      "ReviewQueueItem": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "document_uid": {
+            "type": "string",
+            "title": "Document Uid"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "predicted_type": {
+            "type": "string",
+            "title": "Predicted Type"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "risk_level": {
+            "type": "string",
+            "title": "Risk Level",
+            "description": "HIGH or LOW risk tier"
+          },
+          "review_reason": {
+            "type": "string",
+            "title": "Review Reason"
+          },
+          "pii_sensitivity": {
+            "type": "string",
+            "title": "Pii Sensitivity",
+            "description": "HIGH, MEDIUM, LOW, or NONE"
+          },
+          "age_seconds": {
+            "type": "integer",
+            "title": "Age Seconds"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "thumbnail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id",
+          "document_uid",
+          "file_name",
+          "predicted_type",
+          "confidence",
+          "risk_level",
+          "review_reason",
+          "pii_sensitivity",
+          "age_seconds",
+          "status"
+        ],
+        "title": "ReviewQueueItem",
+        "description": "Item displayed on the human review queue table."
+      },
+      "ReviewQueueResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewQueueItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total_pages": {
+            "type": "integer",
+            "title": "Total Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size",
+          "total_pages"
+        ],
+        "title": "ReviewQueueResponse",
+        "description": "Paginated review queue response."
+      },
+      "StageLatencyMetric": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "p50_ms": {
+            "type": "number",
+            "title": "P50 Ms"
+          },
+          "p95_ms": {
+            "type": "number",
+            "title": "P95 Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "count",
+          "p50_ms",
+          "p95_ms"
+        ],
+        "title": "StageLatencyMetric",
+        "description": "Latency metrics for a specific pipeline stage."
+      },
+      "SystemInfoResponse": {
+        "properties": {
+          "mode": {
+            "type": "string",
+            "title": "Mode",
+            "description": "Operational mode: LOCAL MODE or REAL SERVICES"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "Pipeline application version"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "description": "Deployment environment name"
+          },
+          "storage_backend": {
+            "type": "string",
+            "title": "Storage Backend",
+            "description": "Storage adapter: local or minio"
+          },
+          "queue_backend": {
+            "type": "string",
+            "title": "Queue Backend",
+            "description": "Queue adapter: memory or redis"
+          },
+          "search_backend": {
+            "type": "string",
+            "title": "Search Backend",
+            "description": "Search adapter: memory or opensearch"
+          },
+          "ocr_engine": {
+            "type": "string",
+            "title": "Ocr Engine",
+            "description": "Configured OCR engine"
+          },
+          "classifier_version": {
+            "type": "string",
+            "title": "Classifier Version",
+            "description": "Active document classifier model version"
+          },
+          "high_risk_floor": {
+            "type": "number",
+            "title": "High Risk Floor",
+            "description": "Immutable threshold floor for high-risk classes",
+            "default": 0.92
+          },
+          "low_risk_floor": {
+            "type": "number",
+            "title": "Low Risk Floor",
+            "description": "Immutable threshold floor for low-risk classes",
+            "default": 0.85
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mode",
+          "version",
+          "environment",
+          "storage_backend",
+          "queue_backend",
+          "search_backend",
+          "ocr_engine",
+          "classifier_version"
+        ],
+        "title": "SystemInfoResponse",
+        "description": "System metadata and operational mode indication."
+      },
+      "UserSessionResponse": {
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "Active role: reviewer, admin, compliance, or viewer"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Permissions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id",
+          "username",
+          "role",
+          "permissions"
+        ],
+        "title": "UserSessionResponse",
+        "description": "Stub user session representing role-gated access."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

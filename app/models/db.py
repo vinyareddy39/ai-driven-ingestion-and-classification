@@ -105,6 +105,17 @@ class ReviewTaskModel(Base):
     completed_at = Column(DateTime, nullable=True)
 
 
+class ConfigHistoryModel(Base):
+    """Persistent audit log of configuration threshold updates."""
+    __tablename__ = "config_history"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    change_id = Column(String(64), unique=True, index=True, nullable=False)
+    updated_by = Column(String(100), nullable=False)
+    changes_json = Column(Text, default="{}")
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # Database Engine and Session Factory
 _engine = None
 _SessionFactory = None

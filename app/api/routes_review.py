@@ -3,10 +3,12 @@
 from datetime import datetime, timezone
 import json
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Form, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from app.adapters.ecm import get_ecm_adapter
+from app.core.auth import get_current_user, require_role
 from app.core.security import mask_string, setup_secure_logging
+from app.models.api_schemas import UserSessionResponse
 from app.models.db import DocumentModel, ReviewTaskModel, get_db_session
 
 logger = setup_secure_logging("ecm.api.review")
@@ -17,7 +19,10 @@ _human_verified_training_records: List[Dict[str, Any]] = []
 
 
 @router.get("", response_class=HTMLResponse)
-def get_review_queue_page(request: Request):
+def get_review_queue_page(
+    request: Request,
+    current_user: UserSessionResponse = Depends(require_role(["reviewer", "admin"])),
+):
     """Render HTMX Review Queue UI."""
     db = get_db_session()
     try:
@@ -110,7 +115,10 @@ def get_review_queue_page(request: Request):
 
 
 @router.get("/{document_uid}", response_class=HTMLResponse)
-def get_document_review_detail(document_uid: str):
+def get_document_review_detail(
+    document_uid: str,
+    current_user: UserSessionResponse = Depends(require_role(["reviewer", "admin"])),
+):
     """Render HTMX document verification panel."""
     db = get_db_session()
     try:
@@ -243,7 +251,11 @@ def apply_review_decision(
 
 
 @router.post("/{document_uid}/action", response_class=HTMLResponse)
-async def process_review_action(document_uid: str, request: Request):
+async def process_review_action(
+    document_uid: str,
+    request: Request,
+    current_user: UserSessionResponse = Depends(require_role(["reviewer", "admin"])),
+):
     """Process human confirmation or correction."""
     form_data = await request.form()
     action = form_data.get("action", "CONFIRM")
@@ -279,7 +291,9 @@ async def process_review_action(document_uid: str, request: Request):
 
 
 @router.get("/export/training_data.jsonl", response_class=PlainTextResponse)
-def export_verified_training_jsonl():
+def export_verified_training_jsonl(
+    current_user: UserSessionResponse = Depends(require_role(["reviewer", "admin"])),
+):
     """Export human-verified corrections as labeled JSONL training data."""
     lines = [json.dumps(r) for r in _human_verified_training_records]
     return PlainTextResponse(content="\n".join(lines), media_type="application/jsonl")

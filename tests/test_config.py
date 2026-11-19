@@ -28,3 +28,17 @@ def test_pii_policy_sensitivity():
     high_pii = cfg.pii_policy.sensitivity.get("high", [])
     assert "US_SSN" in high_pii or "CREDIT_CARD" in high_pii
     assert cfg.pii_policy.mask_in_logs is True
+
+
+def test_effective_thresholds_above_floors():
+    """Assert all effective thresholds are strictly at or above their mandatory compliance floors."""
+    cfg = get_pipeline_config()
+    high_floor = cfg.compliance_floors.high_risk_floor if cfg.compliance_floors else 0.95
+    low_floor = cfg.compliance_floors.low_risk_floor if cfg.compliance_floors else 0.90
+
+    for c_name, c_cfg in cfg.classes.items():
+        is_high = c_cfg.risk == "high"
+        floor = high_floor if is_high else low_floor
+        assert c_cfg.tuned_threshold >= floor, (
+            f"Class '{c_name}' tuned threshold {c_cfg.tuned_threshold} is below mandatory floor {floor}"
+        )

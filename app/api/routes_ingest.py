@@ -5,10 +5,12 @@ import os
 from pathlib import Path
 from typing import List, Optional
 import uuid
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from app.adapters.queue import get_queue_adapter
 from app.adapters.storage import get_storage_adapter
+from app.core.auth import get_current_user, require_role
 from app.core.config import get_app_settings, get_pipeline_config
+from app.models.api_schemas import UserSessionResponse
 from app.models.schemas import IngestResponse
 from app.core.security import setup_secure_logging
 
@@ -51,7 +53,10 @@ def ingest_file_bytes(file_bytes: bytes, file_name: str, queue_type: str = "live
 
 
 @router.post("", response_model=IngestResponse, status_code=status.HTTP_202_ACCEPTED)
-async def ingest_single_file(file: UploadFile = File(...)):
+async def ingest_single_file(
+    file: UploadFile = File(...),
+    current_user: UserSessionResponse = Depends(require_role(["admin", "reviewer"])),
+):
     """Upload a single file (PDF, TIFF, JPG, PNG, DOCX, EML)."""
     try:
         content = await file.read()
@@ -62,7 +67,10 @@ async def ingest_single_file(file: UploadFile = File(...)):
 
 
 @router.post("/bulk", response_model=List[IngestResponse], status_code=status.HTTP_202_ACCEPTED)
-async def ingest_bulk_files(files: List[UploadFile] = File(...)):
+async def ingest_bulk_files(
+    files: List[UploadFile] = File(...),
+    current_user: UserSessionResponse = Depends(require_role(["admin", "reviewer"])),
+):
     """Upload multiple documents in a single bulk operation."""
     responses: List[IngestResponse] = []
     for f in files:

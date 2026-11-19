@@ -24,3 +24,15 @@
    - Fields marked as `humanVerifiedFields` in the ECM metadata are treated as ground-truth and can never be overwritten by automated reprocessing passes. Conflicting automated predictions generate an audit diff event rather than modifying verified fields.
 7. **Rate-Limited Reprocessing**:
    - Bulk reprocessing runs on a dedicated low-priority queue with token-bucket rate limiting to guarantee that live real-time ingestion streams are never starved of worker capacity.
+
+## Frontend & API Contract (Phase 4)
+8. **API First Architecture**:
+   - All frontend interactions strictly use typed JSON REST endpoints under `/api/v1/`. Legacy HTMX HTML endpoints under `/review` are preserved for backward compatibility.
+   - Response models are explicitly defined using Pydantic v2 schemas to ensure `/openapi.json` is strictly accurate and client code can be generated via `openapi-typescript`.
+9. **Stub Authentication**:
+   - A role-based stub authentication layer validates headers (`X-User-Role` or `Authorization: Bearer <role>_token`) supporting roles: `reviewer`, `admin`, `compliance`, `viewer`. Stub tokens are mapped directly in configuration until production OIDC/SSO integration.
+10. **Data Grounding & Zero-Mock UI**:
+    - The web frontend displays real data queried directly from the SQLite/PostgreSQL `ecm_documents`, `review_tasks`, and `audit_events` tables. Zero synthetic or hardcoded dashboard metrics are used in production screens.
+11. **Config Validation & Floors**:
+    - Admin threshold updates strictly validate class-specific minimum floor values (0.85 for low-risk, 0.92 for high-risk classes) in the backend to prevent security or compliance degradation.
+

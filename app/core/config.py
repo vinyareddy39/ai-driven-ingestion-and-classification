@@ -47,6 +47,12 @@ class ReprocessingConfig(BaseModel):
     emit_conflict_diff: bool = True
 
 
+class ComplianceFloorsConfig(BaseModel):
+    """Compliance floor limits below which class thresholds cannot be lowered."""
+    high_risk_floor: float = 0.95
+    low_risk_floor: float = 0.90
+
+
 class PipelineYAMLConfig(BaseModel):
     """Full pipeline configuration loaded from YAML."""
     pipeline: Dict[str, Any]
@@ -55,6 +61,7 @@ class PipelineYAMLConfig(BaseModel):
     pii_policy: PIIPolicyConfig
     queues: QueuesConfig
     reprocessing: ReprocessingConfig
+    compliance_floors: Optional[ComplianceFloorsConfig] = Field(default_factory=ComplianceFloorsConfig)
 
 
 class AppSettings(BaseModel):

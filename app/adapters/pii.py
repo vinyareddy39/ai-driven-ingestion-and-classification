@@ -162,20 +162,25 @@ class PresidioPIIDetector(PIIDetector):
 
         # 4. Passport & Travel Document -> PASSPORT (High Sensitivity, tolerant to OCR confusions)
         passport_context_matches = re.finditer(
-            r"(?:Passport\s*(?:No|Number|Code|Serial|#)?|Travel\s*Document|Identification\s*Travel\s*Passport\s*#?|Legal\s*Passport\s*Serial)\s*[:;\s.-]+([A-Za-z0-9]{7,12})",
+            r"(?:Passport\s*(?:No|Number|Code|Serial|#)?|Travel\s*Document|Identification\s*Travel\s*Passport\s*#?|Legal\s*Passport\s*Serial|National\s*Passport\s*No\.?)\s*[:;\s.-]+([A-Za-z0-9]{7,12}|[A-Za-z0-9]{2,4}\s+[A-Za-z0-9]{4,8})",
             text, re.I
         )
         for m in passport_context_matches:
             s, e = m.start(1), m.end(1)
-            raw_val = m.group(1)
-            # Map OCR 1 to I if leading letter
-            if raw_val and raw_val[0] in ('1', 'l', '|'):
-                raw_val = 'I' + raw_val[1:]
-            if not _overlaps(s, e):
-                entities.append(
-                    PIIEntity(entity_type="PASSPORT", text=raw_val, start=s, end=e, score=0.98, sensitivity="high")
-                )
-                existing_spans.add((s, e))
+            raw_val = re.sub(r"[\s.-]", "", m.group(1).strip())
+            # Normalize standard OCR character confusions under passport context
+            if len(raw_val) >= 7 and len(raw_val) <= 12:
+                # Standard leading digit confusions for letters (O, I)
+                if raw_val[0] == '0':
+                    raw_val = 'O' + raw_val[1:]
+                elif raw_val[0] in ('1', 'l', '|'):
+                    raw_val = 'I' + raw_val[1:]
+                
+                if not _overlaps(s, e):
+                    entities.append(
+                        PIIEntity(entity_type="PASSPORT", text=raw_val, start=s, end=e, score=0.98, sensitivity="high")
+                    )
+                    existing_spans.add((s, e))
 
         # 4b. Context-required National ID -> NATIONAL_ID (High Sensitivity)
         nid_context_matches = re.finditer(
@@ -254,7 +259,9 @@ class PresidioPIIDetector(PIIDetector):
             "covenants", "reporting", "interval", "depository", "treasury", "corporate",
             "presented", "prescribed", "admitted", "evaluated", "diagnosed", "recommended",
             "re", "attn", "attention", "practitioner", "physician", "staff", "administrator",
-            "representative", "agent"
+            "representative", "agent", "colleague", "colleagues", "strategic", "quarterly",
+            "employer", "physical", "retainer", "consulting", "engineering", "software",
+            "enterprise", "formal", "copy", "official", "status"
         }
 
         # 8. Person Salutation & Role-Anchored Recognition
@@ -314,6 +321,29 @@ class PresidioPIIDetector(PIIDetector):
                 )
                 existing_spans.add((s, e))
 
+        # Specific Context Name Extractor
+        NAME_CONTEXT_RE = re.compile(
+            r"(?:Applicant\s*(?:Complete\s*)?Name|Recipient\s*Customer|Buyer\s*Representative|Attending\s*Clinician|Lead\s*Physician|Subject\s*Full\s*Legal\s*Name|Primary\s*Beneficiary)\s*[:;\s.-]+([A-Z][a-z]+(?:\s+[A-Za-z'`.-]+){1,3})",
+            re.I
+        )
+        for m in NAME_CONTEXT_RE.finditer(text):
+            cand = m.group(1).strip().strip("`'\"‘“”—-=[](){}:;,.")
+            words = cand.split()
+            valid = []
+            for w in words:
+                if w.lower() in ADMIN_NOUNS:
+                    break
+                valid.append(w)
+            if len(valid) >= 2:
+                cleaned = " ".join(valid[:3])
+                s = m.start(1)
+                e = s + len(cleaned)
+                if not _overlaps(s, e):
+                    entities.append(
+                        PIIEntity(entity_type="PERSON", text=cleaned, start=s, end=e, score=0.97, sensitivity="medium")
+                    )
+                    existing_spans.add((s, e))
+
         for res in presidio_results:
             s, e = res.start, res.end
             if _overlaps(s, e):
@@ -339,7 +369,7 @@ class PresidioPIIDetector(PIIDetector):
                 words = ent_clean.split()
                 if len(words) < 2 or len(words) > 3:
                     continue
-                if words[-1].lower() in ADMIN_NOUNS or words[0].lower() in ADMIN_NOUNS:
+                if any(w.lower() in ADMIN_NOUNS for w in words):
                     continue
                 if not all(w[0].isupper() for w in words):
                     continue

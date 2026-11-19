@@ -1,13 +1,28 @@
 # Windows PowerShell Automation Script for ECM Ingestion Pipeline
 param(
     [Parameter(Position=0)]
-    [ValidateSet("test", "eval", "load", "demo", "up", "down", "train", "scaffold", "help")]
+    [ValidateSet("test", "eval", "load", "demo", "up", "down", "train", "scaffold", "frontend-dev", "frontend-test", "frontend-build", "help")]
     [string]$Command = "help"
 )
 
 $PythonExe = "python"
 
 switch ($Command) {
+    "frontend-dev" {
+        Write-Host "Starting Vite frontend development server on http://localhost:5173..." -ForegroundColor Cyan
+        Set-Location frontend
+        npm run dev
+    }
+    "frontend-test" {
+        Write-Host "Running frontend unit and contract test suite..." -ForegroundColor Cyan
+        Set-Location frontend
+        npm test
+    }
+    "frontend-build" {
+        Write-Host "Building production frontend assets..." -ForegroundColor Cyan
+        Set-Location frontend
+        npm run build
+    }
     "test" {
         Write-Host "Running pytest test suite..." -ForegroundColor Cyan
         & $PythonExe -m pytest -v tests/
@@ -54,6 +69,9 @@ switch ($Command) {
         Write-Host "  .\run.ps1 train   - Retrain model and tune thresholds"
         Write-Host "  .\run.ps1 up      - Start Docker Compose stack"
         Write-Host "  .\run.ps1 down    - Stop Docker Compose stack"
+        Write-Host "  .\run.ps1 frontend-dev   - Start Vite frontend dev server (port 5173)"
+        Write-Host "  .\run.ps1 frontend-test  - Run Vitest unit & contract tests"
+        Write-Host "  .\run.ps1 frontend-build - Build production frontend bundle"
         Write-Host "==========================================================" -ForegroundColor Yellow
     }
 }

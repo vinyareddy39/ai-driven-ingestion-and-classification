@@ -112,6 +112,12 @@ def test_corrupt_and_password_protected_files_quarantined():
     sha_c = hashlib.sha256(data).hexdigest()
     get_storage_adapter().save(sha_c, data)
 
+    # Clean previous record if exists in test DB copy
+    db = get_db_session()
+    db.query(DocumentModel).filter(DocumentModel.sha256 == sha_c).delete()
+    db.commit()
+    db.close()
+
     p_corrupt = {
         "uid": f"corrupt-{sha_c[:8]}",
         "sha256": sha_c,
@@ -129,6 +135,11 @@ def test_corrupt_and_password_protected_files_quarantined():
         pwd_data = f.read()
     sha_p = hashlib.sha256(pwd_data).hexdigest()
     get_storage_adapter().save(sha_p, pwd_data)
+
+    db = get_db_session()
+    db.query(DocumentModel).filter(DocumentModel.sha256 == sha_p).delete()
+    db.commit()
+    db.close()
 
     p_pwd = {
         "uid": f"pwd-{sha_p[:8]}",

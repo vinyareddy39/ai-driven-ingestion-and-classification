@@ -4,11 +4,13 @@ from datetime import datetime, timezone
 import json
 import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.adapters.queue import get_queue_adapter
 from app.adapters.search import get_search_adapter
+from app.core.auth import get_current_user, require_role
 from app.core.config import get_pipeline_config
 from app.core.security import setup_secure_logging
+from app.models.api_schemas import UserSessionResponse
 from app.models.db import AuditEventModel, DocumentModel, get_db_session
 from app.models.schemas import ReprocessRequest, ReprocessResponse
 
@@ -20,7 +22,10 @@ _reprocessing_conflict_diffs: List[Dict[str, Any]] = []
 
 
 @router.post("", response_model=ReprocessResponse, status_code=status.HTTP_202_ACCEPTED)
-def reprocess_documents_by_query(payload: ReprocessRequest):
+def reprocess_documents_by_query(
+    payload: ReprocessRequest,
+    current_user: UserSessionResponse = Depends(require_role(["admin"])),
+):
     """Query OpenSearch for candidate documents and enqueue for rate-limited bulk reprocessing."""
     search = get_search_adapter()
     cfg = get_pipeline_config()

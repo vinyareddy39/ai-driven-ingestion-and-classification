@@ -2,12 +2,14 @@
 
 import json
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import PlainTextResponse
 import numpy as np
 
 from app.adapters.queue import get_queue_adapter
+from app.core.auth import get_current_user, require_role
 from app.core.config import get_pipeline_config
+from app.models.api_schemas import UserSessionResponse
 from app.models.db import AuditEventModel, DocumentModel, ReviewTaskModel, get_db_session
 from app.workers.pipeline import PIPELINE_STATS, STAGE_LATENCY_METRICS
 
@@ -15,7 +17,7 @@ router = APIRouter(tags=["Observability"])
 
 
 @router.get("/metrics", response_class=PlainTextResponse)
-def get_prometheus_metrics():
+def get_prometheus_metrics(current_user: UserSessionResponse = Depends(get_current_user)):
     """Export standard Prometheus metrics covering queues, latency, STP rate, and errors."""
     cfg = get_pipeline_config()
     queue = get_queue_adapter()
@@ -110,7 +112,10 @@ def readiness_check():
 
 
 @router.get("/audit/{uid}")
-def get_asset_audit_report(uid: str):
+def get_asset_audit_report(
+    uid: str,
+    current_user: UserSessionResponse = Depends(require_role(["compliance", "admin", "reviewer"])),
+):
     """Retrieve full audit record and compliance history for asset."""
     db = get_db_session()
     try:

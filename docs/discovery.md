@@ -134,3 +134,17 @@ False Positive Modes:              ZIP+4 postal codes e.g. '02903-1105' misread 
 3. **Restricted Class Processing Enclave**: Given that `kyc_form`, `medical_report`, and `bank_statement` are strictly forbidden from cloud AI execution, is an on-premises GPU node (e.g. NVIDIA A10G/T4 running LayoutLMv3 or vLLM) budgeted for on-prem deep extraction, or should the generic regex/word-box extractor remain the production standard?
 4. **SLA for Human Review Queue**: With a steady-state daily volume of 50,000 documents and an anticipated STP rate of 70%, ~15,000 documents/day will enter the Human Review Queue. What is the required SLA per document review (e.g. 2 hours vs 24 hours)?
 5. **Retention Disposal Automation**: Should documents reaching end-of-retention (e.g. 7 years for invoices) be placed in an automated destruction candidate queue, or automatically hard-deleted with cryptographic audit certificates?
+
+---
+
+## 9. Documented Decisions on Extraction Schemas & Real Data
+
+1. **Receipt vs Invoice Formal Classification**:
+   - Receipts are point-of-sale customer payment slips (narrow roll format, thermal print, GST/SST breakdown, no structured counterparty field).
+   - Invoices are formal B2B billing instruments containing formal `invoice_number`, `invoice_date`, `vendor_name`, `total_amount`.
+   - In production, SROIE receipts correctly route to `unknown` (98.0%) or `invoice` (2.0%) with 0% Straight-Through Processing (STP), safely entering the Human Review triage desk.
+2. **Decision on `vendor_address`**:
+   - **Formally DROPPED from schema extraction**. In real scanned receipts and invoices, addresses are unstructured multi-line geographic strings with high OCR variance and zero downstream automation utility (ERP accounts payable and compliance systems match on Tax ID / EIN / Vendor Name, not street address). Dropping `vendor_address` eliminates noisy zero-confidence fields from corrupting STP.
+3. **Threshold Calibration History & Policy Rationale**:
+   - Initial threshold in config: 0.90 for low-risk, 0.95 for high-risk. Decision gate strictly enforces $\ge 0.90$ (low-risk) and $\ge 0.95$ (high-risk) with a 0.60 review floor.
+   - An operating threshold of 0.85 was evaluated in early exploratory test scripts on linear SVM margins, but enterprise risk weighting (10x cost for high-risk misclassification) mandates strictly preserving $\ge 0.90$ / $\ge 0.95$. All production routing preserves these thresholds.

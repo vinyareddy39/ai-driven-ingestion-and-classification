@@ -1,9 +1,51 @@
+import re
+import sys
 import json
 import time
 import difflib
 from pathlib import Path
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
+
+def parse_and_normalize_date(raw_s: str):
+    if not raw_s:
+        return None
+    # DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+    m = re.search(r'\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})\b', raw_s)
+    if m:
+        d, m_val, y = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if 1 <= d <= 31 and 1 <= m_val <= 12:
+            return f"{y:04d}-{m_val:02d}-{d:02d}"
+    # YYYY-MM-DD
+    m2 = re.search(r'\b(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})\b', raw_s)
+    if m2:
+        y, m_val, d = int(m2.group(1)), int(m2.group(2)), int(m2.group(3))
+        if 1 <= d <= 31 and 1 <= m_val <= 12:
+            return f"{y:04d}-{m_val:02d}-{d:02d}"
+    # DD/MM/YY
+    m3 = re.search(r'\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{2})\b', raw_s)
+    if m3:
+        d, m_val, y_short = int(m3.group(1)), int(m3.group(2)), int(m3.group(3))
+        y = 2000 + y_short if y_short < 70 else 1900 + y_short
+        if 1 <= d <= 31 and 1 <= m_val <= 12:
+            return f"{y:04d}-{m_val:02d}-{d:02d}"
+    return None
+
+def extract_receipt_total(text: str):
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    # Search backwards for Grand Total or Total
+    for line in reversed(lines):
+        u = line.upper()
+        if "SUBTOTAL" in u or "SUB TOTAL" in u or "TAX" in u or "CHANGE" in u or "CASH" in u:
+            continue
+        if "GRAND TOTAL" in u or "TOTAL" in u or "NET AMOUNT" in u or "AMOUNT DUE" in u:
+            m = re.search(r'([0-9]+\.[0-9]{2})', line)
+            if m:
+                try:
+                    return float(m.group(1))
+                except ValueError:
+                    pass
+    return None
 
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -122,31 +164,45 @@ def evaluate_sroie_dev():
                 lines = [line.strip() for line in text.split("\n") if len(line.strip()) > 3]
                 if lines:
                     extracted_val = lines[0]
-            elif fk == "total_amount" and not extracted_val:
-                # search total pattern
-                import re
-                tot_m = re.search(r"(?:TOTAL|AMOUNT|NET|BALANCE)\s*[:$\s]*([0-9]+\.[0-9]{2})", text, re.I)
-                if tot_m:
-                    extracted_val = float(tot_m.group(1))
+            elif fk == "invoice_date":
+                if not extracted_val:
+                    date_iso = parse_and_normalize_date(text)
+                    if date_iso:
+                        extracted_val = date_iso
+                else:
+                    extracted_val = parse_and_normalize_date(str(extracted_val)) or extracted_val
+            elif fk == "total_amount":
+                rtot = extract_receipt_total(text)
+                if rtot is not None:
+                    extracted_val = rtot
 
             match = False
             if extracted_val is not None and expected_val is not None:
                 exp_s = str(expected_val).strip().lower()
                 ext_s = str(extracted_val).strip().lower()
-                if exp_s == ext_s:
-                    match = True
+                
+                if fk == "invoice_date":
+                    exp_iso = parse_and_normalize_date(exp_s)
+                    ext_iso = parse_and_normalize_date(ext_s)
+                    if exp_iso and ext_iso and exp_iso == ext_iso:
+                        match = True
+                    elif exp_s == ext_s:
+                        match = True
                 elif fk == "total_amount":
                     try:
-                        exp_num = float(exp_s.replace("$", "").replace(",", ""))
-                        ext_num = float(ext_s.replace("$", "").replace(",", ""))
+                        exp_num = float(re.sub(r"[^\d.]", "", exp_s))
+                        ext_num = float(re.sub(r"[^\d.]", "", ext_s))
                         if abs(exp_num - ext_num) < 0.05:
                             match = True
                     except Exception:
                         pass
                 else:
-                    ratio = difflib.SequenceMatcher(None, exp_s, ext_s).ratio()
-                    if ratio >= 0.70 or exp_s in ext_s or ext_s in exp_s:
+                    if exp_s == ext_s:
                         match = True
+                    else:
+                        ratio = difflib.SequenceMatcher(None, exp_s, ext_s).ratio()
+                        if ratio >= 0.70 or exp_s in ext_s or ext_s in exp_s:
+                            match = True
 
             if match:
                 field_stats[fk]["correct"] += 1
