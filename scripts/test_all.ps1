@@ -28,12 +28,14 @@ if (Get-Command pytest -ErrorAction SilentlyContinue) {
 
 # 1. Run the Full Pytest Suite (148 Unit, Integration & API Tests) with 120-second timeout protection
 Write-Host "`n[1/4] Running Full Pytest Suite (148 Tests across all 9 Stages)..." -ForegroundColor Yellow
+$workDir = (Get-Location).Path
 $testJob = Start-Job -ScriptBlock {
-    param($dbUrl)
+    param($dbUrl, $dir)
+    Set-Location $dir
     $env:DATABASE_URL = $dbUrl
     $env:PYTHONPATH = "."
     pytest tests/ -v
-} -ArgumentList $env:DATABASE_URL
+} -ArgumentList $env:DATABASE_URL, $workDir
 
 $completed = Wait-Job $testJob -Timeout 120
 if ($null -eq $completed) {

@@ -15,11 +15,34 @@ import uvicorn
 from app.api.app import app
 from app.core.auth import get_configured_tokens
 from app.core.jwt_auth import create_jwt_token
-from app.models.db import init_db
+from app.models.db import init_db, get_db_session, DocumentModel
 
 
 def run_live_verification():
     init_db()
+
+    # Seed sample batch for user isolation test if not already present
+    db = get_db_session()
+    try:
+        existing_doc = db.query(DocumentModel).filter(DocumentModel.batch_id == "batch-usr-a-101").first()
+        if not existing_doc:
+            doc = DocumentModel(
+                uid="doc-live-batch-01",
+                sha256="live_test_hash_01",
+                file_name="sample_batch.pdf",
+                file_size=1024,
+                mime_type="application/pdf",
+                storage_path="data/test_samples/sample_batch.pdf",
+                batch_id="batch-usr-a-101",
+                user_id="usr-patient-a",
+                doc_type="kyc",
+                confidence=0.95,
+                review_status="human_verified",
+            )
+            db.add(doc)
+            db.commit()
+    finally:
+        db.close()
 
     # Configure real uvicorn server on port 8000
     config = uvicorn.Config(app, host="127.0.0.1", port=8000, log_level="warning")
