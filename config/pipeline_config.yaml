@@ -13,6 +13,13 @@ classes:
     retention_class: FINANCIAL_7_YEARS
     acl: CONFIDENTIAL_FINANCE
     target_workflow: AP_INVOICE_PROCESSING
+  receipt:
+    risk: low
+    default_threshold: 0.90
+    tuned_threshold: 0.90
+    retention_class: FINANCIAL_7_YEARS
+    acl: CONFIDENTIAL_FINANCE
+    target_workflow: AP_RECEIPT_PROCESSING
   contract:
     risk: low
     default_threshold: 0.9
