@@ -12,7 +12,8 @@ from app.api.routes_v1 import router as v1_router
 from app.api.routes_auth import router as auth_router
 from app.api.routes_prescriptions import router as prescriptions_router
 from app.core.auth import validate_auth_config
-from app.core.config import get_app_settings, get_pipeline_config
+from app.core.config import get_pipeline_config
+from app.core.settings import get_app_settings, validate_production_safety
 from app.core.security import setup_secure_logging
 from app.models.db import init_db
 
@@ -23,6 +24,8 @@ logger = setup_secure_logging("ecm.app")
 async def lifespan(app: FastAPI):
     # Initialize database tables, security validation, and load configuration
     logger.info("Initializing ECM Ingestion Engine...")
+    settings = get_app_settings()
+    validate_production_safety(settings)
     validate_auth_config()
     init_db()
     cfg = get_pipeline_config()

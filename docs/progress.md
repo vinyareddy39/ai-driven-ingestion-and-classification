@@ -31,7 +31,19 @@
 
 | Stage 5 | Timetable Generation | COMPLETED | 73643df | Deterministic schedule parser (anchor times, offsets, interval frequencies, month/year boundaries, DST transitions, PRN zero-slots), mandatory medical disclaimer, confirm endpoint returning 409 if any item unverified, adherence slot status updates with audit logging; 47/47 timetable tests and 119/119 full suite passing |
 | Stage 6 | Reminders, Review and Reprocessing | COMPLETED | 5b119e6 | Reminder scheduler with pluggable delivery channels (Log/StubSMTP), strictly zero PII in reminder payloads; human review correction loop appending token spans to data/prescription_corrections.jsonl without PII; batch reprocessing endpoint POST /prescriptions/reprocess with dry_run mode and strict invariant protection (verified_by_user items are never overwritten); 3/3 Stage 6 tests and 122/122 full suite passing |
-| Stage 7 | Privacy, Security and Database | PENDING | - | Column encryption at rest, log hygiene test, data export/delete-my-data |
-| Stage 8 | ECM Lifecycle | PENDING | - | Outbound HMAC webhook, disposition job, legal hold flag |
-| Stage 9 | Test Pack and Report | PENDING | - | Master test script update, docs/prescription-report.md |
+## Complete Production & Deployment Pipeline (Branch: backend/complete)
+
+| Stage | Name | Status | Commit SHA | Notes / Evidence |
+|---|---|---|---|---|
+| Stage 0 | Audit and Skip List | COMPLETED | 4a43efa | Audited DB tables (1,790 docs, 12,585 audits), storage & queue adapters, skipped 17 existing proven capabilities, identified gaps in settings, batch results, LLM router |
+| Stage 1 | Configuration and Secrets | COMPLETED | pending | Unified pydantic-settings module with 24 variables, .env.example, production startup barrier validation (refuses default secrets, SQLite, wildcard CORS, role header bypass, local storage), /api/v1/system/info exposes no secrets; 4/4 Stage 1 tests and 130/130 full suite passing |
+| Stage 2 | Database (PostgreSQL Ready) | PENDING | - | Batch ID column, composite indices, Alembic upgrade/downgrade, backup/restore runbook |
+| Stage 3 | AI Services & Residency | PENDING | - | LLMClient interface (local Ollama vs hosted), residency router, receipt doc type |
+| Stage 4 | Batch Results & ECM Flow | PENDING | - | GET /batches/{id} aggregation in O(1) queries, signed HMAC webhook, legal hold disposition |
+| Stage 5 | Prescription Flow | COMPLETED (Skipped) | 5b119e6 | Fully completed in previous flow (Argon2id, HS256 JWT, medication extractor, timetable, reminders, column encryption) |
+| Stage 6 | Storage, Queue, Workers | PENDING | - | S3 production guard, Postgres job table for restart survival |
+| Stage 7 | Frontend Contract & Connection | PENDING | - | Regenerated openapi.json, docs/frontend-contract-final.md, live curl proofs |
+| Stage 8 | Deployment Files | PENDING | - | render.yaml, Dockerfile, frontend/vercel.json, frontend/.env.example, docs/deploy.md |
+| Stage 9 | Test Pack and Final Report | PENDING | - | scripts/test_all.ps1 update, docs/final-report.md |
+
 

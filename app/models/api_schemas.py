@@ -17,6 +17,8 @@ class SystemInfoResponse(BaseModel):
     classifier_version: str = Field(description="Active document classifier model version")
     high_risk_floor: float = Field(default=0.92, description="Immutable threshold floor for high-risk classes")
     low_risk_floor: float = Field(default=0.85, description="Immutable threshold floor for low-risk classes")
+    max_upload_mb: int = Field(default=10, description="Maximum upload size in MB")
+    allowed_file_types: str = Field(default="image/jpeg,image/png,application/pdf", description="Allowed upload MIME types")
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 

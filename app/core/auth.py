@@ -79,7 +79,13 @@ def is_role_header_allowed() -> bool:
 def get_configured_tokens() -> Dict[str, str]:
     """Parse token:role pairs configured in AUTH_TOKENS environment variable."""
     load_dotenv_if_present()
-    raw = os.getenv("AUTH_TOKENS", "").strip()
+    raw = os.getenv("AUTH_TOKENS")
+    if not raw:
+        try:
+            from app.core.settings import get_app_settings
+            raw = get_app_settings().AUTH_TOKENS
+        except Exception:
+            raw = ""
     tokens: Dict[str, str] = {}
     if raw:
         for part in raw.split(","):

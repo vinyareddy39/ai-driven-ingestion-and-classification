@@ -101,6 +101,8 @@ def get_system_info(current_user: UserSessionResponse = Depends(get_current_user
         classifier_version=cfg.pipeline.get("classifier_model_version", "v1.0"),
         high_risk_floor=get_compliance_floors()[0],
         low_risk_floor=get_compliance_floors()[1],
+        max_upload_mb=settings.MAX_UPLOAD_MB,
+        allowed_file_types=settings.ALLOWED_FILE_TYPES,
     )
 
 

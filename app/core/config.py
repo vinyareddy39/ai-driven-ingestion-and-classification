@@ -64,66 +64,9 @@ class PipelineYAMLConfig(BaseModel):
     compliance_floors: Optional[ComplianceFloorsConfig] = Field(default_factory=ComplianceFloorsConfig)
 
 
-class AppSettings(BaseModel):
-    """Environment and runtime application settings."""
-    ENVIRONMENT: str = Field(default_factory=lambda: os.getenv("ENVIRONMENT", "development"))
-    LOG_LEVEL: str = Field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
-    CORS_ORIGINS: str = Field(
-        default_factory=lambda: os.getenv(
-            "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
-        )
-    )
-
-    # Storage
-    STORAGE_BACKEND: str = Field(default_factory=lambda: os.getenv("STORAGE_BACKEND", "local"))
-    MINIO_ENDPOINT: str = Field(default_factory=lambda: os.getenv("MINIO_ENDPOINT", "localhost:9000"))
-    MINIO_ACCESS_KEY: str = Field(default_factory=lambda: os.getenv("MINIO_ACCESS_KEY", "minioadmin"))
-    MINIO_SECRET_KEY: str = Field(default_factory=lambda: os.getenv("MINIO_SECRET_KEY", "minioadmin"))
-    MINIO_BUCKET: str = Field(default_factory=lambda: os.getenv("MINIO_BUCKET", "ecm-raw-assets"))
-    MINIO_SECURE: bool = Field(default_factory=lambda: os.getenv("MINIO_SECURE", "false").lower() == "true")
-
-    # Database
-    DATABASE_URL: str = Field(default_factory=lambda: os.getenv("DATABASE_URL", "sqlite:///./data/ecm_pipeline.db"))
-
-    # Queue
-    QUEUE_BACKEND: str = Field(default_factory=lambda: os.getenv("QUEUE_BACKEND", "memory"))
-    REDIS_URL: str = Field(default_factory=lambda: os.getenv("REDIS_URL", "redis://localhost:6379/0"))
-
-    # Search Index
-    SEARCH_BACKEND: str = Field(default_factory=lambda: os.getenv("SEARCH_BACKEND", "memory"))
-    OPENSEARCH_URL: str = Field(default_factory=lambda: os.getenv("OPENSEARCH_URL", "http://localhost:9200"))
-    OPENSEARCH_INDEX: str = Field(default_factory=lambda: os.getenv("OPENSEARCH_INDEX", "ecm_documents"))
-
-    # Antivirus
-    VIRUS_SCANNER_BACKEND: str = Field(default_factory=lambda: os.getenv("VIRUS_SCANNER_BACKEND", "mock"))
-    CLAMAV_HOST: str = Field(default_factory=lambda: os.getenv("CLAMAV_HOST", "localhost"))
-    CLAMAV_PORT: int = Field(default_factory=lambda: int(os.getenv("CLAMAV_PORT", "3310")))
-
-    # ECM
-    ECM_ADAPTER_BACKEND: str = Field(default_factory=lambda: os.getenv("ECM_ADAPTER_BACKEND", "fake"))
-    NUXEO_REST_URL: str = Field(default_factory=lambda: os.getenv("NUXEO_REST_URL", "http://localhost:8080/nuxeo/site/api/v1"))
-    NUXEO_USERNAME: str = Field(default_factory=lambda: os.getenv("NUXEO_USERNAME", "Administrator"))
-    NUXEO_PASSWORD: str = Field(default_factory=lambda: os.getenv("NUXEO_PASSWORD", "Administrator"))
-
-    # OCR
-    OCR_ENGINE: str = Field(default_factory=lambda: os.getenv("OCR_ENGINE", "tesseract"))
-
-    # Paths
-    CONFIG_PATH: str = Field(default_factory=lambda: os.getenv("CONFIG_PATH", "./config/pipeline_config.yaml"))
-    SCANNER_WATCH_DIR: str = Field(default_factory=lambda: os.getenv("SCANNER_WATCH_DIR", "./data/scanner_watch"))
-    MODEL_ARTIFACTS_DIR: str = Field(default_factory=lambda: os.getenv("MODEL_ARTIFACTS_DIR", "./data/models"))
-
+from app.core.settings import AppSettings, get_app_settings, validate_production_safety
 
 _runtime_config: Optional[PipelineYAMLConfig] = None
-_app_settings: Optional[AppSettings] = None
-
-
-def get_app_settings() -> AppSettings:
-    """Retrieve application settings from environment."""
-    global _app_settings
-    if _app_settings is None:
-        _app_settings = AppSettings()
-    return _app_settings
 
 
 def load_pipeline_config(config_path: Optional[str] = None) -> PipelineYAMLConfig:
