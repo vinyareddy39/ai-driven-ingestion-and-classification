@@ -1,0 +1,64 @@
+services:
+  # ---------------------------------------------------------------------------
+  # FastAPI Production Backend Service
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: ecm-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: oregon
+    preDeployCommand: alembic upgrade head
+    healthCheckPath: /api/v1/system/info
+    autoDeploy: false
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ecm-postgres
+          property: connectionString
+      - key: SECRET_KEY
+        sync: false
+      - key: DATA_ENCRYPTION_KEY
+        sync: false
+      - key: AUTH_TOKENS
+        sync: false
+      - key: AUTH_ALLOW_ROLE_HEADER
+        value: "false"
+      - key: STORAGE_BACKEND
+        value: s3
+      - key: S3_BUCKET_NAME
+        sync: false
+      - key: S3_REGION
+        value: us-east-1
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_ENDPOINT_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: WEBHOOK_SIGNING_SECRET
+        sync: false
+      - key: QUEUE_BACKEND
+        value: database
+      - key: SEARCH_BACKEND
+        value: memory
+      - key: VIRUS_SCANNER_BACKEND
+        value: mock
+      - key: LLM_LOCAL_BASE_URL
+        value: http://127.0.0.1:11434/v1
+      - key: LLM_ALLOW_HOSTED_CLASSES
+        value: receipt,invoice,contract
+
+databases:
+  # ---------------------------------------------------------------------------
+  # Managed PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  - name: ecm-postgres
+    plan: starter
+    databaseName: ecm
+    user: ecm_user
+    region: oregon
