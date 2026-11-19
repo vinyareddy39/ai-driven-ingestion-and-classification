@@ -15,3 +15,19 @@
 - **Stage 3 (Blind Dataset Evaluation)**: `BLOCKED: data/blind missing`. Real test documents not placed in directory.
 - **Stage 3 (LLM Extraction Backend)**: `BLOCKED: No LLM API key or local endpoint in .env`. Extraction evaluation remains on deterministic local extractors.
 - **Stage 5 (Real Services Orchestration)**: `BLOCKED: Docker engine not running`. Docker client installed, but daemon named pipe `//./pipe/docker_engine` is inactive.
+
+## Prescription Extension Flow (Branch: backend/prescriptions)
+
+| Stage | Name | Status | Commit SHA | Notes / Evidence |
+|---|---|---|---|---|
+| Stage 0 | Gap Check Against Existing System | COMPLETED | - | Audited 16 target flow items with file:line evidence; identified gaps in auth, isolation, medication extractor, timetable, reminders |
+| Stage 1 | Design and Contract | COMPLETED | - | Authored docs/prescription-design.md & docs/frontend-tasks.md; portable SQLAlchemy models; Alembic migration a1b2c3d4e5f6 verified upgrade/downgrade on DB copy; openapi.json regenerated (45 paths) |
+| Stage 2 | Auth and Isolation | PENDING | - | User signup, login, argon2/bcrypt hashing, JWT tokens, per-user isolation 404s |
+| Stage 3 | Upload, Storage and Worker | PENDING | - | Storage adapter by random key, OCR, PII tagging, always NEEDS_REVIEW |
+| Stage 4 | Medication Field Extraction | PENDING | - | Grounded drug, strength, dose, frequency, timing extraction on synthetic scans |
+| Stage 5 | Timetable Generation | PENDING | - | Deterministic schedule parser, 40+ unit tests, confirm endpoint with 409 check |
+| Stage 6 | Reminders, Review and Reprocessing | PENDING | - | Reminder scheduler, training JSONL export, batch reprocess query |
+| Stage 7 | Privacy, Security and Database | PENDING | - | Column encryption at rest, log hygiene test, data export/delete-my-data |
+| Stage 8 | ECM Lifecycle | PENDING | - | Outbound HMAC webhook, disposition job, legal hold flag |
+| Stage 9 | Test Pack and Report | PENDING | - | Master test script update, docs/prescription-report.md |
+

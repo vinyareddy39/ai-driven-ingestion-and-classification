@@ -9,6 +9,8 @@ from app.api.routes_review import router as review_router
 from app.api.routes_reprocess import router as reprocess_router
 from app.api.routes_observability import router as observability_router
 from app.api.routes_v1 import router as v1_router
+from app.api.routes_auth import router as auth_router
+from app.api.routes_prescriptions import router as prescriptions_router
 from app.core.auth import validate_auth_config
 from app.core.config import get_pipeline_config
 from app.core.security import setup_secure_logging
@@ -73,6 +75,8 @@ def create_app() -> FastAPI:
     app.include_router(reprocess_router)
     app.include_router(observability_router)
     app.include_router(v1_router)
+    app.include_router(auth_router)
+    app.include_router(prescriptions_router)
 
     return app
 

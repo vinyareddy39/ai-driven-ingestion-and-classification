@@ -8,6 +8,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     Float,
+    ForeignKey,
     Integer,
     String,
     Text,
@@ -114,6 +115,80 @@ class ConfigHistoryModel(Base):
     updated_by = Column(String(100), nullable=False)
     changes_json = Column(Text, default="{}")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+# ---------------------------------------------------------------------------
+# Patient Prescription & Timetable Data Models
+# ---------------------------------------------------------------------------
+
+class UserModel(Base):
+    """User account record for patient and staff authentication."""
+    __tablename__ = "users"
+
+    id = Column(String(36), primary_key=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(String(32), default="patient", nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    disabled = Column(Boolean, default=False)
+
+
+class PrescriptionModel(Base):
+    """Patient prescription scan and job tracking record."""
+    __tablename__ = "prescriptions"
+
+    id = Column(String(36), primary_key=True)
+    user_id = Column(String(36), ForeignKey("users.id"), index=True, nullable=False)
+    file_key = Column(String(255), index=True, nullable=False)
+    status = Column(String(32), default="QUEUED", index=True, nullable=False)  # QUEUED, PROCESSING, NEEDS_REVIEW, CONFIRMED, FAILED
+    model_version = Column(String(50), default="v1.0")
+    ocr_engine = Column(String(50), default="HybridPyMuPDF-Tesseract")
+    pii_detected = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class ExtractedItemModel(Base):
+    """Medication item extracted from a prescription."""
+    __tablename__ = "extracted_items"
+
+    id = Column(String(36), primary_key=True)
+    prescription_id = Column(String(36), ForeignKey("prescriptions.id"), index=True, nullable=False)
+    raw_text = Column(Text, default="")
+    drug_name = Column(String(255), nullable=False)
+    strength = Column(String(100), default="")
+    dose = Column(String(100), default="")
+    frequency = Column(String(100), default="")
+    timing = Column(String(100), default="")
+    duration_days = Column(Integer, nullable=True)
+    schedule_rule = Column(String(255), default="")
+    confidence_json = Column(Text, default="{}")
+    verified_by_user = Column(Boolean, default=False, index=True)
+    verified_at = Column(DateTime, nullable=True)
+
+
+class TimetableSlotModel(Base):
+    """Discrete scheduled dose slot for patient adherence tracking."""
+    __tablename__ = "timetable_slots"
+
+    id = Column(String(36), primary_key=True)
+    user_id = Column(String(36), ForeignKey("users.id"), index=True, nullable=False)
+    prescription_id = Column(String(36), ForeignKey("prescriptions.id"), index=True, nullable=False)
+    extracted_item_id = Column(String(36), ForeignKey("extracted_items.id"), index=True, nullable=False)
+    scheduled_at = Column(DateTime, nullable=False, index=True)
+    instruction = Column(String(255), default="")
+    status = Column(String(32), default="pending", index=True)  # pending, taken, skipped
+    status_changed_at = Column(DateTime, nullable=True)
+
+
+class ReminderModel(Base):
+    """Medication reminder notification dispatch record."""
+    __tablename__ = "reminders"
+
+    id = Column(String(36), primary_key=True)
+    slot_id = Column(String(36), ForeignKey("timetable_slots.id"), index=True, nullable=False)
+    channel = Column(String(32), default="email")
+    send_at = Column(DateTime, nullable=False, index=True)
+    sent_at = Column(DateTime, nullable=True)
 
 
 # Database Engine and Session Factory

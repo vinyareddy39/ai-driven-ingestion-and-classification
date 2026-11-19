@@ -13,7 +13,7 @@ data/*.db
 data/*.sqlite*
 data/ocr_cache*.json
 data/models/
-models/
+/models/
 
 # Local installers and binary tool extractions
 tools/
