@@ -2,8 +2,8 @@
 
 | Stage | Name | Status | Commit SHA | Notes / Evidence |
 |---|---|---|---|---|
-| Stage 0 | Preflight and Loose Ends | IN_PROGRESS | - | Preflight checks, random secrets, config floors, restart proof |
-| Stage 1 | Decision Gate and Thresholds | PENDING | - | Threshold cost assumptions, routing conflict proof |
+| Stage 0 | Preflight and Loose Ends | COMPLETED | a97d396 | Baseline 57/57 tests pass, 4 random 43-char secrets in .env, floors 0.90/0.95 enforced, restart persistence verified |
+| Stage 1 | Decision Gate and Thresholds | COMPLETED | - | Cost matrix CFA/CFR ($500 vs $5), conflict routing rule proved, sub-floor rejection verified in table tests |
 | Stage 2 | PII Precision | PENDING | - | Generic context rules, National ID, unseen eval |
 | Stage 3 | Extraction and Real Documents | PENDING | - | SROIE line-break OCR, receipts, extraction decision memo |
 | Stage 4 | Feedback Loop and Load Test | PENDING | - | Review export fine-tuning, identical document load test |
