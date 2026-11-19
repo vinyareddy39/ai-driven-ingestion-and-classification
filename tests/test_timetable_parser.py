@@ -302,3 +302,4 @@ def test_api_slot_status_update_and_audit(client, patient_user):
         assert audit_ev.status == "SUCCESS"
     finally:
         db.close()
+

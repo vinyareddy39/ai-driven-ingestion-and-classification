@@ -87,3 +87,4 @@ def test_insulin_high_alert_flag(extractor):
     assert len(results) == 1
     item = results[0]
     assert any("High alert medication" in w for w in item.warnings)
+

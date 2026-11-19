@@ -13,12 +13,68 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    TypeDecorator,
     create_engine,
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session
+from cryptography.fernet import Fernet, InvalidToken
 from app.core.config import get_app_settings
 
 Base = declarative_base()
+
+# ---------------------------------------------------------------------------
+# Column-Level Health Data Encryption at Rest (Fernet / AES-128-CBC + HMAC)
+# ---------------------------------------------------------------------------
+
+_fernet_instance = None
+
+
+def get_fernet_cipher() -> Fernet:
+    global _fernet_instance
+    if _fernet_instance is None:
+        import base64
+        import hashlib
+        raw_key = os.getenv("ENCRYPTION_KEY", "secure_development_key_for_privacy_123")
+        try:
+            key_str = raw_key if isinstance(raw_key, str) else raw_key.decode("utf-8")
+            decoded = base64.urlsafe_b64decode(key_str.encode("utf-8"))
+            if len(decoded) == 32:
+                key_bytes = key_str.encode("utf-8")
+            else:
+                key_bytes = base64.urlsafe_b64encode(hashlib.sha256(key_str.encode("utf-8")).digest())
+        except Exception:
+            key_bytes = base64.urlsafe_b64encode(hashlib.sha256(str(raw_key).encode("utf-8")).digest())
+        _fernet_instance = Fernet(key_bytes)
+    return _fernet_instance
+
+
+class EncryptedText(TypeDecorator):
+    """Transparent column-level encryption for sensitive health text at rest."""
+
+    impl = Text
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if not value:
+            return ""
+        cipher = get_fernet_cipher()
+        return cipher.encrypt(value.encode("utf-8")).decode("utf-8")
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        if not value:
+            return ""
+        if value.startswith("gAAAAA"):
+            try:
+                cipher = get_fernet_cipher()
+                return cipher.decrypt(value.encode("utf-8")).decode("utf-8")
+            except (InvalidToken, Exception):
+                return value
+        return value
+
 
 
 class DocumentModel(Base):
@@ -143,7 +199,7 @@ class PrescriptionModel(Base):
     file_key = Column(String(255), index=True, nullable=False)
     sha256 = Column(String(64), index=True, nullable=True)
     status = Column(String(32), default="QUEUED", index=True, nullable=False)  # QUEUED, PROCESSING, NEEDS_REVIEW, CONFIRMED, FAILED
-    raw_text = Column(Text, nullable=True)
+    raw_text = Column(EncryptedText, nullable=True)
     error_message = Column(String(255), nullable=True)
     model_version = Column(String(50), default="v1.0")
     ocr_engine = Column(String(50), default="HybridPyMuPDF-Tesseract")
@@ -157,7 +213,7 @@ class ExtractedItemModel(Base):
 
     id = Column(String(36), primary_key=True)
     prescription_id = Column(String(36), ForeignKey("prescriptions.id"), index=True, nullable=False)
-    raw_text = Column(Text, default="")
+    raw_text = Column(EncryptedText, default="")
     drug_name = Column(String(255), nullable=False)
     strength = Column(String(100), default="")
     dose = Column(String(100), default="")

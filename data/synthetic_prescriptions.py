@@ -193,3 +193,4 @@ if __name__ == "__main__":
     ds = generate_synthetic_dataset(num_samples=25, seed=42)
     save_synthetic_dataset(ds, out_dir)
     print(f"Generated {len(ds)} synthetic prescriptions in {out_dir}")
+

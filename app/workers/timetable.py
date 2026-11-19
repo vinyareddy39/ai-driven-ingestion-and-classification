@@ -169,3 +169,4 @@ class DeterministicScheduleParser:
         slots.sort(key=lambda s: s["scheduled_at"])
 
         return ScheduleParseResult(status="SUCCESS", slots=slots)
+
