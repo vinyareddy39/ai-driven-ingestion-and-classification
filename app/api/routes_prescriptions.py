@@ -1,11 +1,14 @@
 """Patient Prescription & Timetable API Routes with Strict Per-User Data Isolation."""
 
+import hashlib
 import json
 import os
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, Response, UploadFile, status
+from app.adapters.storage import get_storage_adapter
+from app.adapters.virus import MockVirusScanner
 from app.core.auth import get_current_user
 from app.models.api_schemas import UserSessionResponse
 from app.models.db import (
@@ -28,10 +31,13 @@ from app.models.prescription_schemas import (
     TimetableResponse,
     TimetableSlotResponse,
 )
+from app.workers.prescription_worker import process_prescription_job
 
 router = APIRouter(prefix="/api/v1", tags=["Prescriptions & Timetable"])
 
 STAFF_ROLES = {"reviewer", "admin", "compliance"}
+ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/jpg", "application/pdf"}
+MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
 
 
 def _get_user_prescription(db, prescription_id: str, current_user: UserSessionResponse) -> PrescriptionModel:
@@ -74,33 +80,79 @@ def _get_user_prescription(db, prescription_id: str, current_user: UserSessionRe
 # Prescription Endpoints
 # ---------------------------------------------------------------------------
 
-@router.post("/prescriptions", response_model=PrescriptionJobResponse, status_code=status.HTTP_202_ACCEPTED)
+@router.post("/prescriptions", response_model=PrescriptionJobResponse, status_code=status.HTTP_201_CREATED)
 async def upload_prescription(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     current_user: UserSessionResponse = Depends(get_current_user),
 ):
     """Upload prescription photo/scan. Saves file, enqueues OCR job bound to authenticated user."""
+    # Check mime type
+    content_type = file.content_type or "application/octet-stream"
+    ext = "pdf"
+    if "jpeg" in content_type or "jpg" in content_type or (file.filename and file.filename.lower().endswith((".jpg", ".jpeg"))):
+        ext = "jpg"
+    elif "png" in content_type or (file.filename and file.filename.lower().endswith(".png")):
+        ext = "png"
+    elif "pdf" in content_type or (file.filename and file.filename.lower().endswith(".pdf")):
+        ext = "pdf"
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"Unsupported file type '{content_type}'. Supported: image/jpeg, image/png, application/pdf.",
+        )
+
     file_bytes = await file.read()
     if not file_bytes:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is empty.")
 
-    rx_id = f"rx-{uuid.uuid4().hex[:12]}"
-    job_id = f"job-rx-{uuid.uuid4().hex[:12]}"
-    file_key = f"prescriptions/{current_user.user_id}/{rx_id}.pdf"
+    if len(file_bytes) > MAX_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="File size exceeds maximum allowed 10MB limit.",
+        )
 
-    # Save to local storage
-    storage_dir = os.path.join("data", "storage", "prescriptions", current_user.user_id)
-    os.makedirs(storage_dir, exist_ok=True)
-    local_path = os.path.join(storage_dir, f"{rx_id}.pdf")
-    with open(local_path, "wb") as f:
-        f.write(file_bytes)
+    # Virus scan verification
+    scanner = MockVirusScanner()
+    is_clean, virus_name = scanner.scan(file_bytes)
+    if not is_clean:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Quarantined: malicious content detected ({virus_name}).",
+        )
+
+    # Compute SHA-256 for duplicate detection
+    file_hash = hashlib.sha256(file_bytes).hexdigest()
 
     db = get_db_session()
     try:
+        # Check duplicate per user
+        existing_rx = db.query(PrescriptionModel).filter(
+            PrescriptionModel.user_id == current_user.user_id,
+            PrescriptionModel.sha256 == file_hash,
+        ).first()
+
+        if existing_rx:
+            return PrescriptionJobResponse(
+                job_id=f"job-dup-{existing_rx.id}",
+                prescription_id=existing_rx.id,
+                status=existing_rx.status,
+                message="Duplicate upload detected; returning existing prescription record.",
+            )
+
+        rx_id = f"rx-{uuid.uuid4().hex[:12]}"
+        job_id = f"job-rx-{uuid.uuid4().hex[:12]}"
+        file_key = f"prescriptions/{current_user.user_id}/{rx_id}.{ext}"
+
+        # Save to storage adapter
+        storage = get_storage_adapter()
+        storage.save(file_key, file_bytes, content_type)
+
         rx = PrescriptionModel(
             id=rx_id,
             user_id=current_user.user_id,
             file_key=file_key,
+            sha256=file_hash,
             status="QUEUED",
             model_version="v1.0",
             ocr_engine="HybridPyMuPDF-Tesseract",
@@ -109,6 +161,9 @@ async def upload_prescription(
         )
         db.add(rx)
         db.commit()
+
+        # Enqueue background processing worker
+        background_tasks.add_task(process_prescription_job, rx_id)
 
         return PrescriptionJobResponse(
             job_id=job_id,
@@ -133,6 +188,7 @@ def get_prescription_status(
             prescription_id=rx.id,
             status=rx.status,
             created_at=rx.created_at,
+            error_message=rx.error_message,
         )
     finally:
         db.close()
@@ -174,6 +230,9 @@ def get_prescription_detail(
             prescription_id=rx.id,
             status=rx.status,
             file_key=rx.file_key,
+            sha256=rx.sha256,
+            raw_text=rx.raw_text,
+            error_message=rx.error_message,
             model_version=rx.model_version or "v1.0",
             ocr_engine=rx.ocr_engine or "HybridPyMuPDF-Tesseract",
             pii_detected=rx.pii_detected,
@@ -196,10 +255,24 @@ def get_prescription_image(
     db = get_db_session()
     try:
         rx = _get_user_prescription(db, prescription_id, current_user)
-        local_path = os.path.join("data", "storage", "prescriptions", rx.user_id, f"{rx.id}.pdf")
-        if os.path.exists(local_path):
+        storage = get_storage_adapter()
+        file_bytes: Optional[bytes] = None
+        if storage.exists(rx.file_key):
+            file_bytes = storage.get(rx.file_key)
+        else:
+            local_fallback = os.path.join(os.getcwd(), "data", "storage", rx.file_key)
+            if os.path.exists(local_fallback):
+                with open(local_fallback, "rb") as f:
+                    file_bytes = f.read()
+
+        if not file_bytes:
+            # 1x1 transparent PNG fallback if file is stubbed
+            png_1x1 = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01H\xaf\xa4q\x00\x00\x00\x00IEND\xaeB`\x82"
+            return Response(content=png_1x1, media_type="image/png")
+
+        if rx.file_key.endswith(".pdf"):
             import fitz
-            doc = fitz.open(local_path)
+            doc = fitz.open(stream=file_bytes, filetype="pdf")
             if page < 1 or page > len(doc):
                 doc.close()
                 raise HTTPException(status_code=400, detail="Page number out of range")
@@ -213,10 +286,18 @@ def get_prescription_image(
             img_bytes = pix.tobytes("png")
             doc.close()
             return Response(content=img_bytes, media_type="image/png")
-
-        # 1x1 transparent PNG fallback if file is stubbed
-        png_1x1 = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01H\xaf\xa4q\x00\x00\x00\x00IEND\xaeB`\x82"
-        return Response(content=png_1x1, media_type="image/png")
+        else:
+            if width is not None:
+                import cv2
+                import numpy as np
+                nparr = np.frombuffer(file_bytes, np.uint8)
+                img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                if img is not None:
+                    h, w = img.shape[:2]
+                    new_h = int(h * (width / float(w)))
+                    resized = cv2.resize(img, (width, new_h), interpolation=cv2.INTER_AREA)
+                    return Response(content=cv2.imencode(".png", resized)[1].tobytes(), media_type="image/png")
+            return Response(content=file_bytes, media_type="image/png")
     finally:
         db.close()
 

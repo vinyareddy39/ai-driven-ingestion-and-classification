@@ -266,6 +266,7 @@ class HybridOCREngine(OCREngine):
 
         bboxes: List[BoundingBox] = []
         words: List[str] = []
+        lines_dict: Dict[Tuple[int, int], List[str]] = {}
 
         try:
             import pytesseract
@@ -274,6 +275,8 @@ class HybridOCREngine(OCREngine):
                 w_text = data["text"][i].strip()
                 if w_text:
                     words.append(w_text)
+                    line_key = (data["block_num"][i], data["line_num"][i])
+                    lines_dict.setdefault(line_key, []).append(w_text)
                     x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
                     conf = float(data["conf"][i]) / 100.0 if data["conf"][i] != "-1" else 0.8
                     bboxes.append(
@@ -287,7 +290,9 @@ class HybridOCREngine(OCREngine):
                             confidence=max(0.5, conf),
                         )
                     )
-            full_text = " ".join(words)
+            full_text = "\n".join(" ".join(lw) for lw in lines_dict.values())
+            if not full_text.strip():
+                full_text = " ".join(words)
         except Exception:
             # Fallback if tesseract CLI not found
             full_text = "Extracted Image Content"

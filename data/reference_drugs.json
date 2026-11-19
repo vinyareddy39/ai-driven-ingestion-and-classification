@@ -1,0 +1,26 @@
+{
+  "drugs": [
+    {"name": "paracetamol", "aliases": ["acetaminophen", "tylenol", "panadol", "crocin", "calpol"], "max_daily_mg": 4000, "category": "analgesic"},
+    {"name": "ibuprofen", "aliases": ["advil", "motrin", "brufen"], "max_daily_mg": 2400, "category": "nsaid"},
+    {"name": "amoxicillin", "aliases": ["amoxil", "augmentin", "moxikind"], "max_daily_mg": 3000, "category": "antibiotic"},
+    {"name": "azithromycin", "aliases": ["zithromax", "azee", "z-pack"], "max_daily_mg": 500, "category": "antibiotic"},
+    {"name": "metformin", "aliases": ["glucophage", "glycomet"], "max_daily_mg": 2550, "category": "antidiabetic"},
+    {"name": "atorvastatin", "aliases": ["lipitor", "atorva"], "max_daily_mg": 80, "category": "statin"},
+    {"name": "amlodipine", "aliases": ["norvasc", "amlong"], "max_daily_mg": 10, "category": "antihypertensive"},
+    {"name": "omeprazole", "aliases": ["prilosec", "omez"], "max_daily_mg": 80, "category": "ppi"},
+    {"name": "pantoprazole", "aliases": ["protonix", "pan-40"], "max_daily_mg": 80, "category": "ppi"},
+    {"name": "lisinopril", "aliases": ["zestril", "prinivil"], "max_daily_mg": 40, "category": "ace_inhibitor"},
+    {"name": "losartan", "aliases": ["cozaar"], "max_daily_mg": 100, "category": "arb"},
+    {"name": "levothyroxine", "aliases": ["synthroid", "eltroxin", "thyronorm"], "max_daily_mg": 0.3, "category": "thyroid"},
+    {"name": "albuterol", "aliases": ["ventolin", "salbutamol", "proair"], "max_daily_mg": 32, "category": "bronchodilator"},
+    {"name": "cetirizine", "aliases": ["zyrtec", "cetzine"], "max_daily_mg": 20, "category": "antihistamine"},
+    {"name": "fexofenadine", "aliases": ["allegra"], "max_daily_mg": 180, "category": "antihistamine"},
+    {"name": "ciprofloxacin", "aliases": ["cipro", "ciplox"], "max_daily_mg": 1500, "category": "antibiotic"},
+    {"name": "doxycycline", "aliases": ["vibramycin", "doxypal"], "max_daily_mg": 200, "category": "antibiotic"},
+    {"name": "gabapentin", "aliases": ["neurontin"], "max_daily_mg": 3600, "category": "anticonvulsant"},
+    {"name": "sertraline", "aliases": ["zoloft"], "max_daily_mg": 200, "category": "antidepressant"},
+    {"name": "prednisone", "aliases": ["deltasone"], "max_daily_mg": 80, "category": "corticosteroid"},
+    {"name": "tramadol", "aliases": ["ultram"], "max_daily_mg": 400, "category": "opioid"},
+    {"name": "insulin", "aliases": ["humalog", "lantus", "novolog", "basaglar"], "max_daily_mg": null, "category": "insulin", "warning": "High alert medication: requires precise units/dose"}
+  ]
+}

@@ -77,6 +77,9 @@ class PrescriptionDetailResponse(BaseModel):
     prescription_id: str
     status: str
     file_key: str
+    sha256: Optional[str] = None
+    raw_text: Optional[str] = None
+    error_message: Optional[str] = None
     model_version: str
     ocr_engine: str
     pii_detected: bool
