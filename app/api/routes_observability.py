@@ -159,3 +159,149 @@ def get_asset_audit_report(uid: str):
         }
     finally:
         db.close()
+
+
+@router.get("/api/stats/dashboard")
+def get_dashboard_stats():
+    """Retrieve summarized statistics for the dashboard UI."""
+    cfg = get_pipeline_config()
+    queue = get_queue_adapter()
+
+    live_depth = queue.length(cfg.queues.live_queue) if queue else 0
+    bulk_depth = queue.length(cfg.queues.bulk_queue) if queue else 0
+    dlq_depth = queue.length(cfg.queues.dlq_queue) if queue else 0
+
+    db = get_db_session()
+    try:
+        total_assets = db.query(DocumentModel).count()
+        auto_accepted_count = db.query(DocumentModel).filter(DocumentModel.review_status == "auto_accepted").count()
+        pending_review_count = db.query(ReviewTaskModel).filter(ReviewTaskModel.status == "PENDING").count()
+        quarantined_count = db.query(DocumentModel).filter(DocumentModel.review_status == "quarantined").count()
+        human_verified_count = db.query(DocumentModel).filter(DocumentModel.review_status == "human_verified").count()
+        duplicates_count = db.query(DocumentModel).filter(DocumentModel.is_link == True).count()
+
+        from sqlalchemy import func
+        type_counts = (
+            db.query(DocumentModel.doc_type, func.count(DocumentModel.id))
+            .group_by(DocumentModel.doc_type)
+            .all()
+        )
+        type_breakdown = [{"type": t[0] or "unknown", "count": t[1]} for t in type_counts]
+
+        status_counts = (
+            db.query(DocumentModel.review_status, func.count(DocumentModel.id))
+            .group_by(DocumentModel.review_status)
+            .all()
+        )
+        status_breakdown = [{"status": s[0] or "pending", "count": s[1]} for s in status_counts]
+
+        recent_docs = (
+            db.query(DocumentModel)
+            .order_by(DocumentModel.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        recent_items = [
+            {
+                "uid": d.uid,
+                "file_name": d.file_name,
+                "doc_type": d.doc_type,
+                "confidence": d.confidence,
+                "review_status": d.review_status,
+                "pii_detected": d.pii_detected,
+                "created_at": d.created_at.isoformat() if d.created_at else None,
+            }
+            for d in recent_docs
+        ]
+    finally:
+        db.close()
+
+    total_proc = max(1, PIPELINE_STATS["total_processed"])
+    stp_rate = (
+        float(PIPELINE_STATS["auto_accepted"] / total_proc) * 100.0
+        if PIPELINE_STATS["total_processed"] > 0
+        else (float(auto_accepted_count / max(1, total_assets)) * 100.0)
+    )
+    error_rate = float(PIPELINE_STATS["errors"] / total_proc) * 100.0
+
+    stage_latencies = {}
+    for stage_name, latencies in STAGE_LATENCY_METRICS.items():
+        if latencies:
+            stage_latencies[stage_name] = {
+                "p50": round(float(np.percentile(latencies, 50)) * 1000, 2),
+                "p95": round(float(np.percentile(latencies, 95)) * 1000, 2),
+            }
+        else:
+            stage_latencies[stage_name] = {"p50": 1.0, "p95": 2.0}
+
+    return {
+        "total_documents": total_assets,
+        "auto_accepted": auto_accepted_count,
+        "pending_review": pending_review_count,
+        "quarantined": quarantined_count,
+        "human_verified": human_verified_count,
+        "duplicates_linked": duplicates_count,
+        "stp_rate": round(stp_rate, 1),
+        "error_rate": round(error_rate, 1),
+        "queue_depths": {
+            "live": live_depth,
+            "bulk": bulk_depth,
+            "dlq": dlq_depth,
+        },
+        "stage_latencies": stage_latencies,
+        "type_breakdown": type_breakdown,
+        "status_breakdown": status_breakdown,
+        "recent_documents": recent_items,
+    }
+
+
+@router.get("/api/documents")
+def list_documents(
+    doc_type: Optional[str] = None,
+    review_status: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """List documents with filtering, search, and pagination."""
+    db = get_db_session()
+    try:
+        q = db.query(DocumentModel)
+        if doc_type:
+            q = q.filter(DocumentModel.doc_type == doc_type)
+        if review_status:
+            q = q.filter(DocumentModel.review_status == review_status)
+        if search:
+            search_pattern = f"%{search}%"
+            q = q.filter(
+                (DocumentModel.file_name.ilike(search_pattern))
+                | (DocumentModel.uid.ilike(search_pattern))
+                | (DocumentModel.sha256.ilike(search_pattern))
+            )
+
+        total = q.count()
+        docs = q.order_by(DocumentModel.created_at.desc()).offset(offset).limit(limit).all()
+
+        items = [
+            {
+                "uid": d.uid,
+                "sha256": d.sha256,
+                "file_name": d.file_name,
+                "doc_type": d.doc_type,
+                "confidence": d.confidence,
+                "review_status": d.review_status,
+                "retention_class": d.retention_class,
+                "acl": d.acl,
+                "pii_detected": d.pii_detected,
+                "is_link": d.is_link,
+                "linked_to_uid": d.linked_to_uid,
+                "decision_reason": d.decision_reason,
+                "created_at": d.created_at.isoformat() if d.created_at else None,
+            }
+            for d in docs
+        ]
+
+        return {"total": total, "items": items, "limit": limit, "offset": offset}
+    finally:
+        db.close()
+
