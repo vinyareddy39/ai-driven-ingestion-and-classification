@@ -22,11 +22,14 @@
 |---|---|---|---|---|
 | Stage 0 | Gap Check Against Existing System | COMPLETED | - | Audited 16 target flow items with file:line evidence; identified gaps in auth, isolation, medication extractor, timetable, reminders |
 | Stage 1 | Design and Contract | COMPLETED | - | Authored docs/prescription-design.md & docs/frontend-tasks.md; portable SQLAlchemy models; Alembic migration a1b2c3d4e5f6 verified upgrade/downgrade on DB copy; openapi.json regenerated (45 paths) |
-| Stage 2 | Auth and Isolation | COMPLETED | - | Argon2id password hashing, HS256 JWT access (30m) & refresh (7d) tokens, 5-attempt/5min rate limiting, per-user isolation 404s, staff access audit logging; verified with pytest & curl |
+| Stage 2 | Auth and Isolation | COMPLETED | b9dda5c | Argon2id password hashing, HS256 JWT access (30m) & refresh (7d) tokens, 5-attempt/5min rate limiting, per-user isolation 404s, staff access audit logging; verified with full test suite (61/61 passing) and curl spot-checks (401/401/404/200) |
 
-| Stage 3 | Upload, Storage and Worker | PENDING | - | Storage adapter by random key, OCR, PII tagging, always NEEDS_REVIEW |
-| Stage 4 | Medication Field Extraction | PENDING | - | Grounded drug, strength, dose, frequency, timing extraction on synthetic scans |
-| Stage 5 | Timetable Generation | PENDING | - | Deterministic schedule parser, 40+ unit tests, confirm endpoint with 409 check |
+
+| Stage 3 | Upload, Storage and Worker | COMPLETED | ce35c1d | Storage adapter with UUID keys, 201 QUEUED upload, SHA-256 duplicate detection, MockVirusScanner check, line-preserved OCR, Presidio PII scan, grounded medication extractor, NEVER AUTO-ACCEPT invariant (always NEEDS_REVIEW); 67/67 tests passing |
+
+| Stage 4 | Medication Field Extraction | COMPLETED | be743bf | Grounded medication extractor (100% OCR grounded), drug aliases, safety checks, seeded synthetic benchmark (Dev F1: 96.0%, Fresh holdout F1: 96.1%); BLOCKED: local LLM endpoint in .env, using deterministic rule parser; 72/72 tests passing |
+
+| Stage 5 | Timetable Generation | COMPLETED | c4fa18b (pending) | Deterministic schedule parser (anchor times, offsets, interval frequencies, month/year boundaries, DST transitions, PRN zero-slots), mandatory medical disclaimer, confirm endpoint returning 409 if any item unverified, adherence slot status updates with audit logging; 47/47 timetable tests and 119/119 full suite passing |
 | Stage 6 | Reminders, Review and Reprocessing | PENDING | - | Reminder scheduler, training JSONL export, batch reprocess query |
 | Stage 7 | Privacy, Security and Database | PENDING | - | Column encryption at rest, log hygiene test, data export/delete-my-data |
 | Stage 8 | ECM Lifecycle | PENDING | - | Outbound HMAC webhook, disposition job, legal hold flag |

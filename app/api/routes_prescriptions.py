@@ -374,28 +374,70 @@ def confirm_prescription(
                 detail=f"Clinical safety restriction: All medication items must be verified by user. Unverified: {unverified}",
             )
 
-        rx.status = "CONFIRMED"
-        db.commit()
+        # Generate slots for each verified item using deterministic parser
+        from app.workers.timetable import DeterministicScheduleParser
+        parser = DeterministicScheduleParser()
 
-        # Query created slots for this prescription
-        slots_db = db.query(TimetableSlotModel).filter(
-            TimetableSlotModel.prescription_id == rx.id,
-            TimetableSlotModel.user_id == current_user.user_id,
-        ).order_by(TimetableSlotModel.scheduled_at.asc()).all()
+        # Clean any previous slots for this rx to ensure idempotency
+        db.query(TimetableSlotModel).filter(TimetableSlotModel.prescription_id == rx.id).delete()
+
+        created_slots = []
+        for item in items:
+            parse_res = parser.parse_rule(
+                drug_name=item.drug_name,
+                dose=item.dose,
+                frequency=item.frequency,
+                timing=item.timing,
+                duration_days=item.duration_days,
+            )
+            for sl in parse_res.slots:
+                slot_id = f"slot-{uuid.uuid4().hex[:12]}"
+                slot_row = TimetableSlotModel(
+                    id=slot_id,
+                    user_id=current_user.user_id,
+                    prescription_id=rx.id,
+                    extracted_item_id=item.id,
+                    scheduled_at=sl["scheduled_at"],
+                    instruction=sl["instruction"],
+                    status="pending",
+                )
+                db.add(slot_row)
+                created_slots.append((slot_row, item))
+
+        rx.status = "CONFIRMED"
+
+        # Log audit event
+        audit_ev = AuditEventModel(
+            event_id=f"audit-confirm-{uuid.uuid4().hex[:12]}",
+            document_uid=rx.id,
+            sha256="",
+            event_type="PRESCRIPTION_CONFIRMED",
+            stage_name="timetable_generation",
+            status="SUCCESS",
+            payload_json=json.dumps({
+                "prescription_id": rx.id,
+                "user_id": current_user.user_id,
+                "items_count": len(items),
+                "slots_count": len(created_slots),
+            }),
+            created_at=datetime.now(timezone.utc),
+        )
+        db.add(audit_ev)
+        db.commit()
 
         slot_responses = [
             TimetableSlotResponse(
                 slot_id=s.id,
                 prescription_id=s.prescription_id,
                 extracted_item_id=s.extracted_item_id,
-                drug_name="",
-                dose="",
+                drug_name=it.drug_name,
+                dose=it.dose,
                 instruction=s.instruction or "",
                 scheduled_at=s.scheduled_at,
                 status=s.status,
                 status_changed_at=s.status_changed_at,
             )
-            for s in slots_db
+            for s, it in created_slots
         ]
         return TimetableResponse(slots=slot_responses)
     finally:
@@ -462,7 +504,25 @@ def update_slot_status(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Timetable slot not found")
 
         slot.status = req.status
-        slot.status_changed_at = datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc)
+        slot.status_changed_at = now
+
+        # Record adherence audit event
+        audit_ev = AuditEventModel(
+            event_id=f"audit-slot-{uuid.uuid4().hex[:12]}",
+            document_uid=slot.prescription_id,
+            sha256="",
+            event_type="SLOT_STATUS_UPDATED",
+            stage_name="adherence_tracking",
+            status="SUCCESS",
+            payload_json=json.dumps({
+                "slot_id": slot.id,
+                "user_id": current_user.user_id,
+                "new_status": req.status,
+            }),
+            created_at=now,
+        )
+        db.add(audit_ev)
         db.commit()
 
         item = db.query(ExtractedItemModel).filter(ExtractedItemModel.id == slot.extracted_item_id).first()
