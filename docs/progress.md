@@ -22,7 +22,8 @@
 |---|---|---|---|---|
 | Stage 0 | Gap Check Against Existing System | COMPLETED | - | Audited 16 target flow items with file:line evidence; identified gaps in auth, isolation, medication extractor, timetable, reminders |
 | Stage 1 | Design and Contract | COMPLETED | - | Authored docs/prescription-design.md & docs/frontend-tasks.md; portable SQLAlchemy models; Alembic migration a1b2c3d4e5f6 verified upgrade/downgrade on DB copy; openapi.json regenerated (45 paths) |
-| Stage 2 | Auth and Isolation | PENDING | - | User signup, login, argon2/bcrypt hashing, JWT tokens, per-user isolation 404s |
+| Stage 2 | Auth and Isolation | COMPLETED | - | Argon2id password hashing, HS256 JWT access (30m) & refresh (7d) tokens, 5-attempt/5min rate limiting, per-user isolation 404s, staff access audit logging; verified with pytest & curl |
+
 | Stage 3 | Upload, Storage and Worker | PENDING | - | Storage adapter by random key, OCR, PII tagging, always NEEDS_REVIEW |
 | Stage 4 | Medication Field Extraction | PENDING | - | Grounded drug, strength, dose, frequency, timing extraction on synthetic scans |
 | Stage 5 | Timetable Generation | PENDING | - | Deterministic schedule parser, 40+ unit tests, confirm endpoint with 409 check |

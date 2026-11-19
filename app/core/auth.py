@@ -137,8 +137,31 @@ def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
         token = parts[1].strip()
-        if token in configured_tokens:
+        
+        # Check if token is an RFC 7519 signed JWT
+        if token.count(".") == 2:
+            from app.core.jwt_auth import decode_token
+            payload = decode_token(token)
+            role = payload.get("role", "patient")
+            permissions = payload.get(
+                "permissions",
+                ["patient:read", "patient:write", "prescriptions:read", "prescriptions:write"]
+            )
+            return UserSessionResponse(
+                user_id=payload.get("sub", "usr-patient"),
+                username=payload.get("email", "patient@ecm.local"),
+                role=role,
+                permissions=permissions,
+            )
+        elif token in configured_tokens:
             role = configured_tokens[token]
+            user_data = STUB_USERS[role]
+            return UserSessionResponse(
+                user_id=user_data["user_id"],
+                username=user_data["username"],
+                role=user_data["role"],
+                permissions=user_data["permissions"],
+            )
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -153,14 +176,6 @@ def get_current_user(
             detail="Authentication credentials were not provided. Include 'Authorization: Bearer <token>'.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    user_data = STUB_USERS[role]
-    return UserSessionResponse(
-        user_id=user_data["user_id"],
-        username=user_data["username"],
-        role=user_data["role"],
-        permissions=user_data["permissions"],
-    )
 
 
 def require_role(allowed_roles: List[str]):
