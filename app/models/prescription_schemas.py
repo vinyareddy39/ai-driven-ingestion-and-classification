@@ -138,3 +138,37 @@ class ReminderPreferenceResponse(BaseModel):
     channel: str
     advance_minutes: int
     enabled: bool
+
+
+# ---------------------------------------------------------------------------
+# Reprocessing & Training Export Schemas
+# ---------------------------------------------------------------------------
+
+class ReprocessFilterRequest(BaseModel):
+    min_confidence: Optional[float] = None
+    model_version: Optional[str] = None
+    prescription_ids: Optional[List[str]] = None
+    dry_run: bool = False
+
+
+class ReprocessItemDiff(BaseModel):
+    item_id: str
+    action: str  # preserved, updated, replaced, added
+    drug_name: str
+    details: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ReprocessPrescriptionResult(BaseModel):
+    prescription_id: str
+    status: str
+    items_reprocessed: int
+    items_preserved: int
+    diffs: List[ReprocessItemDiff]
+
+
+class ReprocessResponse(BaseModel):
+    total_scanned: int
+    total_reprocessed: int
+    dry_run: bool
+    results: List[ReprocessPrescriptionResult]
+

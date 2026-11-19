@@ -12,6 +12,8 @@ data/*.db
 *.db
 data/*.sqlite*
 data/ocr_cache*.json
+data/*.jsonl
+data/test_samples/
 data/models/
 /models/
 

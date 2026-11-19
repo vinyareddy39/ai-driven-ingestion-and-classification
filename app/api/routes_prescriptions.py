@@ -27,10 +27,15 @@ from app.models.prescription_schemas import (
     PrescriptionStatusResponse,
     ReminderPreferenceRequest,
     ReminderPreferenceResponse,
+    ReprocessFilterRequest,
+    ReprocessItemDiff,
+    ReprocessPrescriptionResult,
+    ReprocessResponse,
     SlotStatusUpdateRequest,
     TimetableResponse,
     TimetableSlotResponse,
 )
+from app.workers.medication_extractor import MedicationExtractor
 from app.workers.prescription_worker import process_prescription_job
 
 router = APIRouter(prefix="/api/v1", tags=["Prescriptions & Timetable"])
@@ -320,6 +325,16 @@ def update_prescription_item(
         if not item:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Medication item not found")
 
+        prev_data = {
+            "drug_name": item.drug_name,
+            "strength": item.strength,
+            "dose": item.dose,
+            "frequency": item.frequency,
+            "timing": item.timing,
+            "duration_days": item.duration_days,
+            "schedule_rule": item.schedule_rule,
+        }
+
         if req.drug_name is not None: item.drug_name = req.drug_name
         if req.strength is not None: item.strength = req.strength
         if req.dose is not None: item.dose = req.dose
@@ -329,7 +344,48 @@ def update_prescription_item(
         if req.schedule_rule is not None: item.schedule_rule = req.schedule_rule
 
         item.verified_by_user = req.verified_by_user
-        item.verified_at = datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc)
+        item.verified_at = now
+
+        # Append human review correction pair to offline active learning file data/prescription_corrections.jsonl
+        # STRICT SAFETY: Do NOT log patient identity or PII
+        os.makedirs("data", exist_ok=True)
+        corrected_data = {
+            "drug_name": item.drug_name,
+            "strength": item.strength,
+            "dose": item.dose,
+            "frequency": item.frequency,
+            "timing": item.timing,
+            "duration_days": item.duration_days,
+            "schedule_rule": item.schedule_rule,
+        }
+        correction_entry = {
+            "timestamp": now.isoformat(),
+            "prescription_id": rx.id,
+            "item_id": item.id,
+            "source_span": item.raw_text,
+            "original_fields": prev_data,
+            "corrected_fields": corrected_data,
+            "verified_by_user": item.verified_by_user,
+        }
+        with open(os.path.join("data", "prescription_corrections.jsonl"), "a", encoding="utf-8") as f:
+            f.write(json.dumps(correction_entry) + "\n")
+
+        audit_ev = AuditEventModel(
+            event_id=f"audit-item-{uuid.uuid4().hex[:12]}",
+            document_uid=rx.id,
+            sha256=rx.sha256 or "",
+            event_type="ITEM_CORRECTED" if prev_data != corrected_data else "ITEM_VERIFIED",
+            stage_name="human_review",
+            status="SUCCESS",
+            payload_json=json.dumps({
+                "item_id": item.id,
+                "drug_name": item.drug_name,
+                "verified_by_user": item.verified_by_user,
+            }),
+            created_at=now,
+        )
+        db.add(audit_ev)
         db.commit()
 
         conf_dict = json.loads(item.confidence_json or "{}")
@@ -564,3 +620,169 @@ def update_reminder_preferences(
         advance_minutes=req.advance_minutes,
         enabled=req.enabled,
     )
+
+
+@router.post("/prescriptions/reprocess", response_model=ReprocessResponse)
+def reprocess_prescriptions(
+    req: ReprocessFilterRequest,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Batch reprocess unconfirmed prescription extractions with updated models.
+    
+    CRITICAL SAFETY INVARIANT:
+    - Extracted items that have been verified or corrected by a user (verified_by_user == True)
+      are PROTECTED and will NEVER be overwritten or deleted during reprocessing.
+    - Dry-run mode allows auditing what would change before writing to DB.
+    """
+    db = get_db_session()
+    try:
+        query = db.query(PrescriptionModel)
+        if current_user.role not in STAFF_ROLES:
+            query = query.filter(PrescriptionModel.user_id == current_user.user_id)
+
+        if req.prescription_ids:
+            query = query.filter(PrescriptionModel.id.in_(req.prescription_ids))
+        if req.model_version:
+            query = query.filter(PrescriptionModel.model_version == req.model_version)
+
+        # Do not alter confirmed or archived prescriptions
+        query = query.filter(PrescriptionModel.status.in_(["NEEDS_REVIEW", "PROCESSING", "QUEUED"]))
+        rxs = query.all()
+
+        extractor = MedicationExtractor()
+        results: List[ReprocessPrescriptionResult] = []
+        total_reprocessed = 0
+
+        for rx in rxs:
+            existing_items = db.query(ExtractedItemModel).filter(
+                ExtractedItemModel.prescription_id == rx.id
+            ).all()
+
+            preserved_items = [it for it in existing_items if it.verified_by_user]
+            unverified_items = [it for it in existing_items if not it.verified_by_user]
+
+            diffs: List[ReprocessItemDiff] = []
+
+            for p_it in preserved_items:
+                diffs.append(ReprocessItemDiff(
+                    item_id=p_it.id,
+                    action="preserved",
+                    drug_name=p_it.drug_name,
+                    details={"reason": "User-verified item protected from automated overwrite", "dose": p_it.dose},
+                ))
+
+            # Re-extract from stored raw text
+            new_candidates = extractor.extract(rx.raw_text or "")
+            preserved_drug_names = {p.drug_name.lower() for p in preserved_items}
+
+            # Filter out candidates that duplicate preserved items
+            actionable_candidates = [
+                c for c in new_candidates if c.drug_name.lower() not in preserved_drug_names
+            ]
+
+            for old_unv in unverified_items:
+                diffs.append(ReprocessItemDiff(
+                    item_id=old_unv.id,
+                    action="replaced",
+                    drug_name=old_unv.drug_name,
+                    details={"reason": "Unverified item replaced by latest model extraction"},
+                ))
+
+            for new_c in actionable_candidates:
+                diffs.append(ReprocessItemDiff(
+                    item_id=f"new-reprocess-{uuid.uuid4().hex[:8]}",
+                    action="added",
+                    drug_name=new_c.drug_name,
+                    details={
+                        "strength": new_c.strength,
+                        "dose": new_c.dose,
+                        "frequency": new_c.frequency,
+                        "timing": new_c.timing,
+                        "duration_days": new_c.duration_days,
+                    },
+                ))
+
+            if not req.dry_run:
+                # Delete unverified items
+                db.query(ExtractedItemModel).filter(
+                    ExtractedItemModel.prescription_id == rx.id,
+                    ExtractedItemModel.verified_by_user == False,
+                ).delete()
+
+                # Insert new candidates
+                for cand in actionable_candidates:
+                    new_item_row = ExtractedItemModel(
+                        id=str(uuid.uuid4()),
+                        prescription_id=rx.id,
+                        raw_text=cand.source_span,
+                        drug_name=cand.drug_name,
+                        strength=cand.strength,
+                        dose=cand.dose,
+                        frequency=cand.frequency,
+                        timing=cand.timing,
+                        duration_days=cand.duration_days,
+                        schedule_rule=cand.schedule_rule,
+                        confidence_json=json.dumps(cand.confidence),
+                        verified_by_user=False,
+                    )
+                    db.add(new_item_row)
+
+                rx.model_version = "v2.0-batch-reprocessed"
+
+                now = datetime.now(timezone.utc)
+                audit_ev = AuditEventModel(
+                    event_id=f"audit-reprocess-{uuid.uuid4().hex[:12]}",
+                    document_uid=rx.id,
+                    sha256=rx.sha256 or "",
+                    event_type="PRESCRIPTION_REPROCESSED",
+                    stage_name="batch_reprocessing",
+                    status="SUCCESS",
+                    payload_json=json.dumps({
+                        "prescription_id": rx.id,
+                        "preserved_count": len(preserved_items),
+                        "reprocessed_count": len(actionable_candidates),
+                        "model_version": rx.model_version,
+                    }),
+                    created_at=now,
+                )
+                db.add(audit_ev)
+                total_reprocessed += 1
+
+            results.append(ReprocessPrescriptionResult(
+                prescription_id=rx.id,
+                status="DRY_RUN_PREVIEW" if req.dry_run else "REPROCESSED",
+                items_reprocessed=len(actionable_candidates),
+                items_preserved=len(preserved_items),
+                diffs=diffs,
+            ))
+
+        if not req.dry_run:
+            db.commit()
+
+        return ReprocessResponse(
+            total_scanned=len(rxs),
+            total_reprocessed=total_reprocessed if not req.dry_run else len(rxs),
+            dry_run=req.dry_run,
+            results=results,
+        )
+    finally:
+        db.close()
+
+
+@router.post("/reminders/dispatch")
+def trigger_reminder_dispatch(
+    window_minutes: int = Query(60, ge=1, le=1440),
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Trigger dispatch of upcoming medication reminders."""
+    db = get_db_session()
+    try:
+        from app.workers.reminders import dispatch_due_reminders
+        dispatched = dispatch_due_reminders(db, window_minutes=window_minutes)
+        return {
+            "dispatched_count": len(dispatched),
+            "dispatched": dispatched,
+        }
+    finally:
+        db.close()
+
