@@ -61,6 +61,11 @@ class AppSettings(BaseModel):
     """Environment and runtime application settings."""
     ENVIRONMENT: str = Field(default_factory=lambda: os.getenv("ENVIRONMENT", "development"))
     LOG_LEVEL: str = Field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
+    CORS_ORIGINS: str = Field(
+        default_factory=lambda: os.getenv(
+            "CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+        )
+    )
 
     # Storage
     STORAGE_BACKEND: str = Field(default_factory=lambda: os.getenv("STORAGE_BACKEND", "local"))
