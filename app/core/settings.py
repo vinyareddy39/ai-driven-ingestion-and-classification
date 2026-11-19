@@ -116,14 +116,19 @@ class AppSettings(BaseSettings):
     VIRUS_SCANNER_BACKEND: str = Field(default="mock")
 
 
-def validate_production_safety(settings: AppSettings) -> None:
+class ProductionSecurityError(ValueError):
+    """Raised when application configuration violates production security standards."""
+    pass
+
+
+def validate_production_safety(settings: AppSettings) -> bool:
     """Enforce strict security barriers when operating in production mode.
     
     Refuses startup if secrets are missing, defaults are used, or insecure
     configurations (wildcard CORS, role header bypass, local disk) are enabled.
     """
     if settings.APP_ENV.lower() != "production":
-        return
+        return True
 
     errors: List[str] = []
 
@@ -149,11 +154,12 @@ def validate_production_safety(settings: AppSettings) -> None:
 
     # 6. Storage Backend
     if settings.STORAGE_BACKEND == "local":
-        errors.append("STORAGE_BACKEND must be 's3' in production because cloud container disks are ephemeral.")
+        errors.append("STORAGE_BACKEND must be 's3' in production because cloud container disks are ephemeral; STORAGE_BACKEND='local' is forbidden.")
 
     if errors:
         msg = "PRODUCTION STARTUP REFUSED:\n  - " + "\n  - ".join(errors)
-        raise ValueError(msg)
+        raise ProductionSecurityError(msg)
+    return True
 
 
 _cached_settings: Optional[AppSettings] = None

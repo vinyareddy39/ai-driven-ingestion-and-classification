@@ -263,6 +263,22 @@ class ReminderModel(Base):
     sent_at = Column(DateTime, nullable=True)
 
 
+class PipelineJobModel(Base):
+    """Persistent job queue model surviving process restarts across PostgreSQL and SQLite."""
+    __tablename__ = "pipeline_jobs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_id = Column(String(64), unique=True, index=True, nullable=False)
+    queue_name = Column(String(64), index=True, nullable=False)
+    payload_json = Column(Text, nullable=False)
+    status = Column(String(32), default="QUEUED", index=True, nullable=False)  # QUEUED, PROCESSING, COMPLETED, FAILED
+    retry_count = Column(Integer, default=0, nullable=False)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+
 # Database Engine and Session Factory
 _engine = None
 _SessionFactory = None

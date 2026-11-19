@@ -99,10 +99,10 @@ class MinioStorage(Storage):
 def get_storage_adapter() -> Storage:
     """Factory creating configured storage adapter."""
     settings = get_app_settings()
-    if settings.STORAGE_BACKEND == "minio":
+    if settings.STORAGE_BACKEND in ("minio", "s3"):
         try:
             return MinioStorage()
         except Exception:
-            # Graceful fallback to local if MinIO container is offline
+            # Graceful fallback to local if MinIO/S3 endpoint is offline in non-production
             return LocalFileStorage()
     return LocalFileStorage()

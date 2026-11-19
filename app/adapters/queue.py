@@ -95,6 +95,82 @@ class RedisStreamsQueue(Queue):
             return 0
 
 
+class DatabaseQueue(Queue):
+    """Persistent database-backed queue for reliable message processing across restarts."""
+
+    def push(self, queue_name: str, message: Dict[str, Any]) -> str:
+        from app.models.db import PipelineJobModel, get_db_session
+        import uuid
+        job_id = f"job-{uuid.uuid4().hex[:12]}"
+        db = get_db_session()
+        try:
+            job = PipelineJobModel(
+                job_id=job_id,
+                queue_name=queue_name,
+                payload_json=json.dumps(message),
+                status="QUEUED",
+            )
+            db.add(job)
+            db.commit()
+            return job_id
+        finally:
+            db.close()
+
+    def pop(self, queue_name: str, consumer_group: str = "default", timeout_ms: int = 1000) -> Optional[Tuple[str, Dict[str, Any]]]:
+        from app.models.db import PipelineJobModel, get_db_session
+        from datetime import datetime, timezone
+        db = get_db_session()
+        try:
+            job = (
+                db.query(PipelineJobModel)
+                .filter(
+                    PipelineJobModel.queue_name == queue_name,
+                    PipelineJobModel.status == "QUEUED",
+                )
+                .order_by(PipelineJobModel.created_at.asc())
+                .first()
+            )
+            if not job:
+                return None
+            job.status = "PROCESSING"
+            job.updated_at = datetime.now(timezone.utc)
+            db.commit()
+            payload = json.loads(job.payload_json)
+            return (job.job_id, payload)
+        finally:
+            db.close()
+
+    def ack(self, queue_name: str, consumer_group: str, message_id: str) -> bool:
+        from app.models.db import PipelineJobModel, get_db_session
+        from datetime import datetime, timezone
+        db = get_db_session()
+        try:
+            job = db.query(PipelineJobModel).filter(PipelineJobModel.job_id == message_id).first()
+            if job:
+                job.status = "COMPLETED"
+                job.updated_at = datetime.now(timezone.utc)
+                db.commit()
+                return True
+            return False
+        finally:
+            db.close()
+
+    def length(self, queue_name: str) -> int:
+        from app.models.db import PipelineJobModel, get_db_session
+        db = get_db_session()
+        try:
+            return (
+                db.query(PipelineJobModel)
+                .filter(
+                    PipelineJobModel.queue_name == queue_name,
+                    PipelineJobModel.status == "QUEUED",
+                )
+                .count()
+            )
+        finally:
+            db.close()
+
+
 _global_queue_adapter: Optional[Queue] = None
 
 
@@ -108,6 +184,8 @@ def get_queue_adapter() -> Queue:
                 _global_queue_adapter = RedisStreamsQueue()
             except Exception:
                 _global_queue_adapter = MemoryQueue()
+        elif settings.QUEUE_BACKEND in ("database", "postgres"):
+            _global_queue_adapter = DatabaseQueue()
         else:
             _global_queue_adapter = MemoryQueue()
     return _global_queue_adapter
