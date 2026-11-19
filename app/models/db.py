@@ -1,5 +1,6 @@
 """Database models for documents, stages, audit trail, and human review tasks."""
 
+import os
 from datetime import datetime, timezone
 import json
 from typing import Any, Dict, Optional
@@ -140,7 +141,10 @@ class PrescriptionModel(Base):
     id = Column(String(36), primary_key=True)
     user_id = Column(String(36), ForeignKey("users.id"), index=True, nullable=False)
     file_key = Column(String(255), index=True, nullable=False)
+    sha256 = Column(String(64), index=True, nullable=True)
     status = Column(String(32), default="QUEUED", index=True, nullable=False)  # QUEUED, PROCESSING, NEEDS_REVIEW, CONFIRMED, FAILED
+    raw_text = Column(Text, nullable=True)
+    error_message = Column(String(255), nullable=True)
     model_version = Column(String(50), default="v1.0")
     ocr_engine = Column(String(50), default="HybridPyMuPDF-Tesseract")
     pii_detected = Column(Boolean, default=False)
@@ -199,8 +203,10 @@ _SessionFactory = None
 def get_db_engine():
     global _engine
     if _engine is None:
-        settings = get_app_settings()
-        db_url = settings.DATABASE_URL
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            settings = get_app_settings()
+            db_url = settings.DATABASE_URL
         connect_args = {"check_same_thread": False} if "sqlite" in db_url else {}
         _engine = create_engine(db_url, connect_args=connect_args)
     return _engine

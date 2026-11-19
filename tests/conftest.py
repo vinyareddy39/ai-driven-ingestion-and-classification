@@ -12,7 +12,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 # Direct all test operations to a copy of the database
 test_db_file = Path("data/test_ecm_pipeline.db")
-live_db_file = Path("data/ecm_pipeline.db")
+live_db_file = Path("data/ecm_pipeline.backup.db")
+if not live_db_file.exists():
+    live_db_file = Path("data/ecm_pipeline.db")
 if live_db_file.exists():
     shutil.copyfile(live_db_file, test_db_file)
 os.environ["DATABASE_URL"] = f"sqlite:///{test_db_file.as_posix()}"

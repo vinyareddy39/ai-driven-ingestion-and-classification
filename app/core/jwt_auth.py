@@ -71,6 +71,12 @@ def create_token(payload: Dict[str, Any], expires_in_seconds: int = 1800) -> str
     return f"{segment1}.{segment2}.{segment3}"
 
 
+def create_jwt_token(user_id: str, role: str = "patient", expires_in_seconds: int = 1800) -> str:
+    """Convenience helper to create signed JWT for a user ID and role."""
+    return create_token({"sub": user_id, "role": role}, expires_in_seconds=expires_in_seconds)
+
+
+
 def decode_token(token_str: str) -> Dict[str, Any]:
     """Verify and decode signed JWT; raises HTTPException 401 on failure or expiry."""
     secret = get_jwt_secret().encode("utf-8")
