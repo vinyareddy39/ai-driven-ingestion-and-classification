@@ -27,8 +27,11 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Override sqlalchemy.url with dynamic app settings URL
-settings = get_app_settings()
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+db_url = os.getenv("DATABASE_URL")
+if not db_url:
+    settings = get_app_settings()
+    db_url = settings.DATABASE_URL
+config.set_main_option("sqlalchemy.url", db_url)
 
 
 # other values from the config, defined by the needs of env.py,
@@ -68,8 +71,11 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    section = config.get_section(config.config_ini_section, {})
+    section["sqlalchemy.url"] = db_url
+
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

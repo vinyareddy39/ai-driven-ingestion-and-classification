@@ -36,8 +36,8 @@
 | Stage | Name | Status | Commit SHA | Notes / Evidence |
 |---|---|---|---|---|
 | Stage 0 | Audit and Skip List | COMPLETED | 4a43efa | Audited DB tables (1,790 docs, 12,585 audits), storage & queue adapters, skipped 17 existing proven capabilities, identified gaps in settings, batch results, LLM router |
-| Stage 1 | Configuration and Secrets | COMPLETED | pending | Unified pydantic-settings module with 24 variables, .env.example, production startup barrier validation (refuses default secrets, SQLite, wildcard CORS, role header bypass, local storage), /api/v1/system/info exposes no secrets; 4/4 Stage 1 tests and 130/130 full suite passing |
-| Stage 2 | Database (PostgreSQL Ready) | PENDING | - | Batch ID column, composite indices, Alembic upgrade/downgrade, backup/restore runbook |
+| Stage 1 | Configuration and Secrets | COMPLETED | 47a55c4 | Unified pydantic-settings module with 24 variables, .env.example, production startup barrier validation (refuses default secrets, SQLite, wildcard CORS, role header bypass, local storage), /api/v1/system/info exposes no secrets; 4/4 Stage 1 tests and 130/130 full suite passing |
+| Stage 2 | Database (PostgreSQL Ready) | COMPLETED | pending | Portable SQLAlchemy models, Alembic migration c3d4e5f6a1b2 adding batch_id, user_id, legal_hold, and composite indices (idx_doc_model_conf, idx_doc_batch_status), verified upgrade/downgrade/re-upgrade cycle on DB copy, EXPLAIN QUERY PLAN confirms index search on classifier_version and confidence, authored docs/operations.md; BLOCKED: Docker engine not running on host for live PostgreSQL instance; 130/130 full suite passing |
 | Stage 3 | AI Services & Residency | PENDING | - | LLMClient interface (local Ollama vs hosted), residency router, receipt doc type |
 | Stage 4 | Batch Results & ECM Flow | PENDING | - | GET /batches/{id} aggregation in O(1) queries, signed HMAC webhook, legal hold disposition |
 | Stage 5 | Prescription Flow | COMPLETED (Skipped) | 5b119e6 | Fully completed in previous flow (Argon2id, HS256 JWT, medication extractor, timetable, reminders, column encryption) |

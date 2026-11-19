@@ -10,6 +10,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -115,6 +116,17 @@ class DocumentModel(Base):
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    # Enterprise Batch, Ownership, and Retention extensions
+    batch_id = Column(String(64), index=True, nullable=True)
+    user_id = Column(String(36), ForeignKey("users.id"), index=True, nullable=True)
+    legal_hold = Column(Boolean, default=False, index=True)
+    retention_expires_at = Column(DateTime, nullable=True, index=True)
+
+    __table_args__ = (
+        Index("idx_doc_model_conf", "classifier_version", "confidence"),
+        Index("idx_doc_batch_status", "batch_id", "review_status"),
+    )
 
 
 class StageExecutionModel(Base):
