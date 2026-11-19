@@ -28,6 +28,9 @@ from app.models.api_schemas import (
     AdminConfigUpdateResponse,
     AuditEventItem,
     AuditTrailResponse,
+    BatchDetailResponse,
+    BatchFileItem,
+    BatchProgressCounts,
     ClassThresholdConfig,
     ConfigHistoryItem,
     ConfigHistoryResponse,
@@ -371,6 +374,89 @@ def process_review_action(
             doc_type=doc.doc_type,
             message=msg,
             updated_at=now,
+        )
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# Batch Results & Progress Endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/batches/{batch_id}", response_model=BatchDetailResponse)
+def get_batch_detail(
+    batch_id: str,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Retrieve batch progress, status breakdown, and document list with user isolation."""
+    db = get_db_session()
+    try:
+        docs = (
+            db.query(DocumentModel)
+            .filter(DocumentModel.batch_id == batch_id)
+            .order_by(DocumentModel.created_at.asc())
+            .all()
+        )
+        if not docs:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Batch '{batch_id}' not found",
+            )
+
+        # Enforce user isolation:
+        batch_owner = docs[0].user_id
+        is_staff = current_user.role in ("admin", "reviewer", "compliance")
+        if batch_owner and not is_staff and current_user.user_id != batch_owner:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Batch '{batch_id}' not found",
+            )
+
+        # O(1) SQL Aggregations:
+        status_counts = dict(
+            db.query(DocumentModel.review_status, func.count(DocumentModel.uid))
+            .filter(DocumentModel.batch_id == batch_id)
+            .group_by(DocumentModel.review_status)
+            .all()
+        )
+
+        type_counts = dict(
+            db.query(DocumentModel.doc_type, func.count(DocumentModel.uid))
+            .filter(DocumentModel.batch_id == batch_id)
+            .group_by(DocumentModel.doc_type)
+            .all()
+        )
+
+        progress = BatchProgressCounts(
+            total=len(docs),
+            queued=status_counts.get("queued", 0),
+            processing=status_counts.get("processing", 0),
+            done=status_counts.get("auto_accepted", 0) + status_counts.get("approved", 0),
+            needs_review=status_counts.get("pending_review", 0),
+            failed=status_counts.get("failed", 0),
+            quarantined=status_counts.get("quarantined", 0),
+            duplicate=status_counts.get("duplicate", 0),
+        )
+
+        items = [
+            BatchFileItem(
+                uid=d.uid,
+                file_name=d.file_name,
+                doc_type=d.doc_type,
+                review_status=d.review_status,
+                confidence=d.confidence or 0.0,
+                error_detail=d.quarantine_reason if d.review_status == "quarantined" else None,
+                created_at=d.created_at,
+            )
+            for d in docs
+        ]
+
+        return BatchDetailResponse(
+            batch_id=batch_id,
+            user_id=batch_owner,
+            progress=progress,
+            counts_by_type=type_counts,
+            items=items,
         )
     finally:
         db.close()

@@ -91,6 +91,10 @@ class AppSettings(BaseSettings):
         default="default_webhook_hmac_signing_secret_123",
         description="Secret key for signing outbound JSON webhook payloads with HMAC-SHA256",
     )
+    OUTBOUND_WEBHOOK_URL: str = Field(
+        default="",
+        description="Target endpoint for outbound event webhooks",
+    )
 
     # Upload & Operational Limits
     MAX_UPLOAD_MB: int = Field(default=10, description="Maximum single file upload limit in megabytes")

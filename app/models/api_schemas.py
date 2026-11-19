@@ -329,3 +329,40 @@ class ConfigHistoryItem(BaseModel):
 class ConfigHistoryResponse(BaseModel):
     """Audit history of configuration adjustments."""
     history: List[ConfigHistoryItem]
+
+
+# ---------------------------------------------------------------------------
+# Batch Processing Schemas
+# ---------------------------------------------------------------------------
+
+class BatchProgressCounts(BaseModel):
+    """Aggregated status counts for documents in a batch."""
+    total: int = 0
+    queued: int = 0
+    processing: int = 0
+    done: int = 0
+    needs_review: int = 0
+    failed: int = 0
+    quarantined: int = 0
+    duplicate: int = 0
+
+
+class BatchFileItem(BaseModel):
+    """Individual document summary in a batch detail response."""
+    uid: str
+    file_name: str
+    doc_type: str
+    review_status: str
+    confidence: float
+    error_detail: Optional[str] = None
+    created_at: datetime
+
+
+class BatchDetailResponse(BaseModel):
+    """Aggregated batch status, progress breakdown, per-type counts, and per-file items."""
+    batch_id: str
+    user_id: Optional[str] = None
+    progress: BatchProgressCounts
+    counts_by_type: Dict[str, int]
+    items: List[BatchFileItem]
+
