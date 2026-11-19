@@ -464,6 +464,120 @@
         }
       }
     },
+    "/review/api/tasks": {
+      "get": {
+        "tags": [
+          "Review UI"
+        ],
+        "summary": "Get Review Tasks Json",
+        "description": "Return pending review tasks in JSON for the frontend.",
+        "operationId": "get_review_tasks_json_review_api_tasks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/api/task/{document_uid}": {
+      "get": {
+        "tags": [
+          "Review UI"
+        ],
+        "summary": "Get Review Task Detail Json",
+        "description": "Return single review task detail in JSON for the frontend.",
+        "operationId": "get_review_task_detail_json_review_api_task__document_uid__get",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review/api/task/{document_uid}/action": {
+      "post": {
+        "tags": [
+          "Review UI"
+        ],
+        "summary": "Process Review Action Json",
+        "description": "Execute review action (CONFIRM, CORRECT, REJECT) via JSON payload.",
+        "operationId": "process_review_action_json_review_api_task__document_uid__action_post",
+        "parameters": [
+          {
+            "name": "document_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Document Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/reprocess": {
       "post": {
         "tags": [
@@ -522,7 +636,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReprocessResponse"
+                  "$ref": "#/components/schemas/app__models__schemas__ReprocessResponse"
                 }
               }
             }
@@ -694,6 +808,126 @@
                 }
               ],
               "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stats/dashboard": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "summary": "Get Dashboard Stats",
+        "description": "Retrieve summarized statistics for the dashboard UI.",
+        "operationId": "get_dashboard_stats_api_stats_dashboard_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents": {
+      "get": {
+        "tags": [
+          "Observability"
+        ],
+        "summary": "List Documents",
+        "description": "List documents with filtering, search, and pagination.",
+        "operationId": "list_documents_api_documents_get",
+        "parameters": [
+          {
+            "name": "doc_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Doc Type"
+            }
+          },
+          {
+            "name": "review_status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Review Status"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
             }
           }
         ],
@@ -2518,7 +2752,7 @@
           "Authentication"
         ],
         "summary": "Signup",
-        "description": "Register a new patient or user account.",
+        "description": "Register a new patient or user account with Argon2id hashed credentials.",
         "operationId": "signup_api_v1_auth_signup_post",
         "requestBody": {
           "content": {
@@ -2664,7 +2898,7 @@
           "Prescriptions & Timetable"
         ],
         "summary": "Upload Prescription",
-        "description": "Upload prescription photo/scan. Validates token, file size and enqueues OCR extraction job.",
+        "description": "Upload prescription photo/scan. Saves file, enqueues OCR job bound to authenticated user.",
         "operationId": "upload_prescription_api_v1_prescriptions_post",
         "parameters": [
           {
@@ -2711,7 +2945,7 @@
           }
         },
         "responses": {
-          "202": {
+          "201": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -3464,6 +3698,286 @@
                 "schema": {
                   "$ref": "#/components/schemas/ReminderPreferenceResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/prescriptions/reprocess": {
+      "post": {
+        "tags": [
+          "Prescriptions & Timetable"
+        ],
+        "summary": "Reprocess Prescriptions",
+        "description": "Batch reprocess unconfirmed prescription extractions with updated models.\n\nCRITICAL SAFETY INVARIANT:\n- Extracted items that have been verified or corrected by a user (verified_by_user == True)\n  are PROTECTED and will NEVER be overwritten or deleted during reprocessing.\n- Dry-run mode allows auditing what would change before writing to DB.",
+        "operationId": "reprocess_prescriptions_api_v1_prescriptions_reprocess_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReprocessFilterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/app__models__prescription_schemas__ReprocessResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reminders/dispatch": {
+      "post": {
+        "tags": [
+          "Prescriptions & Timetable"
+        ],
+        "summary": "Trigger Reminder Dispatch",
+        "description": "Trigger dispatch of upcoming medication reminders.",
+        "operationId": "trigger_reminder_dispatch_api_v1_reminders_dispatch_post",
+        "parameters": [
+          {
+            "name": "window_minutes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1440,
+              "minimum": 1,
+              "default": 60,
+              "title": "Window Minutes"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/export-my-data": {
+      "get": {
+        "tags": [
+          "Prescriptions & Timetable"
+        ],
+        "summary": "Export User Data",
+        "description": "Export all personal health data and account records for authenticated user.",
+        "operationId": "export_user_data_api_v1_user_export_my_data_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/user/delete-my-data": {
+      "delete": {
+        "tags": [
+          "Prescriptions & Timetable"
+        ],
+        "summary": "Delete User Data",
+        "description": "Hard delete all user files, health data, and records (GDPR / HIPAA compliance).\n\nGuarantees:\n- Physical files stored in storage adapter are permanently deleted.\n- Prescriptions, items, slots, reminders, and user rows deleted from database.\n- Sanitized, scrubbed audit record retained with ZERO personal identifiers or content.",
+        "operationId": "delete_user_data_api_v1_user_delete_my_data_delete",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -4655,6 +5169,39 @@
             "type": "string",
             "title": "File Key"
           },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          },
+          "raw_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Raw Text"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
           "model_version": {
             "type": "string",
             "title": "Model Version"
@@ -4920,6 +5467,81 @@
         "title": "ReprocessExecutionResponse",
         "description": "Response from executing a reprocess run."
       },
+      "ReprocessFilterRequest": {
+        "properties": {
+          "min_confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Confidence"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "prescription_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prescription Ids"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ReprocessFilterRequest"
+      },
+      "ReprocessItemDiff": {
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "title": "Item Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "drug_name": {
+            "type": "string",
+            "title": "Drug Name"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_id",
+          "action",
+          "drug_name"
+        ],
+        "title": "ReprocessItemDiff"
+      },
       "ReprocessJobStatusResponse": {
         "properties": {
           "job_id": {
@@ -4958,6 +5580,42 @@
         ],
         "title": "ReprocessJobStatusResponse",
         "description": "Progress status of an active or completed reprocess job."
+      },
+      "ReprocessPrescriptionResult": {
+        "properties": {
+          "prescription_id": {
+            "type": "string",
+            "title": "Prescription Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "items_reprocessed": {
+            "type": "integer",
+            "title": "Items Reprocessed"
+          },
+          "items_preserved": {
+            "type": "integer",
+            "title": "Items Preserved"
+          },
+          "diffs": {
+            "items": {
+              "$ref": "#/components/schemas/ReprocessItemDiff"
+            },
+            "type": "array",
+            "title": "Diffs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "prescription_id",
+          "status",
+          "items_reprocessed",
+          "items_preserved",
+          "diffs"
+        ],
+        "title": "ReprocessPrescriptionResult"
       },
       "ReprocessPreviewRequest": {
         "properties": {
@@ -5098,40 +5756,6 @@
         "type": "object",
         "title": "ReprocessRequest",
         "description": "Query payload for reprocess-by-query endpoint."
-      },
-      "ReprocessResponse": {
-        "properties": {
-          "matched_count": {
-            "type": "integer",
-            "title": "Matched Count"
-          },
-          "queued_count": {
-            "type": "integer",
-            "title": "Queued Count"
-          },
-          "skipped_count": {
-            "type": "integer",
-            "title": "Skipped Count"
-          },
-          "dry_run": {
-            "type": "boolean",
-            "title": "Dry Run"
-          },
-          "job_id": {
-            "type": "string",
-            "title": "Job Id"
-          }
-        },
-        "type": "object",
-        "required": [
-          "matched_count",
-          "queued_count",
-          "skipped_count",
-          "dry_run",
-          "job_id"
-        ],
-        "title": "ReprocessResponse",
-        "description": "Response from reprocess endpoint."
       },
       "ReprocessSampleItem": {
         "properties": {
@@ -5875,6 +6499,71 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "app__models__prescription_schemas__ReprocessResponse": {
+        "properties": {
+          "total_scanned": {
+            "type": "integer",
+            "title": "Total Scanned"
+          },
+          "total_reprocessed": {
+            "type": "integer",
+            "title": "Total Reprocessed"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/ReprocessPrescriptionResult"
+            },
+            "type": "array",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_scanned",
+          "total_reprocessed",
+          "dry_run",
+          "results"
+        ],
+        "title": "ReprocessResponse"
+      },
+      "app__models__schemas__ReprocessResponse": {
+        "properties": {
+          "matched_count": {
+            "type": "integer",
+            "title": "Matched Count"
+          },
+          "queued_count": {
+            "type": "integer",
+            "title": "Queued Count"
+          },
+          "skipped_count": {
+            "type": "integer",
+            "title": "Skipped Count"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run"
+          },
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "matched_count",
+          "queued_count",
+          "skipped_count",
+          "dry_run",
+          "job_id"
+        ],
+        "title": "ReprocessResponse",
+        "description": "Response from reprocess endpoint."
       }
     }
   }
