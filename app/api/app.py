@@ -12,7 +12,7 @@ from app.api.routes_v1 import router as v1_router
 from app.api.routes_auth import router as auth_router
 from app.api.routes_prescriptions import router as prescriptions_router
 from app.core.auth import validate_auth_config
-from app.core.config import get_pipeline_config
+from app.core.config import get_app_settings, get_pipeline_config
 from app.core.security import setup_secure_logging
 from app.models.db import init_db
 
@@ -44,6 +44,18 @@ async def lifespan(app: FastAPI):
         logger.warning(f"Could not restore config history: {e}")
 
     logger.info(f"Loaded pipeline config version {cfg.pipeline.get('version', '1.0.0')}")
+
+    import threading
+    from app.workers.pipeline import run_pipeline_worker
+
+    worker_thread = threading.Thread(
+        target=run_pipeline_worker,
+        kwargs={"queue_type": "live"},
+        daemon=True,
+    )
+    worker_thread.start()
+    logger.info("Pipeline background worker thread started for live queue.")
+
     yield
     logger.info("Shutting down ECM Ingestion Engine...")
 
@@ -57,14 +69,14 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
-    origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
-    if "*" not in origins:
-        origins.append("*")
+    settings = get_app_settings()
+    cors_origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+    if "*" not in cors_origins:
+        cors_origins.append("*")
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

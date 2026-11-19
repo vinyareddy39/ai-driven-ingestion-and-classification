@@ -1,6 +1,7 @@
-import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -14,7 +15,11 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
-      '/health': {
+      '/review': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/reprocess': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
@@ -22,14 +27,14 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
+      '/health': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/audit': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
     },
-  },
-  // @ts-ignore
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/setupTests.ts',
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['e2e/**', 'node_modules/**'],
   },
 });

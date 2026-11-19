@@ -144,6 +144,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/review/api/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Review Tasks Json
+         * @description Return pending review tasks in JSON for the frontend.
+         */
+        get: operations["get_review_tasks_json_review_api_tasks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/review/api/task/{document_uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Review Task Detail Json
+         * @description Return single review task detail in JSON for the frontend.
+         */
+        get: operations["get_review_task_detail_json_review_api_task__document_uid__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/review/api/task/{document_uid}/action": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Process Review Action Json
+         * @description Execute review action (CONFIRM, CORRECT, REJECT) via JSON payload.
+         */
+        post: operations["process_review_action_json_review_api_task__document_uid__action_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/reprocess": {
         parameters: {
             query?: never;
@@ -244,6 +304,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/stats/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Dashboard Stats
+         * @description Retrieve summarized statistics for the dashboard UI.
+         */
+        get: operations["get_dashboard_stats_api_stats_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Documents
+         * @description List documents with filtering, search, and pagination.
+         */
+        get: operations["list_documents_api_documents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/system/info": {
         parameters: {
             query?: never;
@@ -253,7 +353,7 @@ export interface paths {
         };
         /**
          * Get System Info
-         * @description Retrieve operational mode and pipeline metadata for the application shell.
+         * @description Return runtime operational mode, upload limits, and environment info.
          */
         get: operations["get_system_info_api_v1_system_info_get"];
         put?: never;
@@ -272,10 +372,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Auth Me
-         * @description Return active authenticated user session.
+         * Get Current User
+         * @description Return authenticated user context based on Bearer token or role header.
          */
-        get: operations["get_auth_me_api_v1_auth_me_get"];
+        get: operations["get_current_user_api_v1_auth_me_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -293,29 +393,9 @@ export interface paths {
         };
         /**
          * Get Review Queue
-         * @description Retrieve paginated, filterable review queue.
+         * @description Retrieve pending review queue tasks.
          */
         get: operations["get_review_queue_api_v1_review_queue_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/review/{document_uid}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Review Detail
-         * @description Retrieve full review detail for a document including OCR text and bounding boxes.
-         */
-        get: operations["get_review_detail_api_v1_review__document_uid__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -334,10 +414,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Process Review Action
-         * @description Confirm, correct, or reject a document classification with human-verified field tracking.
+         * Submit Review Action
+         * @description Process a human review action (CONFIRM, CORRECT, REJECT).
          */
-        post: operations["process_review_action_api_v1_review__document_uid__action_post"];
+        post: operations["submit_review_action_api_v1_review__document_uid__action_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -353,7 +433,7 @@ export interface paths {
         };
         /**
          * Get Documents List
-         * @description Retrieve paginated documents matching search and filter parameters.
+         * @description Retrieve paginated and filtered list of documents.
          */
         get: operations["get_documents_list_api_v1_documents_get"];
         put?: never;
@@ -364,7 +444,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/documents/{document_uid}/status": {
+    "/api/v1/documents/{uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Document By Uid
+         * @description Retrieve full audit report and document metadata.
+         */
+        get: operations["get_document_by_uid_api_v1_documents__uid__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{uid}/status": {
         parameters: {
             query?: never;
             header?: never;
@@ -373,9 +473,9 @@ export interface paths {
         };
         /**
          * Get Document Status
-         * @description Fast polling endpoint for ingestion status.
+         * @description Retrieve current processing or review status for a document.
          */
-        get: operations["get_document_status_api_v1_documents__document_uid__status_get"];
+        get: operations["get_document_status_api_v1_documents__uid__status_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -384,7 +484,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/documents/{document_uid}": {
+    "/api/v1/documents/{uid}/pages/{n}/image": {
         parameters: {
             query?: never;
             header?: never;
@@ -392,10 +492,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Document Compliance Detail
-         * @description Retrieve complete compliance record and explainability details.
+         * Get Document Page Image
+         * @description Return rendered page image (PNG).
          */
-        get: operations["get_document_compliance_detail_api_v1_documents__document_uid__get"];
+        get: operations["get_document_page_image_api_v1_documents__uid__pages__n__image_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -404,7 +504,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/documents/{document_uid}/audit": {
+    "/api/v1/audit/{uid}": {
         parameters: {
             query?: never;
             header?: never;
@@ -412,52 +512,12 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Document Audit Trail
-         * @description Retrieve full audit event timeline for a document.
+         * Get Audit By Uid
+         * @description Audit report endpoint alias under /api/v1.
          */
-        get: operations["get_document_audit_trail_api_v1_documents__document_uid__audit_get"];
+        get: operations["get_audit_by_uid_api_v1_audit__uid__get"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/documents/{document_uid}/pages/{page_num}/image": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Page Image
-         * @description Render and serve an authenticated page as a PNG image, with optional thumbnail resizing.
-         */
-        get: operations["get_page_image_api_v1_documents__document_uid__pages__page_num__image_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/documents/{document_uid}/pii/reveal": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Reveal Pii Entity
-         * @description Record an audit trail event for unmasking a PII entity without logging the secret value.
-         */
-        post: operations["reveal_pii_entity_api_v1_documents__document_uid__pii_reveal_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -474,50 +534,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Preview Reprocess Query
-         * @description Dry-run preview: calculates matched documents and flags human-verified field conflicts.
+         * Preview Reprocess
+         * @description Dry-run preview of reprocess query matches without enqueuing.
          */
-        post: operations["preview_reprocess_query_api_v1_reprocess_preview_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/reprocess/jobs/{job_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Reprocess Job Status
-         * @description Retrieve execution status for a reprocess job.
-         */
-        get: operations["get_reprocess_job_status_api_v1_reprocess_jobs__job_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/reprocess": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Execute Reprocess
-         * @description Execute reprocessing on matched documents while strictly preserving human-verified fields.
-         */
-        post: operations["execute_reprocess_api_v1_reprocess_post"];
+        post: operations["preview_reprocess_api_v1_reprocess_preview_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -533,7 +553,7 @@ export interface paths {
         };
         /**
          * Get Dashboard Metrics
-         * @description Retrieve operational metrics computed from the database and pipeline telemetry.
+         * @description Retrieve dashboard operational KPIs and stage latencies.
          */
         get: operations["get_dashboard_metrics_api_v1_dashboard_metrics_get"];
         put?: never;
@@ -553,15 +573,11 @@ export interface paths {
         };
         /**
          * Get Admin Config
-         * @description Retrieve current class thresholds, floor constraints, and routing policy.
+         * @description Retrieve active pipeline and classifier thresholds.
          */
         get: operations["get_admin_config_api_v1_admin_config_get"];
         put?: never;
-        /**
-         * Update Admin Config
-         * @description Update class thresholds with strict server-side validation against compliance floors.
-         */
-        post: operations["update_admin_config_api_v1_admin_config_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -576,10 +592,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Config History
-         * @description Retrieve historical log of configuration modifications from database.
+         * Get Admin Config History
+         * @description Retrieve history of pipeline configuration changes.
          */
-        get: operations["get_config_history_api_v1_admin_config_history_get"];
+        get: operations["get_admin_config_history_api_v1_admin_config_history_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -592,93 +608,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /**
-         * AdminConfigResponse
-         * @description Current threshold settings, floor limits, and PII sensitivity mapping.
-         */
-        AdminConfigResponse: {
-            /** Classes */
-            classes: {
-                [key: string]: components["schemas"]["ClassThresholdConfig"];
-            };
-            /** Routing Rules */
-            routing_rules: {
-                [key: string]: string;
-            };
-            /** Pii Policy */
-            pii_policy: {
-                [key: string]: unknown;
-            };
-            /**
-             * High Risk Floor
-             * @default 0.92
-             */
-            high_risk_floor: number;
-            /**
-             * Low Risk Floor
-             * @default 0.85
-             */
-            low_risk_floor: number;
-        };
-        /**
-         * AdminConfigUpdateRequest
-         * @description Proposed updates to class thresholds with floor validation.
-         */
-        AdminConfigUpdateRequest: {
-            /** Updated By */
-            updated_by: string;
-            /** Class Thresholds */
-            class_thresholds: {
-                [key: string]: number;
-            };
-            /** Pii Policy */
-            pii_policy?: {
-                [key: string]: unknown;
-            } | null;
-        };
-        /**
-         * AdminConfigUpdateResponse
-         * @description Result of configuration change application.
-         */
-        AdminConfigUpdateResponse: {
-            /** Success */
-            success: boolean;
-            /** Message */
-            message: string;
-            effective_config: components["schemas"]["AdminConfigResponse"];
-        };
-        /**
-         * AuditEventItem
-         * @description Individual audit event in the document history timeline.
-         */
-        AuditEventItem: {
-            /** Event Id */
-            event_id: string;
-            /** Document Uid */
-            document_uid: string;
-            /** Event Type */
-            event_type: string;
-            /** Stage Name */
-            stage_name?: string | null;
-            /** Status */
-            status: string;
-            /** Payload */
-            payload?: {
-                [key: string]: unknown;
-            };
-            /** Created At */
-            created_at?: string | null;
-        };
-        /**
-         * AuditTrailResponse
-         * @description Complete chronological audit trail for a document.
-         */
-        AuditTrailResponse: {
-            /** Document Uid */
-            document_uid: string;
-            /** Events */
-            events: components["schemas"]["AuditEventItem"][];
-        };
         /** Body_ingest_bulk_files_ingest_bulk_post */
         Body_ingest_bulk_files_ingest_bulk_post: {
             /** Files */
@@ -689,175 +618,12 @@ export interface components {
             /** File */
             file: string;
         };
-        /**
-         * ClassThresholdConfig
-         * @description Configuration and floor constraints for a single document class.
-         */
-        ClassThresholdConfig: {
-            /** Class Name */
-            class_name: string;
-            /** Risk */
-            risk: string;
-            /** Current Threshold */
-            current_threshold: number;
-            /** Default Threshold */
-            default_threshold: number;
-            /** Floor Threshold */
-            floor_threshold: number;
-            /** Retention Class */
-            retention_class: string;
-            /** Acl */
-            acl: string;
-            /** Target Workflow */
-            target_workflow: string;
-        };
-        /**
-         * ConfigHistoryItem
-         * @description Audit entry recording historical configuration changes.
-         */
-        ConfigHistoryItem: {
-            /** Change Id */
-            change_id: string;
-            /** Updated By */
-            updated_by: string;
-            /**
-             * Timestamp
-             * Format: date-time
-             */
-            timestamp: string;
-            /** Changes */
-            changes: {
-                [key: string]: unknown;
-            };
-        };
-        /**
-         * ConfigHistoryResponse
-         * @description Audit history of configuration adjustments.
-         */
-        ConfigHistoryResponse: {
-            /** History */
-            history: components["schemas"]["ConfigHistoryItem"][];
-        };
-        /**
-         * DashboardMetricsResponse
-         * @description High-level operational metrics dashboard.
-         */
-        DashboardMetricsResponse: {
-            /** Has Data */
-            has_data: boolean;
-            /** Total Ingested */
-            total_ingested: number;
-            /** Queue Depth */
-            queue_depth: number;
-            /** Review Queue Size */
-            review_queue_size: number;
-            /** Stp Rate */
-            stp_rate?: number | null;
-            /** Error Rate */
-            error_rate?: number | null;
-            /** Stage Latencies Ms */
-            stage_latencies_ms?: {
-                [key: string]: components["schemas"]["StageLatencyMetric"];
-            };
-            /** Per Class Counts */
-            per_class_counts?: {
-                [key: string]: number;
-            };
-            /**
-             * Dead Letter Count
-             * @default 0
-             */
-            dead_letter_count: number;
-        };
-        /**
-         * DocumentComplianceDetailResponse
-         * @description Detailed compliance view showing AIClassification record, retention rules, and ACL.
-         */
-        DocumentComplianceDetailResponse: {
-            /** Uid */
-            uid: string;
-            /** Sha256 */
-            sha256: string;
-            /** File Name */
-            file_name: string;
-            /** File Size */
-            file_size: number;
-            /** Doc Type */
-            doc_type: string;
-            /** Confidence */
-            confidence: number;
-            /** Retention Class */
-            retention_class?: string | null;
-            /** Acl */
-            acl?: string | null;
-            /** Decision Rule */
-            decision_rule?: string | null;
-            /** Decision Reason */
-            decision_reason?: string | null;
-            /** Target Workflow */
-            target_workflow?: string | null;
-            /** Review Status */
-            review_status: string;
-            /** Classifier Model */
-            classifier_model?: string | null;
-            /** Classifier Version */
-            classifier_version?: string | null;
-            /** Ocr Engine */
-            ocr_engine?: string | null;
-            /** Ocr Version */
-            ocr_version?: string | null;
-            /** Pii Detected */
-            pii_detected: boolean;
-            /** Pii Entities */
-            pii_entities?: {
-                [key: string]: unknown;
-            }[];
-            /** Pii Types */
-            pii_types?: string[];
-            /** Extracted Fields */
-            extracted_fields?: {
-                [key: string]: unknown;
-            };
-            /** Human Verified Fields */
-            human_verified_fields?: {
-                [key: string]: unknown;
-            };
-            /** Field Confidences */
-            field_confidences?: {
-                [key: string]: number;
-            };
-            /** Created At */
-            created_at?: string | null;
-            /** Updated At */
-            updated_at?: string | null;
-        };
-        /**
-         * DocumentListResponse
-         * @description Paginated list of documents with metadata filters.
-         */
-        DocumentListResponse: {
-            /** Items */
-            items: components["schemas"]["DocumentSummaryItem"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Page Size */
-            page_size: number;
-            /** Total Pages */
-            total_pages: number;
-        };
-        /**
-         * DocumentStatusResponse
-         * @description Lightweight document status polling payload.
-         */
+        /** DocumentStatusResponse */
         DocumentStatusResponse: {
             /** Uid */
             uid: string;
-            /** File Name */
-            file_name: string;
-            /** Review Status */
-            review_status: string;
+            /** Status */
+            status: string;
             /** Doc Type */
             doc_type: string;
             /** Confidence */
@@ -866,42 +632,6 @@ export interface components {
             is_link: boolean;
             /** Linked To Uid */
             linked_to_uid?: string | null;
-            /** Quarantine Reason */
-            quarantine_reason?: string | null;
-            /** Created At */
-            created_at?: string | null;
-        };
-        /**
-         * DocumentSummaryItem
-         * @description Summary item for documents list and search results.
-         */
-        DocumentSummaryItem: {
-            /** Uid */
-            uid: string;
-            /** File Name */
-            file_name: string;
-            /** File Size */
-            file_size: number;
-            /** Mime Type */
-            mime_type: string;
-            /** Doc Type */
-            doc_type: string;
-            /** Confidence */
-            confidence: number;
-            /** Review Status */
-            review_status: string;
-            /** Pii Detected */
-            pii_detected: boolean;
-            /** Pii Types */
-            pii_types?: string[];
-            /** Classifier Version */
-            classifier_version: string;
-            /** Is Link */
-            is_link: boolean;
-            /** Linked To Uid */
-            linked_to_uid?: string | null;
-            /** Quarantine Reason */
-            quarantine_reason?: string | null;
             /** Created At */
             created_at?: string | null;
         };
@@ -927,132 +657,6 @@ export interface components {
             queue: string;
             /** Message */
             message: string;
-        };
-        /**
-         * OCRWordBox
-         * @description Bounding box coordinates for an OCR detected word or token.
-         */
-        OCRWordBox: {
-            /** Text */
-            text: string;
-            /** X0 */
-            x0: number;
-            /** Y0 */
-            y0: number;
-            /** X1 */
-            x1: number;
-            /** Y1 */
-            y1: number;
-            /**
-             * Page Num
-             * @default 1
-             */
-            page_num: number;
-        };
-        /**
-         * PIIRevealRequest
-         * @description Audit request to reveal a masked PII entity.
-         */
-        PIIRevealRequest: {
-            /** Entity Type */
-            entity_type: string;
-            /** Position */
-            position?: {
-                [key: string]: unknown;
-            } | null;
-        };
-        /**
-         * PIIRevealResponse
-         * @description Audit confirmation of PII reveal.
-         */
-        PIIRevealResponse: {
-            /** Success */
-            success: boolean;
-            /** Event Id */
-            event_id: string;
-            /** Entity Type */
-            entity_type: string;
-            /** Message */
-            message: string;
-        };
-        /**
-         * ReprocessExecutionRequest
-         * @description Execution request to reprocess documents matching criteria.
-         */
-        ReprocessExecutionRequest: {
-            /** Query */
-            query?: string | null;
-            /** Target Types */
-            target_types?: string[] | null;
-            /** Min Confidence */
-            min_confidence?: number | null;
-            /** Classifier Version Filter */
-            classifier_version_filter?: string | null;
-            /**
-             * Dry Run
-             * @default false
-             */
-            dry_run: boolean;
-        };
-        /**
-         * ReprocessExecutionResponse
-         * @description Response from executing a reprocess run.
-         */
-        ReprocessExecutionResponse: {
-            /** Job Id */
-            job_id: string;
-            /** Status */
-            status: string;
-            /** Matched Count */
-            matched_count: number;
-            /** Reprocessed Count */
-            reprocessed_count: number;
-            /** Conflicts Preserved Count */
-            conflicts_preserved_count: number;
-        };
-        /**
-         * ReprocessJobStatusResponse
-         * @description Progress status of an active or completed reprocess job.
-         */
-        ReprocessJobStatusResponse: {
-            /** Job Id */
-            job_id: string;
-            /** Status */
-            status: string;
-            /** Matched Count */
-            matched_count: number;
-            /** Processed Count */
-            processed_count: number;
-            /** Skipped Count */
-            skipped_count: number;
-            /** Error Count */
-            error_count: number;
-        };
-        /**
-         * ReprocessPreviewRequest
-         * @description Criteria to preview documents targeted for reprocessing.
-         */
-        ReprocessPreviewRequest: {
-            /** Query */
-            query?: string | null;
-            /** Classifier Version Filter */
-            classifier_version_filter?: string | null;
-            /** Min Confidence */
-            min_confidence?: number | null;
-            /** Target Types */
-            target_types?: string[] | null;
-        };
-        /**
-         * ReprocessPreviewResponse
-         * @description Dry-run preview metrics for a proposed reprocess job.
-         */
-        ReprocessPreviewResponse: {
-            /** Matched Count */
-            matched_count: number;
-            /** Human Verified Conflict Count */
-            human_verified_conflict_count: number;
-            /** Sample Documents */
-            sample_documents: components["schemas"]["ReprocessSampleItem"][];
         };
         /**
          * ReprocessRequest
@@ -1089,277 +693,86 @@ export interface components {
             /** Job Id */
             job_id: string;
         };
-        /**
-         * ReprocessSampleItem
-         * @description Sample document matching reprocess criteria.
-         */
-        ReprocessSampleItem: {
-            /** Uid */
-            uid: string;
-            /** File Name */
-            file_name: string;
-            /** Current Doc Type */
-            current_doc_type: string;
-            /** Current Confidence */
-            current_confidence: number;
-            /** Classifier Version */
-            classifier_version: string;
-            /** Has Human Verified Fields */
-            has_human_verified_fields: boolean;
-            /** Human Verified Field Names */
-            human_verified_field_names?: string[];
-        };
-        /**
-         * ReviewActionRequest
-         * @description Review action payload submitted by reviewer.
-         */
-        ReviewActionRequest: {
-            /** Reviewer Id */
-            reviewer_id: string;
-            /**
-             * Action
-             * @description CONFIRM, CORRECT, or REJECT
-             */
-            action: string;
-            /** Corrected Type */
-            corrected_type?: string | null;
-            /** Corrected Fields */
-            corrected_fields?: {
-                [key: string]: unknown;
-            } | null;
-            /** Review Notes */
-            review_notes?: string | null;
-        };
-        /**
-         * ReviewActionResponse
-         * @description Result of human review decision.
-         */
-        ReviewActionResponse: {
-            /** Success */
-            success: boolean;
-            /** Document Uid */
-            document_uid: string;
-            /** Review Status */
-            review_status: string;
-            /** Doc Type */
-            doc_type: string;
-            /** Message */
-            message: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at?: string;
-        };
-        /**
-         * ReviewDetailResponse
-         * @description Full review detail payload with page image, OCR text, and field confidences.
-         */
-        ReviewDetailResponse: {
-            /** Document Uid */
-            document_uid: string;
-            /** Task Id */
-            task_id: string;
-            /** File Name */
-            file_name: string;
-            /** Predicted Type */
-            predicted_type: string;
-            /** Confidence */
-            confidence: number;
-            /** Model Name */
-            model_name: string;
-            /** Model Version */
-            model_version: string;
-            /** Ocr Engine */
-            ocr_engine: string;
-            /** Ocr Version */
-            ocr_version: string;
-            /** Decision Reason */
-            decision_reason: string;
-            /** Review Status */
-            review_status: string;
-            /** Assigned Reviewer */
-            assigned_reviewer?: string | null;
-            /** Extracted Fields */
-            extracted_fields?: {
-                [key: string]: unknown;
-            };
-            /** Human Verified Fields */
-            human_verified_fields?: {
-                [key: string]: unknown;
-            };
-            /** Field Confidences */
-            field_confidences?: {
-                [key: string]: number;
-            };
-            /** Pii Entities */
-            pii_entities?: {
-                [key: string]: unknown;
-            }[];
-            /**
-             * Ocr Text
-             * @default
-             */
-            ocr_text: string;
-            /** Ocr Words */
-            ocr_words?: components["schemas"]["OCRWordBox"][];
-            /**
-             * Page Count
-             * @default 1
-             */
-            page_count: number;
-            /**
-             * Page Image Url
-             * @default
-             */
-            page_image_url: string;
-            /** Created At */
-            created_at?: string | null;
-        };
-        /**
-         * ReviewQueueItem
-         * @description Item displayed on the human review queue table.
-         */
-        ReviewQueueItem: {
-            /** Task Id */
-            task_id: string;
-            /** Document Uid */
-            document_uid: string;
-            /** File Name */
-            file_name: string;
-            /** Predicted Type */
-            predicted_type: string;
-            /** Confidence */
-            confidence: number;
-            /**
-             * Risk Level
-             * @description HIGH or LOW risk tier
-             */
-            risk_level: string;
-            /** Review Reason */
-            review_reason: string;
-            /**
-             * Pii Sensitivity
-             * @description HIGH, MEDIUM, LOW, or NONE
-             */
-            pii_sensitivity: string;
-            /** Age Seconds */
-            age_seconds: number;
-            /** Created At */
-            created_at?: string | null;
-            /** Status */
-            status: string;
-            /** Thumbnail Url */
-            thumbnail_url?: string | null;
-        };
-        /**
-         * ReviewQueueResponse
-         * @description Paginated review queue response.
-         */
-        ReviewQueueResponse: {
-            /** Items */
-            items: components["schemas"]["ReviewQueueItem"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Page Size */
-            page_size: number;
-            /** Total Pages */
-            total_pages: number;
-        };
-        /**
-         * StageLatencyMetric
-         * @description Latency metrics for a specific pipeline stage.
-         */
-        StageLatencyMetric: {
-            /** Stage */
-            stage: string;
-            /** Count */
-            count: number;
-            /** P50 Ms */
-            p50_ms: number;
-            /** P95 Ms */
-            p95_ms: number;
-        };
-        /**
-         * SystemInfoResponse
-         * @description System metadata and operational mode indication.
-         */
+        /** SystemInfoResponse */
         SystemInfoResponse: {
             /**
              * Mode
-             * @description Operational mode: LOCAL MODE or REAL SERVICES
+             * @default LOCAL MODE
              */
             mode: string;
             /**
              * Version
-             * @description Pipeline application version
+             * @default 1.0.0
              */
             version: string;
             /**
              * Environment
-             * @description Deployment environment name
+             * @default development
              */
             environment: string;
             /**
-             * Storage Backend
-             * @description Storage adapter: local or minio
+             * Max Upload Size Bytes
+             * @default 26214400
              */
-            storage_backend: string;
+            max_upload_size_bytes: number;
             /**
-             * Queue Backend
-             * @description Queue adapter: memory or redis
+             * Max Upload Size Mb
+             * @default 25
              */
-            queue_backend: string;
+            max_upload_size_mb: number;
             /**
-             * Search Backend
-             * @description Search adapter: memory or opensearch
+             * Allowed File Types
+             * @default [
+             *       "application/pdf",
+             *       "image/png",
+             *       "image/jpeg",
+             *       "image/tiff",
+             *       "message/rfc822",
+             *       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+             *     ]
              */
-            search_backend: string;
+            allowed_file_types: string[];
             /**
-             * Ocr Engine
-             * @description Configured OCR engine
+             * Allowed Extensions
+             * @default [
+             *       ".pdf",
+             *       ".png",
+             *       ".jpg",
+             *       ".jpeg",
+             *       ".tiff",
+             *       ".eml",
+             *       ".docx"
+             *     ]
              */
-            ocr_engine: string;
-            /**
-             * Classifier Version
-             * @description Active document classifier model version
-             */
-            classifier_version: string;
-            /**
-             * High Risk Floor
-             * @description Immutable threshold floor for high-risk classes
-             * @default 0.92
-             */
-            high_risk_floor: number;
-            /**
-             * Low Risk Floor
-             * @description Immutable threshold floor for low-risk classes
-             * @default 0.85
-             */
-            low_risk_floor: number;
-            /**
-             * Timestamp
-             * Format: date-time
-             */
-            timestamp?: string;
+            allowed_extensions: string[];
         };
-        /**
-         * UserSessionResponse
-         * @description Stub user session representing role-gated access.
-         */
-        UserSessionResponse: {
-            /** User Id */
-            user_id: string;
-            /** Username */
+        /** UserAuthResponse */
+        UserAuthResponse: {
+            /**
+             * Id
+             * @default user-1
+             */
+            id: string;
+            /**
+             * Username
+             * @default admin
+             */
             username: string;
             /**
              * Role
-             * @description Active role: reviewer, admin, compliance, or viewer
+             * @default admin
              */
             role: string;
-            /** Permissions */
+            /**
+             * Permissions
+             * @default [
+             *       "review",
+             *       "ingest",
+             *       "admin",
+             *       "reprocess",
+             *       "audit"
+             *     ]
+             */
             permissions: string[];
         };
         /** ValidationError */
@@ -1572,6 +985,94 @@ export interface operations {
             };
         };
     };
+    get_review_tasks_json_review_api_tasks_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    get_review_task_detail_json_review_api_task__document_uid__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    process_review_action_json_review_api_task__document_uid__action_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                document_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     reprocess_documents_by_query_reprocess_post: {
         parameters: {
             query?: never;
@@ -1696,13 +1197,65 @@ export interface operations {
             };
         };
     };
+    get_dashboard_stats_api_stats_dashboard_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    list_documents_api_documents_get: {
+        parameters: {
+            query?: {
+                doc_type?: string | null;
+                review_status?: string | null;
+                search?: string | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_system_info_api_v1_system_info_get: {
         parameters: {
             query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -1717,23 +1270,14 @@ export interface operations {
                     "application/json": components["schemas"]["SystemInfoResponse"];
                 };
             };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
         };
     };
-    get_auth_me_api_v1_auth_me_get: {
+    get_current_user_api_v1_auth_me_get: {
         parameters: {
             query?: never;
             header?: {
-                "X-User-Role"?: string | null;
                 authorization?: string | null;
+                "x-user-role"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -1746,7 +1290,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserSessionResponse"];
+                    "application/json": components["schemas"]["UserAuthResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1762,18 +1306,8 @@ export interface operations {
     };
     get_review_queue_api_v1_review_queue_get: {
         parameters: {
-            query?: {
-                page?: number;
-                page_size?: number;
-                sort_by?: string;
-                doc_type?: string | null;
-                risk_level?: string | null;
-                pii_sensitivity?: string | null;
-            };
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
+            query?: never;
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -1785,61 +1319,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReviewQueueResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": unknown;
                 };
             };
         };
     };
-    get_review_detail_api_v1_review__document_uid__get: {
+    submit_review_action_api_v1_review__document_uid__action_post: {
         parameters: {
             query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
-            path: {
-                document_uid: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReviewDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    process_review_action_api_v1_review__document_uid__action_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
+            header?: never;
             path: {
                 document_uid: string;
             };
@@ -1847,7 +1335,9 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReviewActionRequest"];
+                "application/json": {
+                    [key: string]: unknown;
+                };
             };
         };
         responses: {
@@ -1857,7 +1347,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReviewActionResponse"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1874,20 +1364,13 @@ export interface operations {
     get_documents_list_api_v1_documents_get: {
         parameters: {
             query?: {
-                page?: number;
-                page_size?: number;
-                q?: string | null;
                 doc_type?: string | null;
-                min_confidence?: number | null;
-                max_confidence?: number | null;
-                model_version?: string | null;
                 review_status?: string | null;
-                pii_type?: string | null;
+                search?: string | null;
+                limit?: number;
+                offset?: number;
             };
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -1899,7 +1382,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentListResponse"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1913,120 +1396,12 @@ export interface operations {
             };
         };
     };
-    get_document_status_api_v1_documents__document_uid__status_get: {
+    get_document_by_uid_api_v1_documents__uid__get: {
         parameters: {
             query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
+            header?: never;
             path: {
-                document_uid: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DocumentStatusResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_document_compliance_detail_api_v1_documents__document_uid__get: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
-            path: {
-                document_uid: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DocumentComplianceDetailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_document_audit_trail_api_v1_documents__document_uid__audit_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
-            path: {
-                document_uid: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuditTrailResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_page_image_api_v1_documents__document_uid__pages__page_num__image_get: {
-        parameters: {
-            query?: {
-                width?: number | null;
-            };
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
-            path: {
-                document_uid: string;
-                page_num: number;
+                uid: string;
             };
             cookie?: never;
         };
@@ -2052,89 +1427,12 @@ export interface operations {
             };
         };
     };
-    reveal_pii_entity_api_v1_documents__document_uid__pii_reveal_post: {
+    get_document_status_api_v1_documents__uid__status_get: {
         parameters: {
             query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
+            header?: never;
             path: {
-                document_uid: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PIIRevealRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PIIRevealResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    preview_reprocess_query_api_v1_reprocess_preview_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReprocessPreviewRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReprocessPreviewResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_reprocess_job_status_api_v1_reprocess_jobs__job_id__get: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
-            path: {
-                job_id: string;
+                uid: string;
             };
             cookie?: never;
         };
@@ -2146,7 +1444,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReprocessJobStatusResponse"];
+                    "application/json": components["schemas"]["DocumentStatusResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2160,19 +1458,83 @@ export interface operations {
             };
         };
     };
-    execute_reprocess_api_v1_reprocess_post: {
+    get_document_page_image_api_v1_documents__uid__pages__n__image_get: {
         parameters: {
-            query?: never;
+            query?: {
+                width?: number | null;
+            };
             header?: {
-                "X-User-Role"?: string | null;
                 authorization?: string | null;
             };
+            path: {
+                uid: string;
+                n: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_audit_by_uid_api_v1_audit__uid__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_reprocess_api_v1_reprocess_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ReprocessExecutionRequest"];
+                "application/json": components["schemas"]["ReprocessRequest"];
             };
         };
         responses: {
@@ -2182,7 +1544,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReprocessExecutionResponse"];
+                    "application/json": components["schemas"]["ReprocessResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2199,10 +1561,7 @@ export interface operations {
     get_dashboard_metrics_api_v1_dashboard_metrics_get: {
         parameters: {
             query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -2214,16 +1573,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DashboardMetricsResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": unknown;
                 };
             };
         };
@@ -2232,8 +1582,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                "X-User-Role"?: string | null;
                 authorization?: string | null;
+                "x-user-role"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -2246,7 +1596,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AdminConfigResponse"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -2260,49 +1610,10 @@ export interface operations {
             };
         };
     };
-    update_admin_config_api_v1_admin_config_post: {
+    get_admin_config_history_api_v1_admin_config_history_get: {
         parameters: {
             query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AdminConfigUpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminConfigUpdateResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_config_history_api_v1_admin_config_history_get: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-User-Role"?: string | null;
-                authorization?: string | null;
-            };
+            header?: never;
             path?: never;
             cookie?: never;
         };
@@ -2314,16 +1625,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ConfigHistoryResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": unknown;
                 };
             };
         };

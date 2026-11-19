@@ -297,3 +297,98 @@ def export_verified_training_jsonl(
     """Export human-verified corrections as labeled JSONL training data."""
     lines = [json.dumps(r) for r in _human_verified_training_records]
     return PlainTextResponse(content="\n".join(lines), media_type="application/jsonl")
+
+
+@router.get("/api/tasks")
+def get_review_tasks_json():
+    """Return pending review tasks in JSON for the frontend."""
+    db = get_db_session()
+    try:
+        tasks = (
+            db.query(ReviewTaskModel)
+            .filter(ReviewTaskModel.status == "PENDING")
+            .order_by(ReviewTaskModel.created_at.desc())
+            .all()
+        )
+        result = []
+        for t in tasks:
+            doc = db.query(DocumentModel).filter(DocumentModel.uid == t.document_uid).first()
+            pii_types = json.loads(doc.pii_types_json or "[]") if doc else []
+            pii_detected = doc.pii_detected if doc else False
+            file_name = doc.file_name if doc else "document.pdf"
+            decision_reason = doc.decision_reason if doc else ""
+
+            result.append({
+                "task_id": t.task_id,
+                "document_uid": t.document_uid,
+                "file_name": file_name,
+                "predicted_type": t.predicted_type,
+                "confidence": t.confidence,
+                "pii_detected": pii_detected,
+                "pii_types": pii_types,
+                "decision_reason": decision_reason,
+                "created_at": t.created_at.isoformat() if t.created_at else None,
+                "status": t.status,
+            })
+        return result
+    finally:
+        db.close()
+
+
+@router.get("/api/task/{document_uid}")
+def get_review_task_detail_json(document_uid: str):
+    """Return single review task detail in JSON for the frontend."""
+    db = get_db_session()
+    try:
+        doc = db.query(DocumentModel).filter(DocumentModel.uid == document_uid).first()
+        if not doc:
+            raise HTTPException(status_code=404, detail="Document not found")
+        task = db.query(ReviewTaskModel).filter(ReviewTaskModel.document_uid == document_uid).first()
+
+        extracted_fields = json.loads(doc.extracted_fields_json or "{}")
+        field_confidences = json.loads(doc.field_confidences_json or "{}")
+        pii_types = json.loads(doc.pii_types_json or "[]")
+        pii_entities = json.loads(doc.pii_entities_json or "[]")
+
+        return {
+            "document_uid": doc.uid,
+            "task_id": task.task_id if task else None,
+            "file_name": doc.file_name,
+            "sha256": doc.sha256,
+            "doc_type": doc.doc_type,
+            "confidence": doc.confidence,
+            "review_status": doc.review_status,
+            "retention_class": doc.retention_class,
+            "acl": doc.acl,
+            "decision_reason": doc.decision_reason,
+            "pii_detected": doc.pii_detected,
+            "pii_types": pii_types,
+            "pii_entities": pii_entities,
+            "extracted_fields": extracted_fields,
+            "field_confidences": field_confidences,
+            "evidence_text": task.evidence_text if task else "",
+            "created_at": doc.created_at.isoformat() if doc.created_at else None,
+        }
+    finally:
+        db.close()
+
+
+@router.post("/api/task/{document_uid}/action")
+def process_review_action_json(document_uid: str, payload: Dict[str, Any]):
+    """Execute review action (CONFIRM, CORRECT, REJECT) via JSON payload."""
+    action = payload.get("action", "CONFIRM")
+    reviewer_id = payload.get("reviewer_id", "reviewer-qa")
+    corrected_type = payload.get("corrected_type")
+    review_notes = payload.get("review_notes", "")
+    corrected_fields = payload.get("corrected_fields", {})
+
+    result = apply_review_decision(
+        document_uid=document_uid,
+        action=action,
+        reviewer_id=reviewer_id,
+        corrected_type=corrected_type,
+        review_notes=review_notes,
+        corrected_fields=corrected_fields,
+    )
+    return result
+
