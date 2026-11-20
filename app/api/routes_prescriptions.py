@@ -8,8 +8,9 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, Response, UploadFile, status
 from app.adapters.storage import get_storage_adapter
-from app.adapters.virus import MockVirusScanner
+from app.adapters.virus import get_virus_scanner
 from app.core.auth import get_current_user
+from app.core.settings import get_app_settings
 from app.models.api_schemas import UserSessionResponse
 from app.models.db import (
     AuditEventModel,
@@ -120,7 +121,7 @@ async def upload_prescription(
         )
 
     # Virus scan verification
-    scanner = MockVirusScanner()
+    scanner = get_virus_scanner()
     is_clean, virus_name = scanner.scan(file_bytes)
     if not is_clean:
         raise HTTPException(
@@ -273,9 +274,7 @@ def get_prescription_image(
                     file_bytes = f.read()
 
         if not file_bytes:
-            # 1x1 transparent PNG fallback if file is stubbed
-            png_1x1 = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc`\x00\x00\x00\x02\x00\x01H\xaf\xa4q\x00\x00\x00\x00IEND\xaeB`\x82"
-            return Response(content=png_1x1, media_type="image/png")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prescription file not found.")
 
         if rx.file_key.endswith(".pdf"):
             import fitz

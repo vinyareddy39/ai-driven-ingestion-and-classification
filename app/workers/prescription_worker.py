@@ -13,7 +13,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from app.adapters.ocr import HybridOCREngine
+from app.adapters.ocr import get_ocr_engine
 from app.adapters.pii import PresidioPIIDetector
 from app.adapters.storage import get_storage_adapter
 from app.models.db import (
@@ -68,7 +68,7 @@ def process_prescription_job(prescription_id: str) -> bool:
 
         # Run OCR
         file_ext = rx.file_key.split(".")[-1].lower() if "." in rx.file_key else "pdf"
-        ocr_engine = HybridOCREngine()
+        ocr_engine = get_ocr_engine()
         try:
             ocr_result = ocr_engine.extract_text(file_bytes, file_ext)
             raw_text = ocr_result.full_text

@@ -349,19 +349,6 @@ def stage_decision_gate(
             review_status="pending_review",
         )
 
-    # Mandatory rule: field extraction failure or missing fields routes to review!
-    if not extraction_valid:
-        return DecisionResult(
-            action="ROUTE_TO_REVIEW",
-            predicted_type=predicted_type,
-            confidence=confidence,
-            retention_class=class_cfg.retention_class,
-            acl="RESTRICTED_REVIEW",
-            target_workflow="EXTRACTION_FAILURE_REVIEW",
-            reason=f"Field extraction incomplete or failed schema validation for {predicted_type}",
-            review_status="pending_review",
-        )
-
     # Check for classifier / PII conflict:
     # "If classifier and PII detector disagree, take the stricter outcome."
     has_high_pii = pii_info.get("has_high_sensitivity", False)
@@ -374,6 +361,19 @@ def stage_decision_gate(
             acl="RESTRICTED_REVIEW",  # Stricter ACL on conflict
             target_workflow="HIGH_SENSITIVITY_REVIEW",
             reason="Classifier/PII Conflict: High-sensitivity PII found in low-risk class; enforcing stricter review path",
+            review_status="pending_review",
+        )
+
+    # Mandatory rule: field extraction failure or missing fields routes to review!
+    if not extraction_valid:
+        return DecisionResult(
+            action="ROUTE_TO_REVIEW",
+            predicted_type=predicted_type,
+            confidence=confidence,
+            retention_class=class_cfg.retention_class,
+            acl="RESTRICTED_REVIEW",
+            target_workflow="EXTRACTION_FAILURE_REVIEW",
+            reason=f"Field extraction incomplete or failed schema validation for {predicted_type}",
             review_status="pending_review",
         )
 

@@ -72,17 +72,11 @@ def load_dotenv_if_present():
 
 def is_role_header_allowed() -> bool:
     """Check if X-User-Role header bypass is explicitly enabled via environment or .env."""
+    if os.getenv("ENVIRONMENT", "development").lower() in ("production", "prod"):
+        return False
+    if "AUTH_ALLOW_ROLE_HEADER" in os.environ:
+        return os.environ["AUTH_ALLOW_ROLE_HEADER"].lower() in ("true", "1", "yes")
     load_dotenv_if_present()
-    for p in [os.path.join(os.getcwd(), ".env"), os.path.abspath(".env")]:
-        if os.path.exists(p):
-            try:
-                with open(p, "r", encoding="utf-8") as f:
-                    for line in f:
-                        if line.strip().startswith("AUTH_ALLOW_ROLE_HEADER="):
-                            val = line.strip().split("=", 1)[1].strip().strip("'\"").lower()
-                            return val in ("true", "1", "yes")
-            except Exception:
-                pass
     return os.getenv("AUTH_ALLOW_ROLE_HEADER", "false").lower() in ("true", "1", "yes")
 
 
