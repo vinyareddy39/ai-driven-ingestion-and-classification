@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 import csv
+import hashlib
 import io
 import json
 import os
@@ -11,7 +12,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import uuid
 import zipfile
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import StreamingResponse
 import fitz  # PyMuPDF
 from sqlalchemy import desc, asc, func
@@ -25,7 +26,9 @@ from app.models.db import (
     ConfigHistoryModel,
     DocumentModel,
     DownloadModel,
+    MultipartUploadModel,
     NotificationModel,
+    PipelineJobModel,
     ReviewTaskModel,
     StageExecutionModel,
     get_db_session,
@@ -43,6 +46,7 @@ from app.models.api_schemas import (
     BatchListResponse,
     BatchProgressCounts,
     BatchSummaryItem,
+    BatchSummaryResponse,
     ClassThresholdConfig,
     ConfigHistoryItem,
     ConfigHistoryResponse,
@@ -74,6 +78,13 @@ from app.models.api_schemas import (
     ReviewQueueResponse,
     StageLatencyMetric,
     SystemInfoResponse,
+    UploadAbortResponse,
+    UploadCompleteRequest,
+    UploadCompleteResponse,
+    UploadInitRequest,
+    UploadInitResponse,
+    UploadPartETag,
+    UploadPartPresignedUrl,
     UserSessionResponse,
 )
 
@@ -102,15 +113,32 @@ def get_compliance_floors() -> tuple[float, float]:
 @router.get("/system/info", response_model=SystemInfoResponse)
 def get_system_info(current_user: UserSessionResponse = Depends(get_current_user)):
     """Retrieve operational mode and pipeline metadata for the application shell."""
+    from app.adapters.virus import get_virus_scanner, ClamAVScanner
     settings = get_app_settings()
     cfg = get_pipeline_config()
 
     is_real = (
-        settings.STORAGE_BACKEND == "minio"
+        settings.STORAGE_BACKEND in ("minio", "s3")
         and settings.QUEUE_BACKEND == "redis"
         and settings.SEARCH_BACKEND == "opensearch"
     )
     mode = "REAL SERVICES" if is_real else "LOCAL MODE"
+
+    scanner = get_virus_scanner()
+    scanner_name = "clamav" if isinstance(scanner, ClamAVScanner) else "eicar-test-only"
+
+    cls_type = cfg.pipeline.get("classifier_model_type", "tfidf_logistic")
+    cls_ver = cfg.pipeline.get("classifier_model_version", "v1.0")
+
+    engines_dict = {
+        "ocr": settings.OCR_ENGINE,
+        "classifier": f"{cls_type} ({cls_ver})",
+        "pii": "presidio-v2.2 (en)",
+        "database": "postgresql" if "postgres" in (settings.DATABASE_URL or "").lower() else "sqlite",
+        "search": settings.SEARCH_BACKEND if settings.SEARCH_BACKEND != "memory" else "sqlite_fts / memory",
+        "scanner": scanner_name,
+        "reminders": "database-backed scheduler",
+    }
 
     return SystemInfoResponse(
         mode=mode,
@@ -120,7 +148,10 @@ def get_system_info(current_user: UserSessionResponse = Depends(get_current_user
         queue_backend=settings.QUEUE_BACKEND,
         search_backend=settings.SEARCH_BACKEND,
         ocr_engine=settings.OCR_ENGINE,
-        classifier_version=cfg.pipeline.get("classifier_model_version", "v1.0"),
+        classifier_version=cls_ver,
+        virus_scanner=scanner_name,
+        scanner=scanner_name,
+        engines=engines_dict,
         high_risk_floor=get_compliance_floors()[0],
         low_risk_floor=get_compliance_floors()[1],
         max_upload_mb=settings.MAX_UPLOAD_MB,
@@ -757,6 +788,484 @@ def get_batch_detail(
             total_items=total_filtered,
             page=page,
             page_size=page_size,
+        )
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# Direct-to-Storage Multipart Upload Endpoints (Stage 1 & Stage 2)
+# ---------------------------------------------------------------------------
+
+def _is_valid_magic_bytes(header: bytes, ext: str) -> bool:
+    """Validate true magic bytes at start of binary stream."""
+    ext = ext.lower().lstrip(".")
+    if ext == "pdf":
+        return header.startswith(b"%PDF-")
+    elif ext == "png":
+        return header.startswith(b"\x89PNG\r\n\x1a\n")
+    elif ext in ("jpg", "jpeg"):
+        return header.startswith(b"\xff\xd8\xff")
+    elif ext in ("tiff", "tif"):
+        return header.startswith(b"II*\x00") or header.startswith(b"MM\x00*")
+    elif ext == "docx":
+        return header.startswith(b"PK\x03\x04")
+    elif ext == "eml":
+        sample = header[:300].lower()
+        return any(h in sample for h in (b"from:", b"to:", b"subject:", b"received:", b"mime-version:"))
+    return True
+
+
+@router.post("/uploads/init", response_model=UploadInitResponse)
+def init_multipart_upload(
+    req: UploadInitRequest,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Initiate a direct-to-storage presigned multipart upload session."""
+    import math
+    settings = get_app_settings()
+    max_upload_bytes = settings.MAX_UPLOAD_MB * 1024 * 1024
+
+    # 1. Validate file extension / MIME type
+    ext = os.path.splitext(req.file_name)[1].lower()
+    allowed_exts = [".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".eml", ".docx"]
+    if ext not in allowed_exts:
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"Unsupported file extension '{ext}'. Allowed: {', '.join(allowed_exts)}",
+        )
+
+    # 2. Check per-file size limit (MAX_UPLOAD_MB, default 2048)
+    if req.file_size > max_upload_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File size {req.file_size} bytes exceeds maximum allowed limit of {settings.MAX_UPLOAD_MB}MB.",
+        )
+
+    db = get_db_session()
+    try:
+        # 3. If batch_id provided, verify batch exists, check ownership and file count cap (1000)
+        if req.batch_id:
+            batch_rec = db.query(BatchModel).filter(BatchModel.batch_id == req.batch_id).first()
+            first_doc = db.query(DocumentModel).filter(DocumentModel.batch_id == req.batch_id).first()
+            if not batch_rec and not first_doc:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Batch '{req.batch_id}' not found")
+            b_owner = (batch_rec.user_id if batch_rec else None) or (first_doc.user_id if first_doc else None)
+            if b_owner and current_user.role not in ("admin", "reviewer") and b_owner != current_user.user_id:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Batch '{req.batch_id}' not found")
+            existing_count = db.query(DocumentModel).filter(DocumentModel.batch_id == req.batch_id).count()
+            if existing_count >= 1000:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Batch file limit reached (maximum 1,000 files per batch).",
+                )
+
+        # 4. Concurrency backpressure check (Stage 2)
+        active_jobs = db.query(PipelineJobModel).filter(
+            PipelineJobModel.status.in_(["QUEUED", "PROCESSING"])
+        ).count()
+        if active_jobs >= 50:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Pipeline capacity saturated. Backpressure active.",
+                headers={"Retry-After": "30"},
+            )
+
+        # 5. Calculate part size (16 MB to 64 MB)
+        base_part_size = 16 * 1024 * 1024
+        part_size = max(base_part_size, min(64 * 1024 * 1024, math.ceil(req.file_size / 5000)))
+        part_count = max(1, math.ceil(req.file_size / part_size))
+
+        # 6. Storage initialization
+        from app.adapters.storage import get_storage_adapter
+        storage = get_storage_adapter()
+        raw_storage_key = f"raw/{uuid.uuid4().hex}_{req.file_name}"
+
+        storage_upload_id = storage.create_multipart_upload(raw_storage_key, req.mime_type)
+
+        # 7. Generate presigned part URLs
+        parts_list: List[UploadPartPresignedUrl] = []
+        for p_num in range(1, part_count + 1):
+            url = storage.generate_presigned_part_url(
+                key=raw_storage_key,
+                upload_id=storage_upload_id,
+                part_number=p_num,
+                expires_in=3600,
+            )
+            parts_list.append(UploadPartPresignedUrl(part_number=p_num, url=url))
+
+        # 8. Record in DB
+        up_record = MultipartUploadModel(
+            id=storage_upload_id,
+            storage_key=raw_storage_key,
+            file_name=req.file_name,
+            mime_type=req.mime_type,
+            file_size=req.file_size,
+            part_size=part_size,
+            part_count=part_count,
+            owner=current_user.user_id,
+            batch_id=req.batch_id,
+            status="INITIATED",
+            created_at=datetime.now(timezone.utc),
+        )
+        db.add(up_record)
+        db.commit()
+
+        return UploadInitResponse(
+            upload_id=storage_upload_id,
+            key=raw_storage_key,
+            part_size=part_size,
+            part_count=part_count,
+            parts=parts_list,
+            max_upload_mb=settings.MAX_UPLOAD_MB,
+        )
+    finally:
+        db.close()
+
+
+@router.put("/uploads/{upload_id}/parts/{part_number}")
+async def upload_part_local(
+    upload_id: str,
+    part_number: int,
+    request: Request,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Upload a part chunk in local storage mode or test environment."""
+    db = get_db_session()
+    try:
+        up = db.query(MultipartUploadModel).filter(MultipartUploadModel.id == upload_id).first()
+        if not up:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload session not found")
+        if up.owner != current_user.user_id and current_user.role not in ("admin", "reviewer"):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload session not found")
+
+        body_bytes = await request.body()
+        from app.adapters.storage import get_storage_adapter
+        storage = get_storage_adapter()
+        if hasattr(storage, "upload_part_data"):
+            etag = storage.upload_part_data(upload_id, part_number, body_bytes)
+        else:
+            etag = hashlib.md5(body_bytes).hexdigest()
+
+        return Response(content=json.dumps({"etag": etag}), media_type="application/json", headers={"ETag": etag})
+    finally:
+        db.close()
+
+
+@router.post("/uploads/{upload_id}/complete", response_model=UploadCompleteResponse)
+def complete_multipart_upload_endpoint(
+    upload_id: str,
+    req: UploadCompleteRequest,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Finalize multipart upload: verify size, magic bytes, SHA-256, and queue pipeline."""
+    db = get_db_session()
+    try:
+        up = db.query(MultipartUploadModel).filter(MultipartUploadModel.id == upload_id).first()
+        if not up:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload session not found")
+        if up.owner != current_user.user_id and current_user.role not in ("admin", "reviewer"):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload session not found")
+
+        # Idempotency check: if already completed, return existing document
+        if up.status == "COMPLETED" and up.document_uid:
+            doc = db.query(DocumentModel).filter(DocumentModel.uid == up.document_uid).first()
+            if doc:
+                return UploadCompleteResponse(
+                    status="COMPLETED",
+                    document_uid=doc.uid,
+                    file_name=doc.file_name,
+                    file_size=doc.file_size,
+                    sha256=doc.sha256,
+                    batch_id=doc.batch_id,
+                    is_duplicate=doc.is_link or False,
+                )
+
+        from app.adapters.storage import get_storage_adapter
+        storage = get_storage_adapter()
+
+        # 1. Finalize multipart upload in storage
+        parts_dicts = [{"part_number": p.part_number, "etag": p.etag} for p in req.parts]
+        try:
+            storage.complete_multipart_upload(up.storage_key, upload_id, parts_dicts)
+        except Exception as e:
+            logger.error("Failed to complete multipart upload in storage: %s", e)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Storage finalization failed: {str(e)}")
+
+        # 2. Verify stored object size (never trust client)
+        try:
+            real_size = storage.get_object_size(up.storage_key)
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Cannot verify stored object: {str(e)}")
+
+        # 3. Stream object chunk-by-chunk to verify magic bytes and compute real SHA-256
+        hasher = hashlib.sha256()
+        first_chunk = b""
+        for chunk in storage.get_stream(up.storage_key, chunk_size=65536):
+            if not first_chunk:
+                first_chunk = chunk
+            hasher.update(chunk)
+
+        real_sha256 = hasher.hexdigest()
+
+        # Verify magic bytes
+        ext = os.path.splitext(up.file_name)[1].lower()
+        if not _is_valid_magic_bytes(first_chunk, ext):
+            storage.delete(up.storage_key)
+            up.status = "FAILED"
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"File verification failed: signature does not match claimed format '{ext}'.",
+            )
+
+        # 4. Check for virus infection on first chunk
+        from app.adapters.virus import get_virus_scanner
+        scanner = get_virus_scanner()
+        is_clean, virus_name = scanner.scan(first_chunk)
+        if not is_clean:
+            storage.delete(up.storage_key)
+            up.status = "FAILED"
+            db.commit()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Quarantined: malicious content detected ({virus_name}).",
+            )
+
+        # 5. Deduplication check (Stage 2 idempotency)
+        existing_doc = db.query(DocumentModel).filter(DocumentModel.sha256 == real_sha256).first()
+        doc_uid = f"doc-{uuid.uuid4().hex[:12]}"
+        now = datetime.now(timezone.utc)
+
+        if existing_doc:
+            doc = DocumentModel(
+                uid=doc_uid,
+                sha256=real_sha256,
+                file_name=up.file_name,
+                file_size=real_size,
+                mime_type=up.mime_type,
+                storage_path=up.storage_key,
+                doc_type=existing_doc.doc_type,
+                confidence=existing_doc.confidence,
+                retention_class=existing_doc.retention_class,
+                acl=existing_doc.acl,
+                target_workflow=existing_doc.target_workflow,
+                review_status="duplicate",
+                is_link=True,
+                linked_to_uid=existing_doc.uid,
+                batch_id=up.batch_id,
+                user_id=up.owner,
+                extracted_fields_json=existing_doc.extracted_fields_json,
+                field_confidences_json=existing_doc.field_confidences_json,
+                pii_detected=existing_doc.pii_detected,
+                pii_types_json=existing_doc.pii_types_json,
+                ocr_engine=existing_doc.ocr_engine,
+                ocr_version=existing_doc.ocr_version,
+                classifier_model=existing_doc.classifier_model,
+                classifier_version=existing_doc.classifier_version,
+                decision_reason="Duplicate document linked by SHA-256 hash match",
+                created_at=now,
+            )
+            db.add(doc)
+            up.status = "COMPLETED"
+            up.sha256 = real_sha256
+            up.document_uid = doc_uid
+            up.completed_at = now
+            db.commit()
+
+            return UploadCompleteResponse(
+                status="COMPLETED",
+                document_uid=doc_uid,
+                file_name=up.file_name,
+                file_size=real_size,
+                sha256=real_sha256,
+                batch_id=up.batch_id,
+                is_duplicate=True,
+            )
+
+        # 6. New unique document: enqueue into PipelineJobModel for background worker (Stage 3)
+        doc = DocumentModel(
+            uid=doc_uid,
+            sha256=real_sha256,
+            file_name=up.file_name,
+            file_size=real_size,
+            mime_type=up.mime_type,
+            storage_path=up.storage_key,
+            doc_type="processing",
+            confidence=0.0,
+            retention_class="UNCLASSIFIED",
+            acl="RESTRICTED_REVIEW",
+            target_workflow="INGESTION_PIPELINE",
+            review_status="queued",
+            batch_id=up.batch_id,
+            user_id=up.owner,
+            decision_reason="Queued for pipeline processing",
+            created_at=now,
+        )
+        db.add(doc)
+
+        job_payload = {
+            "uid": doc_uid,
+            "sha256": real_sha256,
+            "file_name": up.file_name,
+            "storage_path": up.storage_key,
+            "batch_id": up.batch_id,
+            "user_id": up.owner,
+            "is_reprocess": False,
+        }
+        job = PipelineJobModel(
+            job_id=f"job-{uuid.uuid4().hex[:12]}",
+            queue_name="live",
+            payload_json=json.dumps(job_payload),
+            status="QUEUED",
+            retry_count=0,
+            created_at=now,
+        )
+        db.add(job)
+
+        up.status = "COMPLETED"
+        up.sha256 = real_sha256
+        up.document_uid = doc_uid
+        up.completed_at = now
+        db.commit()
+
+        return UploadCompleteResponse(
+            status="COMPLETED",
+            document_uid=doc_uid,
+            file_name=up.file_name,
+            file_size=real_size,
+            sha256=real_sha256,
+            batch_id=up.batch_id,
+            is_duplicate=False,
+        )
+    finally:
+        db.close()
+
+
+@router.post("/uploads/{upload_id}/abort", response_model=UploadAbortResponse)
+def abort_multipart_upload_endpoint(
+    upload_id: str,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Abort an in-progress multipart upload and clean up temporary parts."""
+    db = get_db_session()
+    try:
+        up = db.query(MultipartUploadModel).filter(MultipartUploadModel.id == upload_id).first()
+        if not up:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload session not found")
+        if up.owner != current_user.user_id and current_user.role not in ("admin", "reviewer"):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Upload session not found")
+
+        from app.adapters.storage import get_storage_adapter
+        storage = get_storage_adapter()
+        try:
+            storage.abort_multipart_upload(up.storage_key, upload_id)
+        except Exception:
+            pass
+
+        up.status = "ABORTED"
+        db.commit()
+        return UploadAbortResponse(status="ABORTED", upload_id=upload_id)
+    finally:
+        db.close()
+
+
+@router.post("/uploads/cleanup-abandoned")
+def cleanup_abandoned_uploads(
+    max_age_hours: int = Query(default=24, ge=1, le=168),
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Cleanup partial uploads abandoned longer than threshold (default 24h)."""
+    db = get_db_session()
+    try:
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+        abandoned = db.query(MultipartUploadModel).filter(
+            MultipartUploadModel.status == "INITIATED",
+            MultipartUploadModel.created_at < cutoff,
+        ).all()
+
+        from app.adapters.storage import get_storage_adapter
+        storage = get_storage_adapter()
+        cleaned_count = 0
+
+        for up in abandoned:
+            try:
+                storage.abort_multipart_upload(up.storage_key, up.id)
+            except Exception:
+                pass
+            up.status = "EXPIRED"
+            cleaned_count += 1
+
+        db.commit()
+        return {"status": "SUCCESS", "cleaned_count": cleaned_count}
+    finally:
+        db.close()
+
+
+@router.get("/batches/{batch_id}/summary")
+def get_batch_summary_export(
+    batch_id: str,
+    format: str = Query(default="json", pattern="^(json|csv)$"),
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Export batch summary in JSON or CSV format (counts by type, review reasons, failures)."""
+    db = get_db_session()
+    try:
+        batch_rec = db.query(BatchModel).filter(BatchModel.batch_id == batch_id).first()
+        first_doc = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).first()
+        if not batch_rec and not first_doc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found")
+
+        batch_owner = (batch_rec.user_id if batch_rec else None) or (first_doc.user_id if first_doc else None)
+        if batch_owner and current_user.role not in ("admin", "reviewer") and batch_owner != current_user.user_id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found")
+
+        docs = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).all()
+        status_counts: Dict[str, int] = {}
+        type_counts: Dict[str, int] = {}
+        review_reasons: Dict[str, int] = {}
+        failures: List[Dict[str, Any]] = []
+
+        for d in docs:
+            st = d.review_status or "unknown"
+            tp = d.doc_type or "unknown"
+            status_counts[st] = status_counts.get(st, 0) + 1
+            type_counts[tp] = type_counts.get(tp, 0) + 1
+            if d.decision_reason:
+                review_reasons[d.decision_reason] = review_reasons.get(d.decision_reason, 0) + 1
+            if d.review_status == "failed":
+                failures.append({"uid": d.uid, "file_name": d.file_name, "error": d.decision_reason})
+
+        if format == "csv":
+            buf = io.StringIO()
+            writer = csv.writer(buf)
+            writer.writerow(["Section", "Key", "Value"])
+            writer.writerow(["Metadata", "Batch ID", batch_id])
+            writer.writerow(["Metadata", "Total Files", str(len(docs))])
+            for st, cnt in status_counts.items():
+                writer.writerow(["Status", st, str(cnt)])
+            for tp, cnt in type_counts.items():
+                writer.writerow(["Type", tp, str(cnt)])
+            for rsn, cnt in review_reasons.items():
+                writer.writerow(["Review Reason", rsn, str(cnt)])
+            for f in failures:
+                writer.writerow(["Failure", f["file_name"], f["error"]])
+            buf.seek(0)
+            return Response(
+                content=buf.getvalue(),
+                media_type="text/csv",
+                headers={"Content-Disposition": f"attachment; filename=batch_{batch_id}_summary.csv"},
+            )
+
+        return BatchSummaryResponse(
+            batch_id=batch_id,
+            batch_number=batch_rec.number if batch_rec else 1,
+            total_files=len(docs),
+            status_counts=status_counts,
+            type_counts=type_counts,
+            review_reasons=review_reasons,
+            failure_details=failures,
+            completed_at=batch_rec.updated_at if batch_rec else None,
         )
     finally:
         db.close()
