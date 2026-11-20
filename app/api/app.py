@@ -87,6 +87,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(ingest_router)
+    app.include_router(ingest_router, prefix="/api/v1")
     app.include_router(review_router)
     app.include_router(reprocess_router)
     app.include_router(observability_router)
