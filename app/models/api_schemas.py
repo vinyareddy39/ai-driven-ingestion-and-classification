@@ -15,6 +15,9 @@ class SystemInfoResponse(BaseModel):
     search_backend: str = Field(description="Search adapter: memory or opensearch")
     ocr_engine: str = Field(description="Configured OCR engine")
     classifier_version: str = Field(description="Active document classifier model version")
+    virus_scanner: str = Field(default="eicar-test-only", description="Active virus scanner: clamav or eicar-test-only")
+    scanner: str = Field(default="eicar-test-only", description="Active scanner name: clamav or eicar-test-only")
+    engines: Dict[str, str] = Field(default_factory=dict, description="List of every active engine")
     high_risk_floor: float = Field(default=0.92, description="Immutable threshold floor for high-risk classes")
     low_risk_floor: float = Field(default=0.85, description="Immutable threshold floor for low-risk classes")
     max_upload_mb: int = Field(default=200, description="Maximum upload size in MB")
@@ -495,5 +498,73 @@ class NotificationMarkReadResponse(BaseModel):
     """Result of marking notifications as read."""
     success: bool
     marked_count: int
+
+
+# ---------------------------------------------------------------------------
+# Direct-to-Storage Multipart Upload Schemas (Stage 1 & Stage 2)
+# ---------------------------------------------------------------------------
+
+class UploadInitRequest(BaseModel):
+    """Request to initiate a presigned multipart upload session."""
+    file_name: str
+    file_size: int = Field(gt=0, description="File size in bytes")
+    mime_type: str = Field(default="application/pdf", description="MIME content type")
+    batch_id: Optional[str] = Field(default=None, description="Optional batch ID to attach file to")
+
+
+class UploadPartPresignedUrl(BaseModel):
+    """Presigned PUT URL for a specific multipart part."""
+    part_number: int
+    url: str
+
+
+class UploadInitResponse(BaseModel):
+    """Presigned multipart upload plan with part URLs."""
+    upload_id: str
+    key: str
+    part_size: int
+    part_count: int
+    parts: List[UploadPartPresignedUrl]
+    max_upload_mb: int
+
+
+class UploadPartETag(BaseModel):
+    """Part number and ETag returned after uploading part to storage."""
+    part_number: int
+    etag: str
+
+
+class UploadCompleteRequest(BaseModel):
+    """Finalization payload containing ETags of all uploaded parts."""
+    parts: List[UploadPartETag]
+
+
+class UploadCompleteResponse(BaseModel):
+    """Result of finalizing a direct-to-storage multipart upload."""
+    status: str
+    document_uid: str
+    file_name: str
+    file_size: int
+    sha256: str
+    batch_id: Optional[str] = None
+    is_duplicate: bool = False
+
+
+class UploadAbortResponse(BaseModel):
+    """Result of aborting an in-progress multipart upload."""
+    status: str
+    upload_id: str
+
+
+class BatchSummaryResponse(BaseModel):
+    """Detailed analytical summary of a batch (Stage 2)."""
+    batch_id: str
+    batch_number: int
+    total_files: int
+    status_counts: Dict[str, int]
+    type_counts: Dict[str, int]
+    review_reasons: Dict[str, int]
+    failure_details: List[Dict[str, Any]]
+    completed_at: Optional[datetime] = None
 
 

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import json
 from typing import Any, Dict, Optional
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     Column,
     DateTime,
@@ -274,6 +275,7 @@ class PipelineJobModel(Base):
     status = Column(String(32), default="QUEUED", index=True, nullable=False)  # QUEUED, PROCESSING, COMPLETED, FAILED
     retry_count = Column(Integer, default=0, nullable=False)
     error_message = Column(Text, nullable=True)
+    claimed_at = Column(DateTime, nullable=True, index=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
@@ -319,6 +321,26 @@ class DownloadModel(Base):
     completed_at = Column(DateTime, nullable=True)
     last_downloaded_at = Column(DateTime, nullable=True)
     error_message = Column(String(500), nullable=True)
+
+
+class MultipartUploadModel(Base):
+    """Multipart file upload sessions for large files (direct-to-storage / R2 / S3)."""
+    __tablename__ = "multipart_uploads"
+
+    id = Column(String(64), primary_key=True)  # upload_id or uuid
+    storage_key = Column(String(255), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    mime_type = Column(String(100), nullable=False)
+    file_size = Column(BigInteger, nullable=False)
+    part_size = Column(Integer, nullable=False)
+    part_count = Column(Integer, nullable=False)
+    owner = Column(String(100), nullable=False, index=True)
+    batch_id = Column(String(64), nullable=True, index=True)
+    status = Column(String(32), default="INITIATED", index=True)  # INITIATED, COMPLETED, ABORTED, EXPIRED
+    sha256 = Column(String(64), nullable=True, index=True)
+    document_uid = Column(String(64), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    completed_at = Column(DateTime, nullable=True)
 
 
 
