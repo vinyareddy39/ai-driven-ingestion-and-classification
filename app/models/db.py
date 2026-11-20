@@ -304,6 +304,23 @@ class NotificationModel(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
+class DownloadModel(Base):
+    """User requested batch export archive record and download tracker."""
+    __tablename__ = "downloads"
+
+    id = Column(String(64), primary_key=True)
+    owner = Column(String(36), index=True, nullable=False)
+    batch_id = Column(String(64), index=True, nullable=False)
+    status = Column(String(32), default="PREPARING", index=True, nullable=False)  # PREPARING, READY, DOWNLOADED, FAILED, EXPIRED
+    file_count = Column(Integer, default=0, nullable=False)
+    size_bytes = Column(Integer, default=0, nullable=False)
+    file_path = Column(String(500), nullable=True)
+    requested_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    completed_at = Column(DateTime, nullable=True)
+    last_downloaded_at = Column(DateTime, nullable=True)
+    error_message = Column(String(500), nullable=True)
+
+
 
 # Database Engine and Session Factory
 _engine = None

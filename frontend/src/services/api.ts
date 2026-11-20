@@ -266,4 +266,27 @@ export const api = {
     });
     return res.json();
   },
+
+  async listDownloads(params?: { page?: number; page_size?: number }): Promise<any> {
+    const query = new URLSearchParams();
+    if (params?.page) query.append('page', params.page.toString());
+    if (params?.page_size) query.append('page_size', params.page_size.toString());
+    const res = await fetch(`${BASE_URL}/api/v1/downloads?${query.toString()}`, {
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error('Failed to fetch downloads');
+    return res.json();
+  },
+
+  async requestBatchDownload(batchId: string): Promise<any> {
+    const res = await fetch(`${BASE_URL}/api/v1/batches/${encodeURIComponent(batchId)}/downloads`, {
+      method: 'POST',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to request download' }));
+      throw new Error(err.detail || 'Failed to request download');
+    }
+    return res.json();
+  },
 };

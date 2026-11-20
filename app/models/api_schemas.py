@@ -412,6 +412,7 @@ class BatchSummaryItem(BaseModel):
     counts_by_status: Dict[str, int] = Field(default_factory=dict)
     needs_check_count: int = 0
     is_finished: bool = False
+    last_downloaded_at: Optional[datetime] = None
 
 
 class BatchListResponse(BaseModel):
@@ -420,6 +421,54 @@ class BatchListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+# ---------------------------------------------------------------------------
+# Download Archive Schemas
+# ---------------------------------------------------------------------------
+
+class DownloadCreateResponse(BaseModel):
+    """Created download archive job response."""
+    id: str
+    batch_id: str
+    status: str  # PREPARING, READY, DOWNLOADED, FAILED, EXPIRED
+    file_count: int
+    size_bytes: int
+    requested_at: datetime
+    completed_at: Optional[datetime] = None
+    last_downloaded_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    download_url: str
+
+
+class DownloadItem(BaseModel):
+    """Single download record in user history."""
+    id: str
+    batch_id: str
+    batch_number: Optional[int] = None
+    batch_name: Optional[str] = None
+    status: str  # PREPARING, READY, DOWNLOADED, FAILED, EXPIRED
+    file_count: int
+    size_bytes: int
+    requested_at: datetime
+    completed_at: Optional[datetime] = None
+    last_downloaded_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    download_url: str
+
+
+class DownloadListResponse(BaseModel):
+    """Paginated list of download records for current user."""
+    items: List[DownloadItem]
+    total: int
+    page: int
+    page_size: int
+
+
+class DownloadCleanupResponse(BaseModel):
+    """Response of expired downloads cleanup job."""
+    expired_count: int
+
 
 
 # ---------------------------------------------------------------------------

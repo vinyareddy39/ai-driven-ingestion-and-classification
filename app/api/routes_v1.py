@@ -1,17 +1,17 @@
 """REST API v1 endpoints for Document Ingestion Web Frontend."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import csv
 import io
 import json
 import os
 from pathlib import Path
 import tempfile
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 import uuid
 import zipfile
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from fastapi.responses import StreamingResponse
 import fitz  # PyMuPDF
 from sqlalchemy import desc, asc, func
@@ -24,6 +24,7 @@ from app.models.db import (
     BatchModel,
     ConfigHistoryModel,
     DocumentModel,
+    DownloadModel,
     NotificationModel,
     ReviewTaskModel,
     StageExecutionModel,
@@ -50,6 +51,10 @@ from app.models.api_schemas import (
     DocumentListResponse,
     DocumentStatusResponse,
     DocumentSummaryItem,
+    DownloadCleanupResponse,
+    DownloadCreateResponse,
+    DownloadItem,
+    DownloadListResponse,
     NotificationItem,
     NotificationListResponse,
     NotificationMarkReadResponse,
@@ -548,6 +553,14 @@ def list_batches(
                 file_count > 0 and (status_counts.get("queued", 0) + status_counts.get("processing", 0) == 0)
             )
 
+            # Lookup latest downloaded timestamp if available
+            last_dl = (
+                db.query(DownloadModel)
+                .filter(DownloadModel.batch_id == b.batch_id, DownloadModel.status == "DOWNLOADED")
+                .order_by(DownloadModel.last_downloaded_at.desc())
+                .first()
+            )
+
             items.append(
                 BatchSummaryItem(
                     batch_id=b.batch_id,
@@ -560,6 +573,7 @@ def list_batches(
                     counts_by_status=plain_status_counts,
                     needs_check_count=plain_status_counts["NEEDS_CHECK"],
                     is_finished=is_finished,
+                    last_downloaded_at=last_dl.last_downloaded_at if last_dl else None,
                 )
             )
 
@@ -748,6 +762,182 @@ def get_batch_detail(
         db.close()
 
 
+def build_batch_zip_file(batch_id: str, db, target_path: str, exported_by: str):
+    """Helper to build a clean zip archive segregated by document type and audit summary."""
+    from app.adapters.storage import get_storage_adapter
+    docs = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).all()
+    if not docs:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found or empty")
+
+    restricted_classes = {"medical_report", "kyc_form", "bank_statement", "claim_form", "prescription"}
+    settings = get_app_settings()
+    has_restricted = any(d.doc_type in restricted_classes for d in docs)
+    if has_restricted:
+        is_prod = getattr(settings, "APP_ENV", "local").lower() == "production"
+        allow_export = getattr(settings, "ALLOW_LOCAL_EXPORT", True)
+        if is_prod or not allow_export:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Security policy: Export of sensitive documents (medical, financial, KYC) is restricted and disabled.",
+            )
+
+    os.makedirs(os.path.dirname(os.path.abspath(target_path)), exist_ok=True)
+    temp_target = target_path + f".tmp.{uuid.uuid4().hex[:6]}"
+    storage = get_storage_adapter()
+    seen_names = {}
+
+    try:
+        with zipfile.ZipFile(temp_target, "w", zipfile.ZIP_DEFLATED) as zf:
+            csv_buffer = io.StringIO()
+            csv_writer = csv.writer(csv_buffer)
+            csv_writer.writerow(["file", "type", "how_sure", "status", "reason", "key_fields"])
+
+            for d in docs:
+                p_status = to_plain_status(d.review_status, d.is_link or False)
+                how_sure_pct = f"{round((d.confidence or 0.0) * 100, 1)}%"
+                reason = d.decision_reason or d.quarantine_reason or ""
+                fields = json.loads(d.extracted_fields_json or "{}")
+                key_fields_str = "; ".join([f"{k}={v}" for k, v in list(fields.items())[:5]])
+
+                csv_writer.writerow([d.file_name, d.doc_type, how_sure_pct, p_status, reason, key_fields_str])
+
+                file_bytes = None
+                if d.storage_path and os.path.exists(d.storage_path):
+                    try:
+                        with open(d.storage_path, "rb") as f_in:
+                            file_bytes = f_in.read()
+                    except Exception:
+                        pass
+                elif d.sha256 and storage.exists(d.sha256):
+                    try:
+                        file_bytes = storage.get(d.sha256)
+                    except Exception:
+                        pass
+
+                if file_bytes is None:
+                    file_bytes = b""
+
+                folder = d.doc_type or "unknown"
+                clean_name = os.path.basename(d.file_name or f"document_{d.uid}.bin")
+
+                pair = (folder, clean_name)
+                seen_names[pair] = seen_names.get(pair, 0) + 1
+                if seen_names[pair] > 1:
+                    p_name, p_ext = os.path.splitext(clean_name)
+                    clean_name = f"{p_name}_{seen_names[pair]}{p_ext}"
+
+                zf.writestr(f"{folder}/{clean_name}", file_bytes)
+
+                if d.review_status == "pending_review":
+                    zf.writestr(f"Needs a quick check/{clean_name}", file_bytes)
+
+            zf.writestr("summary.csv", csv_buffer.getvalue())
+
+        if os.path.exists(target_path):
+            try:
+                os.unlink(target_path)
+            except Exception:
+                pass
+        os.replace(temp_target, target_path)
+
+        audit_evt = AuditEventModel(
+            event_id=f"evt-export-{uuid.uuid4().hex[:8]}",
+            document_uid=batch_id,
+            sha256=docs[0].sha256 or "",
+            event_type="BATCH_EXPORTED",
+            stage_name="export",
+            status="SUCCESS",
+            payload_json=json.dumps({
+                "batch_id": batch_id,
+                "exported_by": exported_by,
+                "file_count": len(docs),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }),
+        )
+        db.add(audit_evt)
+        db.commit()
+
+        return len(docs), os.path.getsize(target_path)
+    finally:
+        if os.path.exists(temp_target):
+            try:
+                os.unlink(temp_target)
+            except Exception:
+                pass
+
+
+def cleanup_expired_downloads(db) -> int:
+    """Purge temporary zip archives exceeding retention duration and mark them EXPIRED."""
+    settings = get_app_settings()
+    expiry_hours = getattr(settings, "DOWNLOAD_EXPIRY_HOURS", 24)
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=expiry_hours)
+
+    expired_records = db.query(DownloadModel).filter(
+        DownloadModel.status.in_(["READY", "DOWNLOADED"]),
+        DownloadModel.requested_at < cutoff,
+    ).all()
+
+    count = 0
+    for dl in expired_records:
+        if dl.file_path and os.path.exists(dl.file_path):
+            try:
+                os.unlink(dl.file_path)
+            except Exception:
+                pass
+        dl.status = "EXPIRED"
+        count += 1
+    if count > 0:
+        db.commit()
+    return count
+
+
+def prepare_download_task(download_id: str, batch_id: str, user_id: str, username: str):
+    """Background worker task to assemble and compress a large batch archive."""
+    db = get_db_session()
+    try:
+        dl = db.query(DownloadModel).filter(DownloadModel.id == download_id).first()
+        if not dl:
+            return
+        dest_dir = os.path.abspath("./data/downloads")
+        os.makedirs(dest_dir, exist_ok=True)
+        dest_path = os.path.join(dest_dir, f"{download_id}.zip")
+
+        file_count, size_bytes = build_batch_zip_file(batch_id, db, dest_path, username)
+        dl.status = "READY"
+        dl.file_path = dest_path
+        dl.file_count = file_count
+        dl.size_bytes = size_bytes
+        dl.completed_at = datetime.now(timezone.utc)
+        dl.error_message = None
+
+        batch_rec = db.query(BatchModel).filter(BatchModel.batch_id == batch_id).first()
+        b_num = batch_rec.number if batch_rec else 1
+        b_name = batch_rec.name if batch_rec else f"Upload #{b_num}"
+
+        notif = NotificationModel(
+            id=f"notif-{uuid.uuid4().hex[:12]}",
+            user_id=user_id,
+            batch_id=batch_id,
+            title=f"{b_name} zip is ready to download",
+            message=f"Your sorted files ({file_count} files) are packaged and ready to download.",
+            read=False,
+            created_at=datetime.now(timezone.utc),
+        )
+        db.add(notif)
+        db.commit()
+    except Exception:
+        try:
+            dl = db.query(DownloadModel).filter(DownloadModel.id == download_id).first()
+            if dl:
+                dl.status = "FAILED"
+                dl.error_message = "Preparation failed. Please try again."
+                db.commit()
+        except Exception:
+            pass
+    finally:
+        db.close()
+
+
 @router.get("/batches/{batch_id}/export")
 def export_batch_zip(
     batch_id: str,
@@ -756,7 +946,6 @@ def export_batch_zip(
     """Stream a zip archive of sorted files organized by type, plus a 'Needs a quick check' folder and summary.csv."""
     db = get_db_session()
     try:
-        from app.adapters.storage import get_storage_adapter
         docs = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).all()
         if not docs:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found or empty")
@@ -766,123 +955,254 @@ def export_batch_zip(
         if batch_owner and not is_staff and current_user.user_id != batch_owner:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found")
 
-        # Restricted class check:
-        restricted_classes = {"medical_report", "kyc_form", "bank_statement", "claim_form", "prescription"}
-        settings = get_app_settings()
-        has_restricted = any(d.doc_type in restricted_classes for d in docs)
-        if has_restricted:
-            is_prod = getattr(settings, "APP_ENV", "local").lower() == "production"
-            allow_export = getattr(settings, "ALLOW_LOCAL_EXPORT", True)
-            if is_prod or not allow_export:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Security policy: Export of sensitive documents (medical, financial, KYC) is restricted and disabled.",
-                )
-
-        # Build zip in a temporary spool on disk (not in RAM)
         temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
         temp_zip_path = temp_zip.name
         temp_zip.close()
 
-        storage = get_storage_adapter()
-        seen_names: Dict[tuple, int] = {}
+        build_batch_zip_file(batch_id, db, temp_zip_path, current_user.username)
 
-        try:
-            with zipfile.ZipFile(temp_zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-                # 1. Summary CSV
-                csv_buffer = io.StringIO()
-                csv_writer = csv.writer(csv_buffer)
-                csv_writer.writerow(["file", "type", "how_sure", "status", "reason", "key_fields"])
+        batch_rec = db.query(BatchModel).filter(BatchModel.batch_id == batch_id).first()
+        export_name = f"Upload_{batch_rec.number if batch_rec else batch_id[:8]}_sorted.zip"
+        from starlette.responses import FileResponse
+        from starlette.background import BackgroundTask
 
-                for d in docs:
-                    p_status = to_plain_status(d.review_status, d.is_link or False)
-                    how_sure_pct = f"{round((d.confidence or 0.0) * 100, 1)}%"
-                    reason = d.decision_reason or d.quarantine_reason or ""
-                    fields = json.loads(d.extracted_fields_json or "{}")
-                    key_fields_str = "; ".join([f"{k}={v}" for k, v in list(fields.items())[:5]])
-
-                    csv_writer.writerow([d.file_name, d.doc_type, how_sure_pct, p_status, reason, key_fields_str])
-
-                    # Get original asset bytes
-                    file_bytes = None
-                    if d.storage_path and os.path.exists(d.storage_path):
-                        try:
-                            with open(d.storage_path, "rb") as f_in:
-                                file_bytes = f_in.read()
-                        except Exception:
-                            pass
-                    elif d.sha256 and storage.exists(d.sha256):
-                        try:
-                            file_bytes = storage.get(d.sha256)
-                        except Exception:
-                            pass
-
-                    if file_bytes is None:
-                        file_bytes = b""
-
-                    # Folder structure: one folder per doc_type
-                    folder = d.doc_type or "unknown"
-                    clean_name = os.path.basename(d.file_name or f"document_{d.uid}.bin")
-
-                    # Disambiguate duplicate names in the same folder
-                    pair = (folder, clean_name)
-                    seen_names[pair] = seen_names.get(pair, 0) + 1
-                    if seen_names[pair] > 1:
-                        p_name, p_ext = os.path.splitext(clean_name)
-                        clean_name = f"{p_name}_{seen_names[pair]}{p_ext}"
-
-                    zf.writestr(f"{folder}/{clean_name}", file_bytes)
-
-                    # Also put a copy in 'Needs a quick check/' if pending_review
-                    if d.review_status == "pending_review":
-                        zf.writestr(f"Needs a quick check/{clean_name}", file_bytes)
-
-                # Write summary.csv at zip root
-                zf.writestr("summary.csv", csv_buffer.getvalue())
-
-            # Log audit trail event
-            audit_evt = AuditEventModel(
-                event_id=f"evt-export-{uuid.uuid4().hex[:8]}",
-                document_uid=batch_id,
-                sha256=docs[0].sha256 or "",
-                event_type="BATCH_EXPORTED",
-                stage_name="export",
-                status="SUCCESS",
-                payload_json=json.dumps({
-                    "batch_id": batch_id,
-                    "exported_by": current_user.username,
-                    "file_count": len(docs),
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                }),
-            )
-            db.add(audit_evt)
-            db.commit()
-
-            batch_rec = db.query(BatchModel).filter(BatchModel.batch_id == batch_id).first()
-            export_name = f"Upload_{batch_rec.number if batch_rec else batch_id[:8]}_sorted.zip"
-            from starlette.responses import FileResponse
-            from starlette.background import BackgroundTask
-
-            def cleanup_spool():
-                if os.path.exists(temp_zip_path):
-                    try:
-                        os.unlink(temp_zip_path)
-                    except Exception:
-                        pass
-
-            return FileResponse(
-                path=temp_zip_path,
-                media_type="application/zip",
-                filename=export_name,
-                background=BackgroundTask(cleanup_spool),
-            )
-        except Exception:
+        def cleanup_spool():
             if os.path.exists(temp_zip_path):
                 try:
                     os.unlink(temp_zip_path)
                 except Exception:
                     pass
-            raise
+
+        return FileResponse(
+            path=temp_zip_path,
+            media_type="application/zip",
+            filename=export_name,
+            background=BackgroundTask(cleanup_spool),
+        )
+    finally:
+        db.close()
+
+
+@router.post("/batches/{batch_id}/downloads", response_model=DownloadCreateResponse)
+def request_batch_download(
+    batch_id: str,
+    background_tasks: BackgroundTasks,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Create a download archive request for a batch. Small batches prepare directly; large ones in background."""
+    db = get_db_session()
+    try:
+        batch_rec = db.query(BatchModel).filter(BatchModel.batch_id == batch_id).first()
+        first_doc = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).first()
+        if not batch_rec and not first_doc:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found")
+
+        batch_owner = (batch_rec.user_id if batch_rec else None) or (first_doc.user_id if first_doc else None)
+        is_staff = current_user.role in ("admin", "reviewer", "compliance")
+        if batch_owner and not is_staff and current_user.user_id != batch_owner:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found")
+
+        doc_count = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).count()
+        if doc_count == 0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot download an empty batch")
+
+        dl_id = f"dl-{uuid.uuid4().hex[:12]}"
+        dest_dir = os.path.abspath("./data/downloads")
+        os.makedirs(dest_dir, exist_ok=True)
+        dest_path = os.path.join(dest_dir, f"{dl_id}.zip")
+
+        now = datetime.now(timezone.utc)
+        dl = DownloadModel(
+            id=dl_id,
+            owner=current_user.user_id,
+            batch_id=batch_id,
+            status="PREPARING",
+            file_count=doc_count,
+            size_bytes=0,
+            file_path=dest_path,
+            requested_at=now,
+            completed_at=None,
+            last_downloaded_at=None,
+            error_message=None,
+        )
+        db.add(dl)
+        db.commit()
+
+        # Small batches (<= 10 files) assemble synchronously
+        if doc_count <= 10:
+            try:
+                file_count, size_bytes = build_batch_zip_file(batch_id, db, dest_path, current_user.username)
+                dl.status = "READY"
+                dl.file_count = file_count
+                dl.size_bytes = size_bytes
+                dl.completed_at = datetime.now(timezone.utc)
+                db.commit()
+            except Exception as e:
+                dl.status = "FAILED"
+                dl.error_message = "Preparation failed. Please try again."
+                db.commit()
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to prepare archive")
+        else:
+            # Large batches assemble in background
+            background_tasks.add_task(
+                prepare_download_task,
+                dl_id,
+                batch_id,
+                current_user.user_id,
+                current_user.username,
+            )
+
+        return DownloadCreateResponse(
+            id=dl.id,
+            batch_id=dl.batch_id,
+            status=dl.status,
+            file_count=dl.file_count,
+            size_bytes=dl.size_bytes,
+            requested_at=dl.requested_at,
+            completed_at=dl.completed_at,
+            last_downloaded_at=dl.last_downloaded_at,
+            error_message=dl.error_message,
+            download_url=f"/api/v1/downloads/{dl.id}/file",
+        )
+    finally:
+        db.close()
+
+
+@router.get("/downloads", response_model=DownloadListResponse)
+def list_user_downloads(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Retrieve owner-scoped download history newest first."""
+    if not isinstance(page, int) or isinstance(page, bool):
+        page = 1
+    if not isinstance(page_size, int) or isinstance(page_size, bool):
+        page_size = 20
+
+    db = get_db_session()
+    try:
+        cleanup_expired_downloads(db)
+
+        is_staff = current_user.role in ("admin", "reviewer", "compliance")
+        query = db.query(DownloadModel)
+        if not is_staff and current_user.user_id:
+            query = query.filter(DownloadModel.owner == current_user.user_id)
+
+        total = query.count()
+        records = query.order_by(DownloadModel.requested_at.desc()).offset((page - 1) * page_size).limit(page_size).all()
+
+        batch_ids = [r.batch_id for r in records]
+        batches = {b.batch_id: b for b in db.query(BatchModel).filter(BatchModel.batch_id.in_(batch_ids)).all()} if batch_ids else {}
+
+        items = []
+        for r in records:
+            b_info = batches.get(r.batch_id)
+            items.append(
+                DownloadItem(
+                    id=r.id,
+                    batch_id=r.batch_id,
+                    batch_number=b_info.number if b_info else None,
+                    batch_name=b_info.name if b_info else f"Upload",
+                    status=r.status,
+                    file_count=r.file_count,
+                    size_bytes=r.size_bytes,
+                    requested_at=r.requested_at,
+                    completed_at=r.completed_at,
+                    last_downloaded_at=r.last_downloaded_at,
+                    error_message=r.error_message,
+                    download_url=f"/api/v1/downloads/{r.id}/file",
+                )
+            )
+
+        return DownloadListResponse(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+    finally:
+        db.close()
+
+
+@router.get("/downloads/{download_id}/file")
+def stream_download_file(
+    download_id: str,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Stream a previously prepared zip archive. Re-downloads reflect review corrections."""
+    db = get_db_session()
+    try:
+        dl = db.query(DownloadModel).filter(DownloadModel.id == download_id).first()
+        if not dl:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Download record not found")
+
+        is_staff = current_user.role in ("admin", "reviewer", "compliance")
+        if dl.owner != current_user.user_id and not is_staff:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Download record not found")
+
+        if dl.status == "PREPARING":
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Download archive is still preparing. Please wait.")
+        if dl.status == "FAILED":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=dl.error_message or "Download preparation failed. Please request a new download.")
+
+        # Rebuild if EXPIRED or file does not exist on disk
+        dest_path = dl.file_path or os.path.abspath(f"./data/downloads/{dl.id}.zip")
+        if dl.status == "EXPIRED" or not os.path.exists(dest_path):
+            file_count, size_bytes = build_batch_zip_file(dl.batch_id, db, dest_path, current_user.username)
+            dl.file_count = file_count
+            dl.size_bytes = size_bytes
+            dl.file_path = dest_path
+            dl.status = "READY"
+            dl.completed_at = datetime.now(timezone.utc)
+            db.commit()
+
+        # Update download status & timestamp
+        dl.status = "DOWNLOADED"
+        dl.last_downloaded_at = datetime.now(timezone.utc)
+        db.commit()
+
+        # Log audit trail event
+        audit_evt = AuditEventModel(
+            event_id=f"evt-dl-{uuid.uuid4().hex[:8]}",
+            document_uid=dl.batch_id,
+            sha256="",
+            event_type="BATCH_DOWNLOADED",
+            stage_name="download",
+            status="SUCCESS",
+            payload_json=json.dumps({
+                "download_id": dl.id,
+                "batch_id": dl.batch_id,
+                "downloaded_by": current_user.username,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }),
+        )
+        db.add(audit_evt)
+        db.commit()
+
+        batch_rec = db.query(BatchModel).filter(BatchModel.batch_id == dl.batch_id).first()
+        b_num = batch_rec.number if batch_rec else 1
+        export_name = f"Upload_{b_num}_sorted.zip"
+
+        from starlette.responses import FileResponse
+        return FileResponse(
+            path=dest_path,
+            media_type="application/zip",
+            filename=export_name,
+        )
+    finally:
+        db.close()
+
+
+@router.post("/downloads/cleanup-expired", response_model=DownloadCleanupResponse)
+def trigger_download_cleanup(
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Trigger cleanup of expired temporary zip files."""
+    db = get_db_session()
+    try:
+        count = cleanup_expired_downloads(db)
+        return DownloadCleanupResponse(expired_count=count)
     finally:
         db.close()
 

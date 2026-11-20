@@ -123,6 +123,8 @@ class AppSettings(BaseSettings):
     SCANNER_WATCH_DIR: str = Field(default="./data/scanner_watch")
     MODEL_ARTIFACTS_DIR: str = Field(default="./data/models")
     VIRUS_SCANNER_BACKEND: str = Field(default="mock")
+    ALLOW_LOCAL_EXPORT: bool = Field(default=True, description="Permit local export of restricted document classes in development")
+    DOWNLOAD_EXPIRY_HOURS: int = Field(default=24, description="Hours before temporary export zip archives expire and are cleaned up")
 
 
 class ProductionSecurityError(ValueError):

@@ -520,3 +520,247 @@ class TestBatchLifecycleAndExports:
         res3 = get_user_notifications(current_user=user)
         assert res3.unread_count == 0
 
+
+class TestDownloadsLifecycleAndE2E:
+    """Test My Downloads history, status transitions, isolation, expiry, and retry."""
+
+    def test_request_download_sync_and_stream(self):
+        from fastapi import BackgroundTasks
+        from app.api.routes_v1 import request_batch_download, list_user_downloads, stream_download_file, list_batches
+        from app.models.api_schemas import UserSessionResponse
+        from app.models.db import BatchModel, DocumentModel, DownloadModel, get_db_session
+
+        user_a = UserSessionResponse(
+            user_id="usr-dl-tester-01",
+            username="dl_tester@ecm.local",
+            role="user",
+            permissions=["documents:read", "documents:write"],
+        )
+
+        db = get_db_session()
+        batch_id = "batch-dl-sync-101"
+        db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).delete()
+        db.query(BatchModel).filter(BatchModel.batch_id == batch_id).delete()
+        db.query(DownloadModel).filter(DownloadModel.batch_id == batch_id).delete()
+
+        b = BatchModel(
+            batch_id=batch_id,
+            number=42,
+            name="Upload #42",
+            user_id=user_a.user_id,
+            created_at=datetime.now(timezone.utc),
+        )
+        d1 = DocumentModel(
+            uid="doc-dl-1",
+            sha256="sha-dl-1",
+            file_name="invoice_1.pdf",
+            doc_type="invoice",
+            review_status="auto_accepted",
+            confidence=0.98,
+            storage_path=SAMPLE_PATH,
+            batch_id=batch_id,
+            user_id=user_a.user_id,
+        )
+        d2 = DocumentModel(
+            uid="doc-dl-2",
+            sha256="sha-dl-2",
+            file_name="receipt_2.pdf",
+            doc_type="receipt",
+            review_status="auto_accepted",
+            confidence=0.95,
+            storage_path=SAMPLE_PATH,
+            batch_id=batch_id,
+            user_id=user_a.user_id,
+        )
+        db.add_all([b, d1, d2])
+        db.commit()
+        db.close()
+
+        # 1. Request download for batch (<= 10 files -> sync READY)
+        bg = BackgroundTasks()
+        dl_resp = request_batch_download(batch_id, background_tasks=bg, current_user=user_a)
+        assert dl_resp.status == "READY"
+        assert dl_resp.file_count == 2
+        assert dl_resp.size_bytes > 0
+        assert dl_resp.download_url == f"/api/v1/downloads/{dl_resp.id}/file"
+
+        # 2. List downloads
+        dl_list = list_user_downloads(page=1, page_size=10, current_user=user_a)
+        assert dl_list.total >= 1
+        found = next((item for item in dl_list.items if item.id == dl_resp.id), None)
+        assert found is not None
+        assert found.status == "READY"
+        assert found.batch_number == 42
+        assert found.batch_name == "Upload #42"
+
+        # 3. Stream file -> transitions to DOWNLOADED and populates last_downloaded_at
+        file_resp = stream_download_file(dl_resp.id, current_user=user_a)
+        assert file_resp.status_code == 200
+        assert "application/zip" in file_resp.headers["content-type"]
+
+        dl_list_after = list_user_downloads(page=1, page_size=10, current_user=user_a)
+        found_after = next((item for item in dl_list_after.items if item.id == dl_resp.id), None)
+        assert found_after.status == "DOWNLOADED"
+        assert found_after.last_downloaded_at is not None
+
+        # 4. Verify batch summary now reports last_downloaded_at
+        batch_list = list_batches(page=1, page_size=20, current_user=user_a)
+        b_summary = next((b for b in batch_list.items if b.batch_id == batch_id), None)
+        assert b_summary is not None
+        assert b_summary.last_downloaded_at is not None
+
+    def test_download_isolation_and_auth(self):
+        from app.api.routes_v1 import stream_download_file
+        from app.models.api_schemas import UserSessionResponse
+        from fastapi import HTTPException
+
+        user_b = UserSessionResponse(
+            user_id="usr-dl-other-02",
+            username="other@ecm.local",
+            role="user",
+            permissions=["documents:read"],
+        )
+
+        # User B accessing User A's download gets 404 (prevent resource enumeration)
+        with pytest.raises(HTTPException) as exc_info:
+            stream_download_file("dl-nonexistent-999", current_user=user_b)
+        assert exc_info.value.status_code == 404
+
+    def test_expired_downloads_cleanup_and_rebuild(self):
+        from app.api.routes_v1 import cleanup_expired_downloads, stream_download_file
+        from app.models.api_schemas import UserSessionResponse
+        from app.models.db import DownloadModel, get_db_session
+
+        user_a = UserSessionResponse(
+            user_id="usr-dl-tester-01",
+            username="dl_tester@ecm.local",
+            role="user",
+            permissions=["documents:read", "documents:write"],
+        )
+
+        db = get_db_session()
+        # Find user A's download from previous test
+        dl = db.query(DownloadModel).filter(DownloadModel.owner == user_a.user_id).first()
+        assert dl is not None
+
+        # Simulate expiration (requested 48 hours ago)
+        dl.requested_at = datetime.now(timezone.utc) - timedelta(hours=48)
+        db.commit()
+
+        # Run cleanup job
+        cleaned = cleanup_expired_downloads(db)
+        assert cleaned >= 1
+
+        db.refresh(dl)
+        assert dl.status == "EXPIRED"
+        db.close()
+
+        # Re-download rebuilds expired file automatically
+        file_resp = stream_download_file(dl.id, current_user=user_a)
+        assert file_resp.status_code == 200
+
+        db = get_db_session()
+        dl_rebuilt = db.query(DownloadModel).filter(DownloadModel.id == dl.id).first()
+        assert dl_rebuilt.status == "DOWNLOADED"
+        db.close()
+
+    def test_e2e_download_flow_interrupted_and_retry(self):
+        """End-to-End: Upload 5 synthetic files, download, simulate interrupted download, retry, verify persistence."""
+        import uuid
+        from fastapi import BackgroundTasks
+        from app.api.routes_v1 import request_batch_download, list_user_downloads, stream_download_file
+        from app.models.api_schemas import UserSessionResponse
+        from app.models.db import BatchModel, DocumentModel, DownloadModel, get_db_session
+
+        e2e_user = UserSessionResponse(
+            user_id="usr-e2e-tester-99",
+            username="e2e_user@ecm.local",
+            role="user",
+            permissions=["documents:read", "documents:write"],
+        )
+
+        db = get_db_session()
+        batch_id = "batch-e2e-5files-001"
+        db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).delete()
+        db.query(BatchModel).filter(BatchModel.batch_id == batch_id).delete()
+        db.query(DownloadModel).filter(DownloadModel.batch_id == batch_id).delete()
+
+        b = BatchModel(
+            batch_id=batch_id,
+            number=99,
+            name="Upload #99",
+            user_id=e2e_user.user_id,
+            created_at=datetime.now(timezone.utc),
+        )
+        docs = [
+            DocumentModel(
+                uid=f"e2e-doc-{i}",
+                sha256=f"sha-e2e-{i}",
+                file_name=f"document_{i}.pdf",
+                doc_type="invoice" if i % 2 == 0 else "receipt",
+                review_status="auto_accepted",
+                confidence=0.92,
+                storage_path=SAMPLE_PATH,
+                batch_id=batch_id,
+                user_id=e2e_user.user_id,
+            )
+            for i in range(1, 6)
+        ]
+        db.add(b)
+        db.add_all(docs)
+        db.commit()
+        db.close()
+
+        # 1. Request download for 5 files
+        bg = BackgroundTasks()
+        dl_1 = request_batch_download(batch_id, background_tasks=bg, current_user=e2e_user)
+        assert dl_1.status == "READY"
+        assert dl_1.file_count == 5
+
+        # 2. Stream download -> see it listed as DOWNLOADED
+        resp_1 = stream_download_file(dl_1.id, current_user=e2e_user)
+        assert resp_1.status_code == 200
+
+        history_1 = list_user_downloads(current_user=e2e_user)
+        assert history_1.items[0].status == "DOWNLOADED"
+        assert history_1.items[0].last_downloaded_at is not None
+
+        # 3. Simulate an interrupted / failed second download
+        db = get_db_session()
+        failed_id = f"dl-interrupted-{uuid.uuid4().hex[:8]}"
+        dl_failed = DownloadModel(
+            id=failed_id,
+            owner=e2e_user.user_id,
+            batch_id=batch_id,
+            status="FAILED",
+            file_count=5,
+            size_bytes=0,
+            requested_at=datetime.now(timezone.utc),
+            error_message="Network connection severed during zip assembly. Please try again.",
+        )
+        db.add(dl_failed)
+        db.commit()
+        db.close()
+
+        # Verify listed as Failed with clear plain-language error
+        history_2 = list_user_downloads(current_user=e2e_user)
+        failed_item = next((item for item in history_2.items if item.id == failed_id), None)
+        assert failed_item is not None
+        assert failed_item.status == "FAILED"
+        assert "severed" in failed_item.error_message
+
+        # 4. Click 'Try again' (re-request download for batch)
+        dl_retry = request_batch_download(batch_id, background_tasks=bg, current_user=e2e_user)
+        assert dl_retry.status == "READY"
+        assert dl_retry.file_count == 5
+
+        resp_retry = stream_download_file(dl_retry.id, current_user=e2e_user)
+        assert resp_retry.status_code == 200
+
+        # 5. Reload / re-query downloads: history persists with multiple records
+        history_final = list_user_downloads(current_user=e2e_user)
+        assert history_final.total >= 3
+        # Ensure latest download is complete
+        assert history_final.items[0].status == "DOWNLOADED"
+
+

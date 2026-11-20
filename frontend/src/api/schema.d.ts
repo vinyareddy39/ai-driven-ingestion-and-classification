@@ -508,6 +508,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/batches/{batch_id}/downloads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Batch Download
+         * @description Create a download archive request for a batch. Small batches prepare directly; large ones in background.
+         */
+        post: operations["request_batch_download_api_v1_batches__batch_id__downloads_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/downloads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List User Downloads
+         * @description Retrieve owner-scoped download history newest first.
+         */
+        get: operations["list_user_downloads_api_v1_downloads_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/downloads/{download_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stream Download File
+         * @description Stream a previously prepared zip archive. Re-downloads reflect review corrections.
+         */
+        get: operations["stream_download_file_api_v1_downloads__download_id__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/downloads/cleanup-expired": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trigger Download Cleanup
+         * @description Trigger cleanup of expired temporary zip files.
+         */
+        post: operations["trigger_download_cleanup_api_v1_downloads_cleanup_expired_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications": {
         parameters: {
             query?: never;
@@ -1554,6 +1634,8 @@ export interface components {
              * @default false
              */
             is_finished: boolean;
+            /** Last Downloaded At */
+            last_downloaded_at?: string | null;
         };
         /** Body_ingest_bulk_files_ingest_bulk_post */
         Body_ingest_bulk_files_ingest_bulk_post: {
@@ -1785,6 +1867,90 @@ export interface components {
             quarantine_reason?: string | null;
             /** Created At */
             created_at?: string | null;
+        };
+        /**
+         * DownloadCleanupResponse
+         * @description Response of expired downloads cleanup job.
+         */
+        DownloadCleanupResponse: {
+            /** Expired Count */
+            expired_count: number;
+        };
+        /**
+         * DownloadCreateResponse
+         * @description Created download archive job response.
+         */
+        DownloadCreateResponse: {
+            /** Id */
+            id: string;
+            /** Batch Id */
+            batch_id: string;
+            /** Status */
+            status: string;
+            /** File Count */
+            file_count: number;
+            /** Size Bytes */
+            size_bytes: number;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Completed At */
+            completed_at?: string | null;
+            /** Last Downloaded At */
+            last_downloaded_at?: string | null;
+            /** Error Message */
+            error_message?: string | null;
+            /** Download Url */
+            download_url: string;
+        };
+        /**
+         * DownloadItem
+         * @description Single download record in user history.
+         */
+        DownloadItem: {
+            /** Id */
+            id: string;
+            /** Batch Id */
+            batch_id: string;
+            /** Batch Number */
+            batch_number?: number | null;
+            /** Batch Name */
+            batch_name?: string | null;
+            /** Status */
+            status: string;
+            /** File Count */
+            file_count: number;
+            /** Size Bytes */
+            size_bytes: number;
+            /**
+             * Requested At
+             * Format: date-time
+             */
+            requested_at: string;
+            /** Completed At */
+            completed_at?: string | null;
+            /** Last Downloaded At */
+            last_downloaded_at?: string | null;
+            /** Error Message */
+            error_message?: string | null;
+            /** Download Url */
+            download_url: string;
+        };
+        /**
+         * DownloadListResponse
+         * @description Paginated list of download records for current user.
+         */
+        DownloadListResponse: {
+            /** Items */
+            items: components["schemas"]["DownloadItem"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
         };
         /** ExtractedMedicationItem */
         ExtractedMedicationItem: {
@@ -3445,6 +3611,141 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_batch_download_api_v1_batches__batch_id__downloads_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-User-Role"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadCreateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_user_downloads_api_v1_downloads_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: {
+                "X-User-Role"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    stream_download_file_api_v1_downloads__download_id__file_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-User-Role"?: string | null;
+                authorization?: string | null;
+            };
+            path: {
+                download_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    trigger_download_cleanup_api_v1_downloads_cleanup_expired_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-User-Role"?: string | null;
+                authorization?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadCleanupResponse"];
                 };
             };
             /** @description Validation Error */
