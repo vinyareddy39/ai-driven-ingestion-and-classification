@@ -7,7 +7,7 @@ from app.core.interfaces import ECMAdapter, ECMDocumentRecord
 from app.models.db import DocumentModel, get_db_session
 
 
-class FakeECM(ECMAdapter):
+class DatabaseECMAdapter(ECMAdapter):
     """Postgres / SQLite backed ECM adapter implementing full document lifecycle."""
 
     def create_document(self, record: ECMDocumentRecord) -> ECMDocumentRecord:
@@ -347,6 +347,9 @@ class NuxeoAdapter(ECMAdapter):
         return None
 
 
+# Alias for backwards compatibility
+FakeECM = DatabaseECMAdapter
+
 _global_ecm_adapter: Optional[ECMAdapter] = None
 
 
@@ -354,5 +357,5 @@ def get_ecm_adapter() -> ECMAdapter:
     """Factory returning configured ECM adapter."""
     global _global_ecm_adapter
     if _global_ecm_adapter is None:
-        _global_ecm_adapter = FakeECM()
+        _global_ecm_adapter = DatabaseECMAdapter()
     return _global_ecm_adapter

@@ -254,6 +254,8 @@ def process_document_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         "sha256": sha256_hash,
         "decision": decision.model_dump(),
         "audit": audit_data.model_dump(),
+        "ocr": ocr_res,
+        "classification": cls_res,
     }
 
 

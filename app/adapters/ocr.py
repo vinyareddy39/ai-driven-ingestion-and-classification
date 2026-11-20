@@ -319,14 +319,19 @@ class TrOCREngine(OCREngine):
         return page_text, bboxes
 
     def _parse_pdf(self, file_bytes: bytes) -> OCRResult:
-        """Parse PDF: bypass OCR on pages with text layer, OCR scanned pages with TrOCR."""
+        """Parse PDF: bypass OCR on pages with text layer, OCR scanned pages with TrOCR/Tesseract."""
         doc = fitz.open(stream=file_bytes, filetype="pdf")
+        if len(doc) > 500:
+            doc.close()
+            raise ValueError(f"PDF exceeds maximum allowed page count (500 pages, got {len(doc)}).")
+
         pages_text: List[str] = []
         bboxes: List[BoundingBox] = []
         page_methods: List[str] = []
         valid_pages_count = len(doc)
 
         scanned_pages: List[Tuple[int, np.ndarray]] = []
+        safe_dpi = min(getattr(self, "dpi", 150), 200)
 
         for page_idx in range(len(doc)):
             page = doc[page_idx]
@@ -351,21 +356,29 @@ class TrOCREngine(OCREngine):
                 pages_text.append(direct_text)
                 page_methods.append("text_layer")
             else:
-                # Scanned image page: render and queue for TrOCR
-                pix = page.get_pixmap(dpi=self.dpi)
+                # Scanned image page: render and queue for OCR
+                pix = page.get_pixmap(dpi=safe_dpi)
+                if pix.width * pix.height > 50_000_000:
+                    del pix
+                    doc.close()
+                    raise ValueError(f"Page image resolution {pix.width}x{pix.height} exceeds safe limit of 50,000,000 pixels.")
+
                 img_np = np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
                 if pix.n == 4:
                     img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2RGB)
                 elif pix.n == 1:
                     img_np = cv2.cvtColor(img_np, cv2.COLOR_GRAY2RGB)
 
+                del pix
                 if len(doc) > 1 and is_blank_image(img_np):
+                    del img_np
                     continue
 
                 scanned_pages.append((page_idx, img_np))
                 page_methods.append("ocr")
-                # Placeholder for ordering
                 pages_text.append("")
+
+            del page
 
         doc.close()
 
