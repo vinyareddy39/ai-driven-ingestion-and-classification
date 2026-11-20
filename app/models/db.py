@@ -278,6 +278,32 @@ class PipelineJobModel(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
 
+class BatchModel(Base):
+    """Enterprise batch upload session record."""
+    __tablename__ = "batches"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    batch_id = Column(String(64), unique=True, index=True, nullable=False)
+    number = Column(Integer, default=1, index=True, nullable=False)
+    name = Column(String(100), nullable=True)
+    user_id = Column(String(36), index=True, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+
+class NotificationModel(Base):
+    """User notifications for completed batches and system events."""
+    __tablename__ = "notifications"
+
+    id = Column(String(64), primary_key=True)
+    user_id = Column(String(36), index=True, nullable=True)
+    batch_id = Column(String(64), index=True, nullable=True)
+    title = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    read = Column(Boolean, default=False, index=True, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+
+
 
 # Database Engine and Session Factory
 _engine = None
@@ -291,8 +317,17 @@ def get_db_engine():
         if not db_url:
             settings = get_app_settings()
             db_url = settings.DATABASE_URL
-        connect_args = {"check_same_thread": False} if "sqlite" in db_url else {}
+        connect_args = {"check_same_thread": False, "timeout": 30.0} if "sqlite" in db_url else {}
         _engine = create_engine(db_url, connect_args=connect_args)
+        if "sqlite" in db_url:
+            from sqlalchemy import event
+
+            @event.listens_for(_engine, "connect")
+            def set_sqlite_pragma(dbapi_connection, connection_record):
+                cursor = dbapi_connection.cursor()
+                cursor.execute("PRAGMA journal_mode=WAL")
+                cursor.execute("PRAGMA busy_timeout=30000")
+                cursor.close()
     return _engine
 
 

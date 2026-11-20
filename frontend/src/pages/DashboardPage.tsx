@@ -158,12 +158,12 @@ export const DashboardPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/80 font-mono text-[11px]">
-                  {Object.entries(data.stage_latencies_ms || {}).map(([stage, m]) => (
+                  {Object.entries((data as any).stage_latencies_ms || {}).map(([stage, m]: [string, any]) => (
                     <tr key={stage} className="hover:bg-slate-900/40">
                       <td className="py-2.5 px-3 font-sans font-medium text-slate-200">{stage}</td>
-                      <td className="py-2.5 px-3 text-slate-400">{m.count}</td>
-                      <td className="py-2.5 px-3 text-sky-300 font-bold">{m.p50_ms.toFixed(1)} ms</td>
-                      <td className="py-2.5 px-3 text-amber-300 font-bold">{m.p95_ms.toFixed(1)} ms</td>
+                      <td className="py-2.5 px-3 text-slate-400">{m?.count}</td>
+                      <td className="py-2.5 px-3 text-sky-300 font-bold">{m?.p50_ms?.toFixed?.(1) ?? '—'} ms</td>
+                      <td className="py-2.5 px-3 text-amber-300 font-bold">{m?.p95_ms?.toFixed?.(1) ?? '—'} ms</td>
                     </tr>
                   ))}
                 </tbody>
@@ -183,14 +183,16 @@ export const DashboardPage: React.FC = () => {
             {Object.entries(data.per_class_counts || {}).length === 0 ? (
               <p className="text-xs text-slate-500">No classified document batches recorded.</p>
             ) : (
-              Object.entries(data.per_class_counts || {}).map(([cName, count]) => {
-                const pct = Math.round((count / data.total_ingested) * 100);
+              Object.entries((data as any).per_class_counts || {}).map(([cName, count]: [string, any]) => {
+                const total = Number((data as any).total_ingested) || 1;
+                const numCount = Number(count) || 0;
+                const pct = Math.round((numCount / total) * 100);
                 return (
                   <div key={cName}>
                     <div className="flex justify-between text-xs font-mono mb-1">
                       <span className="font-semibold text-slate-300">{cName}</span>
                       <span className="text-slate-400">
-                        {count} ({pct}%)
+                        {numCount} ({pct}%)
                       </span>
                     </div>
                     <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">

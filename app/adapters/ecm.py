@@ -30,6 +30,7 @@ class FakeECM(ECMAdapter):
                     review_status=record.review_status,
                     is_link=record.is_link,
                     linked_to_uid=record.linked_to_id,
+                    batch_id=record.metadata.get("batch_id"),
                     extracted_fields_json=json.dumps(record.metadata.get("extracted_fields", {})),
                     human_verified_fields_json=json.dumps(record.human_verified_fields),
                     field_confidences_json=json.dumps(record.metadata.get("field_confidences", {})),
@@ -49,18 +50,45 @@ class FakeECM(ECMAdapter):
                 doc.acl = record.acl
                 doc.target_workflow = record.target_workflow
                 doc.review_status = record.review_status
+                doc.decision_reason = record.metadata.get("decision_reason", "")
+                if record.metadata.get("batch_id"):
+                    doc.batch_id = record.metadata.get("batch_id")
+                if record.metadata.get("user_id"):
+                    doc.user_id = record.metadata.get("user_id")
+                if record.metadata.get("extracted_fields"):
+                    doc.extracted_fields_json = json.dumps(record.metadata.get("extracted_fields", {}))
+                if record.metadata.get("field_confidences"):
+                    doc.field_confidences_json = json.dumps(record.metadata.get("field_confidences", {}))
+                if record.metadata.get("pii_detected") is not None:
+                    doc.pii_detected = record.metadata.get("pii_detected")
+                if record.metadata.get("pii_types"):
+                    doc.pii_types_json = json.dumps(record.metadata.get("pii_types", []))
+                if record.metadata.get("ocr_engine"):
+                    doc.ocr_engine = record.metadata.get("ocr_engine")
+                if record.metadata.get("ocr_version"):
+                    doc.ocr_version = record.metadata.get("ocr_version")
+                if record.metadata.get("classifier_model"):
+                    doc.classifier_model = record.metadata.get("classifier_model")
+                if record.metadata.get("classifier_version"):
+                    doc.classifier_version = record.metadata.get("classifier_version")
             db.commit()
             record.ecm_id = str(doc.id)
             return record
         finally:
             db.close()
 
-    def create_link(self, source_sha256: str, target_record: ECMDocumentRecord) -> ECMDocumentRecord:
+    def create_link(
+        self,
+        source_sha256: str,
+        target_record: ECMDocumentRecord,
+        batch_id: Optional[str] = None,
+        source_uid: Optional[str] = None,
+    ) -> ECMDocumentRecord:
         """Create lightweight link reference instead of copying duplicate asset."""
         import uuid
         db = get_db_session()
         try:
-            link_uid = f"link-{uuid.uuid4().hex[:12]}"
+            link_uid = source_uid or f"link-{uuid.uuid4().hex[:12]}"
             target_uid = target_record.uid if hasattr(target_record, "uid") else target_record.get("uid", "")
             target_meta = target_record.metadata if hasattr(target_record, "metadata") else target_record.get("metadata", {})
             target_type = target_record.doc_type if hasattr(target_record, "doc_type") else target_record.get("doc_type", "unknown")
@@ -78,6 +106,7 @@ class FakeECM(ECMAdapter):
                     "file_name": target_meta.get("file_name", "link.pdf"),
                     "link_created": True,
                     "target_uid": target_uid,
+                    "batch_id": batch_id,
                 },
                 retention_class=target_ret,
                 acl=target_acl,
@@ -86,6 +115,23 @@ class FakeECM(ECMAdapter):
                 is_link=True,
                 linked_to_id=target_uid,
             )
+
+            existing_doc = db.query(DocumentModel).filter(DocumentModel.uid == link_uid).first()
+            if existing_doc:
+                existing_doc.doc_type = target_type
+                existing_doc.confidence = target_conf
+                existing_doc.retention_class = target_ret
+                existing_doc.acl = target_acl
+                existing_doc.target_workflow = "DEDUPE_LINK_REFERENCE"
+                existing_doc.review_status = "auto_accepted"
+                existing_doc.is_link = True
+                existing_doc.linked_to_uid = target_uid
+                existing_doc.decision_reason = f"Deduplicated reference to canonical asset {target_uid}"
+                if batch_id:
+                    existing_doc.batch_id = batch_id
+                db.commit()
+                link_record.ecm_id = str(existing_doc.id)
+                return link_record
 
             link_doc = DocumentModel(
                 uid=link_uid,
@@ -100,6 +146,7 @@ class FakeECM(ECMAdapter):
                 review_status="auto_accepted",
                 is_link=True,
                 linked_to_uid=target_uid,
+                batch_id=batch_id,
                 decision_reason=f"Deduplicated reference to canonical asset {target_uid}",
             )
             db.add(link_doc)
@@ -172,14 +219,18 @@ class FakeECM(ECMAdapter):
         finally:
             db.close()
 
-    def find_by_hash(self, sha256: str) -> Optional[ECMDocumentRecord]:
+    def find_by_hash(self, sha256: str, exclude_uid: Optional[str] = None) -> Optional[ECMDocumentRecord]:
         db = get_db_session()
         try:
-            doc = db.query(DocumentModel).filter(
+            q = db.query(DocumentModel).filter(
                 DocumentModel.sha256 == sha256,
                 DocumentModel.is_link == False,
-                DocumentModel.review_status != "quarantined",
-            ).first()
+                DocumentModel.review_status.in_(["auto_accepted", "approved", "pending_review", "human_verified"]),
+                DocumentModel.doc_type != "unknown",
+            )
+            if exclude_uid:
+                q = q.filter(DocumentModel.uid != exclude_uid)
+            doc = q.first()
             if not doc:
                 return None
             return self.get_document(str(doc.id))

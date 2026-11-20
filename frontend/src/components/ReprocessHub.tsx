@@ -95,7 +95,7 @@ export const ReprocessHub: React.FC = () => {
           'Preview failed — unknown error.';
         setPreviewError(msg);
       } else if (data) {
-        setPreviewResult(data as ReprocessResponse);
+        setPreviewResult(data as unknown as ReprocessResponse);
       }
     } catch (err: unknown) {
       setPreviewError(
@@ -127,7 +127,7 @@ export const ReprocessHub: React.FC = () => {
           'Reprocess run failed — unknown error.';
         setRunError(msg);
       } else if (data) {
-        const resp = data as ReprocessResponse;
+        const resp = data as unknown as ReprocessResponse;
         setJobId(resp.job_id);
       }
     } catch (err: unknown) {

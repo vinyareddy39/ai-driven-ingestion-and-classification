@@ -44,11 +44,11 @@ def stage_virus_scan(sha256_hash: str, raw_bytes: bytes) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Stage 2: Deduplication Check
 # ---------------------------------------------------------------------------
-def stage_dedupe(sha256_hash: str) -> Dict[str, Any]:
+def stage_dedupe(sha256_hash: str, current_uid: Optional[str] = None) -> Dict[str, Any]:
     """Check if an asset with this exact SHA-256 already exists in ECM."""
     ecm = get_ecm_adapter()
-    existing = ecm.find_by_hash(sha256_hash)
-    if existing:
+    existing = ecm.find_by_hash(sha256_hash, exclude_uid=current_uid)
+    if existing and existing.uid != current_uid:
         return {
             "status": "DUPLICATE_FOUND",
             "canonical_uid": existing.uid,
@@ -451,6 +451,8 @@ def stage_write_ecm(
             "decision_reason": decision.reason,
             "file_name": metadata_fields.get("file_name", "document.pdf"),
             "file_size": metadata_fields.get("file_size", 0),
+            "batch_id": metadata_fields.get("batch_id"),
+            "user_id": metadata_fields.get("user_id"),
         },
         retention_class=decision.retention_class,
         acl=decision.acl,

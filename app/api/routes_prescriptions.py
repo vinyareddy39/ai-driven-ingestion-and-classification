@@ -43,7 +43,6 @@ router = APIRouter(prefix="/api/v1", tags=["Prescriptions & Timetable"])
 
 STAFF_ROLES = {"reviewer", "admin", "compliance"}
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/jpg", "application/pdf"}
-MAX_UPLOAD_SIZE = 10 * 1024 * 1024  # 10MB
 
 
 def _get_user_prescription(db, prescription_id: str, current_user: UserSessionResponse) -> PrescriptionModel:
@@ -112,10 +111,12 @@ async def upload_prescription(
     if not file_bytes:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded file is empty.")
 
-    if len(file_bytes) > MAX_UPLOAD_SIZE:
+    settings = get_app_settings()
+    max_upload_bytes = settings.MAX_UPLOAD_MB * 1024 * 1024
+    if len(file_bytes) > max_upload_bytes:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail="File size exceeds maximum allowed 10MB limit.",
+            detail=f"File size exceeds maximum allowed {settings.MAX_UPLOAD_MB}MB limit.",
         )
 
     # Virus scan verification

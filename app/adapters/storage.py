@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+import shutil
 from typing import Optional
 from app.core.interfaces import Storage
 from app.core.config import get_app_settings
@@ -25,6 +26,12 @@ class LocalFileStorage(Storage):
         target.parent.mkdir(parents=True, exist_ok=True)
         with open(target, "wb") as f:
             f.write(data)
+        return str(target.as_posix())
+
+    def save_file(self, key: str, file_path: str, content_type: str = "application/octet-stream") -> str:
+        target = self._get_path(key)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(file_path), str(target))
         return str(target.as_posix())
 
     def get(self, key: str) -> bytes:
@@ -71,6 +78,19 @@ class MinioStorage(Storage):
             length=len(data),
             content_type=content_type,
         )
+        return f"s3://{self.bucket}/{key}"
+
+    def save_file(self, key: str, file_path: str, content_type: str = "application/octet-stream") -> str:
+        self.client.fput_object(
+            bucket_name=self.bucket,
+            object_name=key,
+            file_path=str(file_path),
+            content_type=content_type,
+        )
+        try:
+            os.unlink(file_path)
+        except OSError:
+            pass
         return f"s3://{self.bucket}/{key}"
 
     def get(self, key: str) -> bytes:

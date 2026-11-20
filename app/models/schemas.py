@@ -97,6 +97,7 @@ class IngestResponse(BaseModel):
     status: str
     queue: str
     message: str
+    batch_id: Optional[str] = None
 
 
 class DecisionResult(BaseModel):

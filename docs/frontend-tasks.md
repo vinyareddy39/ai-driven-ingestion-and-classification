@@ -143,23 +143,93 @@
 
 ---
 
-## 6. Screen 5: Batch Ingestion Progress & Results (`/batches/:batchId`)
+## 6. Screen 5: Multi-File Ingestion Desk & Segregated Batch Results (`/batches/:batchId`)
 
 ### UI Layout & Interactions:
-- Visual progress bar showing aggregated completion: Done (green), Needs Review (amber), Quarantined (red), Processing (blue).
-- Document type breakdown pills (`Invoice: 12`, `Receipt: 5`, `KYC: 2`).
-- Filterable table of items in the batch with filename, status badge, confidence, and action links.
+- **Multi-File Selection & Dropzone**:
+  - Native file input configured with `multiple` attribute (`<input type="file" multiple ... />`).
+  - Drag-and-drop zone accepts `FileList` containing multiple files simultaneously.
+  - Per-file dynamic validation against `MAX_UPLOAD_MB` / `max_upload_size_bytes` fetched from `GET /api/v1/system/info`.
+  - Shows clear per-file error badges (e.g. *"File is 230 MB. Maximum allowed is 200 MB."*) while preserving valid files in the queue.
+- **Batch Upload & Progress Tracking**:
+  - Generates a unique `batch_id` per session.
+  - Dispatches each valid file concurrently via `POST /ingest?batch_id={batch_id}` with Bearer token authentication.
+  - Real-time per-file progress list with percentage bars, byte counters, and upload indicators.
+- **Segregated Results View (Grouped by Document Type)**:
+  - Transition immediately to `/batches/:batchId` upon upload completion.
+  - Real-time polling (`GET /api/v1/batches/{batch_id}`) every 2 seconds while `progress.queued > 0` or `progress.processing > 0`.
+  - **Category Segregation Accordions / Tabs**:
+    - Group files under 9 standard document type categories:
+      `invoice`, `receipt`, `bank_statement`, `medical_report`, `kyc_form`, `contract`, `claim_form`, `prescription`, and `unknown`.
+    - Display file count badge per category tab (e.g., `Invoices (10)`, `Bank Statements (10)`).
+    - Status pills on each file row: `Auto-Accepted` (green), `Needs Review` (amber), `Quarantined` (rose), `Duplicate Linked` (blue).
+    - Confidence metric bar (e.g., `96.4%`) with review reason badge (`"High-risk class below threshold 0.95"`).
+  - **Review-Needed Quick Filter**:
+    - Dedicated tab / toggle to isolate all documents in the batch requiring human attention (`review_status === "pending_review"`).
+  - **Split File Detail Drawer**:
+    - Clicking any document in the list opens a slide-over modal rendering authenticated preview (`GET /api/v1/documents/{uid}/pages/1/image`) beside extracted fields and confidence scores.
 
 ### API Endpoints Called:
-1. `GET /api/v1/batches/{batch_id}`
+1. `GET /api/v1/system/info`
+   - Dynamically loads `max_upload_size_bytes` (`MAX_UPLOAD_MB`) and allowed extensions/MIME types.
+2. `POST /ingest?batch_id={batch_id}`
+   - Request: `multipart/form-data` with `file` and query param `batch_id`.
+   - Header: `Authorization: Bearer <token>`
+   - Response: `202 Accepted` returning `{"uid": "...", "batch_id": "...", "status": "QUEUED"}`.
+3. `GET /api/v1/batches/{batch_id}`
    - Header: `Authorization: Bearer <access_token>`
-   - Success: `200 OK` $\rightarrow$ Render batch progress metrics, counts_by_type, and file table.
-   - Polling: Poll every 3 seconds while `progress.processing > 0` or `progress.queued > 0`.
-   - Error `404 Not Found` $\rightarrow$ Show *"Batch not found or unauthorized"*.
+   - Success: `200 OK` $\rightarrow$ Returns `BatchDetailResponse` with `progress`, `counts_by_type`, and `items` (including `confidence`, `doc_type`, `review_status`, and `review_reason`).
+   - Polling: Polls every 2 seconds until `progress.queued == 0 && progress.processing == 0`.
+   - Error: `404 Not Found` $\rightarrow$ Displays *"Batch not found or unauthorized"*.
+
+### States to Handle:
+- **Loading / Initializing**: Skeleton loader with 6 progress cards and batch header.
+- **In-Progress (Queued / Processing)**: Animated pulse bar tracking completion `(done + needs_review + quarantined) / total * 100%`.
+- **Completed**: Segregated category tabs populated with count badges and files.
+- **Empty Batch**: Graphic with message *"No documents found in this batch"*.
+- **Error / Fetch Failure**: Dismissible banner with retry action button.
 
 ---
 
-## 7. API Client Regeneration Note
+## 7. Minimal Patch for Frontend Collaborator (`frontend/src/components/BatchResultView.tsx`)
+
+```tsx
+// Patch for frontend/src/components/BatchResultView.tsx
+// Add category grouping and type tabs:
+
+const STANDARD_CATEGORIES = [
+  'all',
+  'invoice',
+  'receipt',
+  'bank_statement',
+  'medical_report',
+  'kyc_form',
+  'contract',
+  'claim_form',
+  'prescription',
+  'unknown',
+] as const;
+
+// Inside BatchResultView component:
+const [activeCategory, setActiveCategory] = useState<string>('all');
+const [statusFilter, setStatusFilter] = useState<string>('all');
+
+const filteredItems = useMemo(() => {
+  if (!batchData?.items) return [];
+  return batchData.items.filter((item) => {
+    const matchesCat = activeCategory === 'all' || item.doc_type === activeCategory;
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'review' && item.review_status === 'pending_review') ||
+      (statusFilter === 'done' && (item.review_status === 'auto_accepted' || item.review_status === 'approved'));
+    return matchesCat && matchesStatus;
+  });
+}, [batchData?.items, activeCategory, statusFilter]);
+```
+
+---
+
+## 8. API Client Regeneration Note
 
 After merging the backend routes, please run:
 ```bash

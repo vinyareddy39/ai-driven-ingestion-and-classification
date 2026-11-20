@@ -97,10 +97,14 @@ class AppSettings(BaseSettings):
     )
 
     # Upload & Operational Limits
-    MAX_UPLOAD_MB: int = Field(default=10, description="Maximum single file upload limit in megabytes")
+    MAX_UPLOAD_MB: int = Field(default=200, description="Maximum single file upload limit in megabytes")
     ALLOWED_FILE_TYPES: str = Field(
         default="image/jpeg,image/png,image/jpg,application/pdf",
         description="Comma-separated MIME types allowed for ingestion",
+    )
+    ALLOW_LOCAL_EXPORT: bool = Field(
+        default=True,
+        description="Whether to permit zip export of classified documents in non-production environments",
     )
 
     # Queue & Other Adapters

@@ -12,9 +12,25 @@
           "Ingestion"
         ],
         "summary": "Ingest Single File",
-        "description": "Upload a single file (PDF, TIFF, JPG, PNG, DOCX, EML).",
+        "description": "Upload a single file (PDF, TIFF, JPG, PNG, DOCX, EML) with streaming chunk validation.",
         "operationId": "ingest_single_file_ingest_post",
         "parameters": [
+          {
+            "name": "batch_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Batch Id"
+            }
+          },
           {
             "name": "X-User-Role",
             "in": "header",
@@ -88,9 +104,25 @@
           "Ingestion"
         ],
         "summary": "Ingest Bulk Files",
-        "description": "Upload multiple documents in a single bulk operation.",
+        "description": "Upload multiple documents in a single bulk operation with streaming chunk validation.",
         "operationId": "ingest_bulk_files_ingest_bulk_post",
         "parameters": [
+          {
+            "name": "batch_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Batch Id"
+            }
+          },
           {
             "name": "X-User-Role",
             "in": "header",
@@ -1392,14 +1424,314 @@
         }
       }
     },
+    "/api/v1/batches": {
+      "post": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Create Batch",
+        "description": "Explicitly initialize a new upload batch session prior to file streaming.",
+        "operationId": "create_batch_api_v1_batches_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/BatchCreateRequest"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchCreateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "List Batches",
+        "description": "List all upload batches (owner-scoped, newest first) with status and type breakdowns.",
+        "operationId": "list_batches_api_v1_batches_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/batches/{batch_id}": {
       "get": {
         "tags": [
           "REST API v1"
         ],
         "summary": "Get Batch Detail",
-        "description": "Retrieve batch progress, status breakdown, and document list with user isolation.",
+        "description": "Retrieve batch progress, status breakdown, and document list with user isolation and filtering.",
         "operationId": "get_batch_detail_api_v1_batches__batch_id__get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/batches/{batch_id}/export": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Export Batch Zip",
+        "description": "Stream a zip archive of sorted files organized by type, plus a 'Needs a quick check' folder and summary.csv.",
+        "operationId": "export_batch_zip_api_v1_batches__batch_id__export_get",
         "parameters": [
           {
             "name": "batch_id",
@@ -1448,8 +1780,213 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BatchDetailResponse"
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Get User Notifications",
+        "description": "Retrieve owner-scoped notifications newest first with unread badge count.",
+        "operationId": "get_user_notifications_api_v1_notifications_get",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{notification_id}/read": {
+      "post": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Mark Notification Read",
+        "description": "Mark a single notification as read.",
+        "operationId": "mark_notification_read_api_v1_notifications__notification_id__read_post",
+        "parameters": [
+          {
+            "name": "notification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Notification Id"
+            }
+          },
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationMarkReadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "tags": [
+          "REST API v1"
+        ],
+        "summary": "Mark All Notifications Read",
+        "description": "Mark all notifications for current user as read.",
+        "operationId": "mark_all_notifications_read_api_v1_notifications_read_all_post",
+        "parameters": [
+          {
+            "name": "X-User-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-User-Role"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationMarkReadResponse"
                 }
               }
             }
@@ -4284,11 +4821,69 @@
         ],
         "title": "AuthUserResponse"
       },
+      "BatchCreateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "title": "BatchCreateRequest",
+        "description": "Request to initialize a new upload batch."
+      },
+      "BatchCreateResponse": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "title": "Batch Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "number",
+          "name",
+          "created_at"
+        ],
+        "title": "BatchCreateResponse",
+        "description": "Created batch reference."
+      },
       "BatchDetailResponse": {
         "properties": {
           "batch_id": {
             "type": "string",
             "title": "Batch Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number",
+            "default": 1
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "default": "Upload #1"
           },
           "user_id": {
             "anyOf": [
@@ -4301,8 +4896,25 @@
             ],
             "title": "User Id"
           },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
           "progress": {
             "$ref": "#/components/schemas/BatchProgressCounts"
+          },
+          "progress_percent": {
+            "type": "number",
+            "title": "Progress Percent",
+            "default": 0.0
           },
           "counts_by_type": {
             "additionalProperties": {
@@ -4311,20 +4923,50 @@
             "type": "object",
             "title": "Counts By Type"
           },
+          "counts_by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts By Status"
+          },
+          "needs_check_count": {
+            "type": "integer",
+            "title": "Needs Check Count",
+            "default": 0
+          },
+          "is_finished": {
+            "type": "boolean",
+            "title": "Is Finished",
+            "default": false
+          },
           "items": {
             "items": {
               "$ref": "#/components/schemas/BatchFileItem"
             },
             "type": "array",
             "title": "Items"
+          },
+          "total_items": {
+            "type": "integer",
+            "title": "Total Items",
+            "default": 0
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size",
+            "default": 100
           }
         },
         "type": "object",
         "required": [
           "batch_id",
-          "progress",
-          "counts_by_type",
-          "items"
+          "progress"
         ],
         "title": "BatchDetailResponse",
         "description": "Aggregated batch status, progress breakdown, per-type counts, and per-file items."
@@ -4347,9 +4989,30 @@
             "type": "string",
             "title": "Review Status"
           },
+          "plain_status": {
+            "type": "string",
+            "title": "Plain Status",
+            "default": "SORTED_AUTOMATICALLY"
+          },
           "confidence": {
             "type": "number",
             "title": "Confidence"
+          },
+          "how_sure": {
+            "type": "number",
+            "title": "How Sure",
+            "default": 0.0
+          },
+          "review_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Review Reason"
           },
           "error_detail": {
             "anyOf": [
@@ -4361,6 +5024,18 @@
               }
             ],
             "title": "Error Detail"
+          },
+          "is_link": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Link",
+            "default": false
           },
           "created_at": {
             "type": "string",
@@ -4379,6 +5054,38 @@
         ],
         "title": "BatchFileItem",
         "description": "Individual document summary in a batch detail response."
+      },
+      "BatchListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BatchSummaryItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "page_size"
+        ],
+        "title": "BatchListResponse",
+        "description": "Paginated list of upload batches for My Uploads."
       },
       "BatchProgressCounts": {
         "properties": {
@@ -4426,6 +5133,70 @@
         "type": "object",
         "title": "BatchProgressCounts",
         "description": "Aggregated status counts for documents in a batch."
+      },
+      "BatchSummaryItem": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "title": "Batch Id"
+          },
+          "number": {
+            "type": "integer",
+            "title": "Number"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "file_count": {
+            "type": "integer",
+            "title": "File Count"
+          },
+          "progress_percent": {
+            "type": "number",
+            "title": "Progress Percent"
+          },
+          "counts_by_type": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts By Type"
+          },
+          "counts_by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts By Status"
+          },
+          "needs_check_count": {
+            "type": "integer",
+            "title": "Needs Check Count",
+            "default": 0
+          },
+          "is_finished": {
+            "type": "boolean",
+            "title": "Is Finished",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "number",
+          "name",
+          "created_at",
+          "file_count",
+          "progress_percent"
+        ],
+        "title": "BatchSummaryItem",
+        "description": "Summary of an upload batch for batch list view."
       },
       "Body_ingest_bulk_files_ingest_bulk_post": {
         "properties": {
@@ -5177,6 +5948,17 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
           }
         },
         "type": "object",
@@ -5278,6 +6060,93 @@
         },
         "type": "object",
         "title": "ItemCorrectionRequest"
+      },
+      "NotificationItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "read": {
+            "type": "boolean",
+            "title": "Read",
+            "default": false
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "message",
+          "created_at"
+        ],
+        "title": "NotificationItem",
+        "description": "User notification item."
+      },
+      "NotificationListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NotificationItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "unread_count": {
+            "type": "integer",
+            "title": "Unread Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "unread_count"
+        ],
+        "title": "NotificationListResponse",
+        "description": "List of notifications with unread count."
+      },
+      "NotificationMarkReadResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "marked_count": {
+            "type": "integer",
+            "title": "Marked Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "marked_count"
+        ],
+        "title": "NotificationMarkReadResponse",
+        "description": "Result of marking notifications as read."
       },
       "OCRWordBox": {
         "properties": {
@@ -6470,13 +7339,33 @@
             "type": "integer",
             "title": "Max Upload Mb",
             "description": "Maximum upload size in MB",
-            "default": 10
+            "default": 200
+          },
+          "max_upload_size_mb": {
+            "type": "integer",
+            "title": "Max Upload Size Mb",
+            "description": "Maximum upload size in MB",
+            "default": 200
+          },
+          "max_upload_size_bytes": {
+            "type": "integer",
+            "title": "Max Upload Size Bytes",
+            "description": "Maximum upload size in bytes",
+            "default": 209715200
           },
           "allowed_file_types": {
             "type": "string",
             "title": "Allowed File Types",
             "description": "Allowed upload MIME types",
             "default": "image/jpeg,image/png,application/pdf"
+          },
+          "allowed_extensions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Allowed Extensions",
+            "description": "Allowed upload file extensions"
           },
           "timestamp": {
             "type": "string",

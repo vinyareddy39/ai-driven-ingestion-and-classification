@@ -71,8 +71,18 @@ def load_dotenv_if_present():
 
 
 def is_role_header_allowed() -> bool:
-    """Check if X-User-Role header bypass is explicitly enabled via environment."""
+    """Check if X-User-Role header bypass is explicitly enabled via environment or .env."""
     load_dotenv_if_present()
+    for p in [os.path.join(os.getcwd(), ".env"), os.path.abspath(".env")]:
+        if os.path.exists(p):
+            try:
+                with open(p, "r", encoding="utf-8") as f:
+                    for line in f:
+                        if line.strip().startswith("AUTH_ALLOW_ROLE_HEADER="):
+                            val = line.strip().split("=", 1)[1].strip().strip("'\"").lower()
+                            return val in ("true", "1", "yes")
+            except Exception:
+                pass
     return os.getenv("AUTH_ALLOW_ROLE_HEADER", "false").lower() in ("true", "1", "yes")
 
 
@@ -115,26 +125,8 @@ def get_current_user(
     role: Optional[str] = None
     configured_tokens = get_configured_tokens()
 
-    # 1. Check if X-User-Role is allowed by config
-    if x_user_role:
-        if not is_role_header_allowed():
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="X-User-Role header is disabled. Provide a valid Bearer token in the Authorization header.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        candidate = x_user_role.lower().strip()
-        if candidate in STUB_USERS:
-            role = candidate
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=f"Invalid authentication role '{candidate}'.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-
-    # 2. Extract Bearer token from Authorization header
-    elif authorization:
+    # 1. Primary: Extract Bearer token from Authorization header if provided
+    if authorization:
         parts = authorization.split()
         if len(parts) != 2 or parts[0].lower() != "bearer":
             raise HTTPException(
@@ -172,6 +164,24 @@ def get_current_user(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or unknown authentication token.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+    # 2. Secondary fallback: Check if X-User-Role is allowed by config
+    elif x_user_role:
+        if not is_role_header_allowed():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="X-User-Role header is disabled. Provide a valid Bearer token in the Authorization header.",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        candidate = x_user_role.lower().strip()
+        if candidate in STUB_USERS:
+            role = candidate
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid authentication role '{candidate}'.",
                 headers={"WWW-Authenticate": "Bearer"},
             )
 

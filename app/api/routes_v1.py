@@ -1,13 +1,18 @@
 """REST API v1 endpoints for Document Ingestion Web Frontend."""
 
 from datetime import datetime, timezone
+import csv
+import io
 import json
 import os
 from pathlib import Path
+import tempfile
 from typing import Any, Dict, List, Optional
 import uuid
+import zipfile
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi.responses import StreamingResponse
 import fitz  # PyMuPDF
 from sqlalchemy import desc, asc, func
 
@@ -16,8 +21,10 @@ from app.core.config import get_app_settings, get_pipeline_config
 from app.core.security import setup_secure_logging
 from app.models.db import (
     AuditEventModel,
+    BatchModel,
     ConfigHistoryModel,
     DocumentModel,
+    NotificationModel,
     ReviewTaskModel,
     StageExecutionModel,
     get_db_session,
@@ -28,9 +35,13 @@ from app.models.api_schemas import (
     AdminConfigUpdateResponse,
     AuditEventItem,
     AuditTrailResponse,
+    BatchCreateRequest,
+    BatchCreateResponse,
     BatchDetailResponse,
     BatchFileItem,
+    BatchListResponse,
     BatchProgressCounts,
+    BatchSummaryItem,
     ClassThresholdConfig,
     ConfigHistoryItem,
     ConfigHistoryResponse,
@@ -39,6 +50,9 @@ from app.models.api_schemas import (
     DocumentListResponse,
     DocumentStatusResponse,
     DocumentSummaryItem,
+    NotificationItem,
+    NotificationListResponse,
+    NotificationMarkReadResponse,
     OCRWordBox,
     PIIRevealRequest,
     PIIRevealResponse,
@@ -105,7 +119,10 @@ def get_system_info(current_user: UserSessionResponse = Depends(get_current_user
         high_risk_floor=get_compliance_floors()[0],
         low_risk_floor=get_compliance_floors()[1],
         max_upload_mb=settings.MAX_UPLOAD_MB,
+        max_upload_size_mb=settings.MAX_UPLOAD_MB,
+        max_upload_size_bytes=settings.MAX_UPLOAD_MB * 1024 * 1024,
         allowed_file_types=settings.ALLOWED_FILE_TYPES,
+        allowed_extensions=[".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".eml", ".docx"],
     )
 
 
@@ -380,39 +397,224 @@ def process_review_action(
 
 
 # ---------------------------------------------------------------------------
-# Batch Results & Progress Endpoints
+# Batch Results, Upload Sessions & Export Endpoints
 # ---------------------------------------------------------------------------
+
+PLAIN_STATUS_MAP = {
+    "auto_accepted": "SORTED_AUTOMATICALLY",
+    "approved": "SORTED_AUTOMATICALLY",
+    "human_verified": "SORTED_AUTOMATICALLY",
+    "pending_review": "NEEDS_CHECK",
+    "failed": "FAILED",
+    "duplicate": "ALREADY_UPLOADED",
+    "quarantined": "BLOCKED",
+    "queued": "PROCESSING",
+    "processing": "PROCESSING",
+}
+
+
+def to_plain_status(review_status: str, is_link: bool = False) -> str:
+    if is_link:
+        return "ALREADY_UPLOADED"
+    return PLAIN_STATUS_MAP.get(review_status or "queued", "SORTED_AUTOMATICALLY")
+
+
+@router.post("/batches", response_model=BatchCreateResponse, status_code=status.HTTP_201_CREATED)
+def create_batch(
+    req: Optional[BatchCreateRequest] = None,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Explicitly initialize a new upload batch session prior to file streaming."""
+    db = get_db_session()
+    try:
+        batch_id = f"batch-{uuid.uuid4().hex[:12]}"
+        user_id = current_user.user_id if current_user else None
+        b_count = db.query(BatchModel).count()
+        number = b_count + 1
+        name = req.name if (req and req.name) else f"Upload #{number}"
+        now = datetime.now(timezone.utc)
+
+        batch = BatchModel(
+            batch_id=batch_id,
+            number=number,
+            name=name,
+            user_id=user_id,
+            created_at=now,
+        )
+        db.add(batch)
+        db.commit()
+        return BatchCreateResponse(
+            batch_id=batch_id,
+            number=number,
+            name=name,
+            created_at=now,
+        )
+    finally:
+        db.close()
+
+
+@router.get("/batches", response_model=BatchListResponse)
+def list_batches(
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """List all upload batches (owner-scoped, newest first) with status and type breakdowns."""
+    if not isinstance(page, int) or isinstance(page, bool):
+        page = 1
+    if not isinstance(page_size, int) or isinstance(page_size, bool):
+        page_size = 20
+
+    db = get_db_session()
+    try:
+        user_id = current_user.user_id if current_user else None
+        is_staff = current_user.role in ("admin", "reviewer", "compliance")
+
+        # Discover all unique batches from BatchModel or DocumentModel
+        batch_query = db.query(BatchModel)
+        if not is_staff and user_id:
+            batch_query = batch_query.filter(BatchModel.user_id == user_id)
+
+        all_batch_rows = batch_query.order_by(desc(BatchModel.created_at)).all()
+        known_batch_ids = {b.batch_id for b in all_batch_rows}
+
+        # Also find any batch_ids present in DocumentModel not yet in BatchModel
+        doc_batches_query = db.query(DocumentModel.batch_id, DocumentModel.user_id, func.min(DocumentModel.created_at)).filter(
+            DocumentModel.batch_id.isnot(None)
+        )
+        if not is_staff and user_id:
+            doc_batches_query = doc_batches_query.filter(DocumentModel.user_id == user_id)
+        doc_batches = doc_batches_query.group_by(DocumentModel.batch_id).all()
+
+        for b_id, b_uid, b_created in doc_batches:
+            if b_id and b_id not in known_batch_ids:
+                count = len(all_batch_rows) + 1
+                new_b = BatchModel(
+                    batch_id=b_id,
+                    number=count,
+                    name=f"Upload #{count}",
+                    user_id=b_uid,
+                    created_at=b_created or datetime.now(timezone.utc),
+                )
+                db.add(new_b)
+                all_batch_rows.append(new_b)
+                known_batch_ids.add(b_id)
+        db.commit()
+
+        # Re-query sorted
+        all_batch_rows.sort(key=lambda x: x.created_at or datetime.min, reverse=True)
+        total = len(all_batch_rows)
+        paged_batches = all_batch_rows[(page - 1) * page_size : page * page_size]
+
+        items: List[BatchSummaryItem] = []
+        for b in paged_batches:
+            # Query aggregations for this batch
+            status_counts = dict(
+                db.query(DocumentModel.review_status, func.count(DocumentModel.uid))
+                .filter(DocumentModel.batch_id == b.batch_id)
+                .group_by(DocumentModel.review_status)
+                .all()
+            )
+            type_counts = dict(
+                db.query(DocumentModel.doc_type, func.count(DocumentModel.uid))
+                .filter(DocumentModel.batch_id == b.batch_id)
+                .group_by(DocumentModel.doc_type)
+                .all()
+            )
+
+            file_count = sum(status_counts.values())
+            plain_status_counts = {
+                "SORTED_AUTOMATICALLY": (
+                    status_counts.get("auto_accepted", 0)
+                    + status_counts.get("approved", 0)
+                    + status_counts.get("human_verified", 0)
+                ),
+                "NEEDS_CHECK": status_counts.get("pending_review", 0),
+                "FAILED": status_counts.get("failed", 0),
+                "ALREADY_UPLOADED": status_counts.get("duplicate", 0),
+                "BLOCKED": status_counts.get("quarantined", 0),
+                "PROCESSING": status_counts.get("queued", 0) + status_counts.get("processing", 0),
+            }
+
+            finished_count = (
+                plain_status_counts["SORTED_AUTOMATICALLY"]
+                + plain_status_counts["NEEDS_CHECK"]
+                + plain_status_counts["FAILED"]
+                + plain_status_counts["ALREADY_UPLOADED"]
+                + plain_status_counts["BLOCKED"]
+            )
+            progress_pct = round((finished_count / file_count) * 100, 1) if file_count > 0 else 0.0
+            is_finished = (progress_pct >= 100.0 and file_count > 0) or (
+                file_count > 0 and (status_counts.get("queued", 0) + status_counts.get("processing", 0) == 0)
+            )
+
+            items.append(
+                BatchSummaryItem(
+                    batch_id=b.batch_id,
+                    number=b.number or 1,
+                    name=b.name or f"Upload #{b.number or 1}",
+                    created_at=b.created_at,
+                    file_count=file_count,
+                    progress_percent=progress_pct,
+                    counts_by_type=type_counts,
+                    counts_by_status=plain_status_counts,
+                    needs_check_count=plain_status_counts["NEEDS_CHECK"],
+                    is_finished=is_finished,
+                )
+            )
+
+        return BatchListResponse(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+        )
+    finally:
+        db.close()
+
 
 @router.get("/batches/{batch_id}", response_model=BatchDetailResponse)
 def get_batch_detail(
     batch_id: str,
+    doc_type: Optional[str] = Query(None, alias="type"),
+    review_status: Optional[str] = Query(None, alias="status"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=100, ge=1, le=500),
     current_user: UserSessionResponse = Depends(get_current_user),
 ):
-    """Retrieve batch progress, status breakdown, and document list with user isolation."""
+    """Retrieve batch progress, status breakdown, and document list with user isolation and filtering."""
+    if not isinstance(doc_type, str):
+        doc_type = None
+    if not isinstance(review_status, str):
+        review_status = None
+    if not isinstance(page, int) or isinstance(page, bool):
+        page = 1
+    if not isinstance(page_size, int) or isinstance(page_size, bool):
+        page_size = 100
+
     db = get_db_session()
     try:
-        docs = (
-            db.query(DocumentModel)
-            .filter(DocumentModel.batch_id == batch_id)
-            .order_by(DocumentModel.created_at.asc())
-            .all()
-        )
-        if not docs:
+        # 1. Fetch batch metadata from BatchModel or DocumentModel
+        batch_record = db.query(BatchModel).filter(BatchModel.batch_id == batch_id).first()
+        doc_count_total = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).count()
+
+        if not batch_record and doc_count_total == 0:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Batch '{batch_id}' not found",
+                detail=f"Upload '{batch_id}' not found",
             )
 
         # Enforce user isolation:
-        batch_owner = docs[0].user_id
+        first_doc = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).first()
+        batch_owner = (batch_record.user_id if batch_record else None) or (first_doc.user_id if first_doc else None)
         is_staff = current_user.role in ("admin", "reviewer", "compliance")
         if batch_owner and not is_staff and current_user.user_id != batch_owner:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Batch '{batch_id}' not found",
+                detail=f"Upload '{batch_id}' not found",
             )
 
-        # O(1) SQL Aggregations:
+        # 2. O(1) SQL Aggregations: Status counts and Type counts
         status_counts = dict(
             db.query(DocumentModel.review_status, func.count(DocumentModel.uid))
             .filter(DocumentModel.batch_id == batch_id)
@@ -427,16 +629,82 @@ def get_batch_detail(
             .all()
         )
 
+        total_files = sum(status_counts.values())
+
+        plain_status_counts = {
+            "SORTED_AUTOMATICALLY": (
+                status_counts.get("auto_accepted", 0)
+                + status_counts.get("approved", 0)
+                + status_counts.get("human_verified", 0)
+            ),
+            "NEEDS_CHECK": status_counts.get("pending_review", 0),
+            "FAILED": status_counts.get("failed", 0),
+            "ALREADY_UPLOADED": status_counts.get("duplicate", 0),
+            "BLOCKED": status_counts.get("quarantined", 0),
+            "PROCESSING": status_counts.get("queued", 0) + status_counts.get("processing", 0),
+        }
+
+        finished_count = (
+            plain_status_counts["SORTED_AUTOMATICALLY"]
+            + plain_status_counts["NEEDS_CHECK"]
+            + plain_status_counts["FAILED"]
+            + plain_status_counts["ALREADY_UPLOADED"]
+            + plain_status_counts["BLOCKED"]
+        )
+        progress_pct = round((finished_count / total_files) * 100, 1) if total_files > 0 else 0.0
+        is_finished = (progress_pct >= 100.0 and total_files > 0) or (
+            total_files > 0 and (status_counts.get("queued", 0) + status_counts.get("processing", 0) == 0)
+        )
+
         progress = BatchProgressCounts(
-            total=len(docs),
+            total=total_files,
             queued=status_counts.get("queued", 0),
             processing=status_counts.get("processing", 0),
-            done=status_counts.get("auto_accepted", 0) + status_counts.get("approved", 0),
+            done=plain_status_counts["SORTED_AUTOMATICALLY"],
             needs_review=status_counts.get("pending_review", 0),
             failed=status_counts.get("failed", 0),
             quarantined=status_counts.get("quarantined", 0),
             duplicate=status_counts.get("duplicate", 0),
         )
+
+        # Auto-create notification if finished and not yet notified
+        if is_finished and total_files > 0:
+            existing_notif = db.query(NotificationModel).filter(NotificationModel.batch_id == batch_id).first()
+            if not existing_notif:
+                b_name = batch_record.name if batch_record else f"Upload"
+                notif = NotificationModel(
+                    id=f"notif-{uuid.uuid4().hex[:12]}",
+                    user_id=batch_owner,
+                    batch_id=batch_id,
+                    title=f"{b_name} is ready",
+                    message=f"{total_files} files sorted.",
+                    read=False,
+                    created_at=datetime.now(timezone.utc),
+                )
+                db.add(notif)
+                db.commit()
+
+        # 3. Query paginated and filtered items
+        items_query = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id)
+        if doc_type and doc_type != "all":
+            items_query = items_query.filter(DocumentModel.doc_type == doc_type)
+        if review_status and review_status != "all":
+            # Map plain status filter back to db status if necessary
+            if review_status == "SORTED_AUTOMATICALLY":
+                items_query = items_query.filter(DocumentModel.review_status.in_(["auto_accepted", "approved", "human_verified"]))
+            elif review_status == "NEEDS_CHECK":
+                items_query = items_query.filter(DocumentModel.review_status == "pending_review")
+            elif review_status == "FAILED":
+                items_query = items_query.filter(DocumentModel.review_status == "failed")
+            elif review_status == "ALREADY_UPLOADED":
+                items_query = items_query.filter((DocumentModel.review_status == "duplicate") | (DocumentModel.is_link == True))
+            elif review_status == "BLOCKED":
+                items_query = items_query.filter(DocumentModel.review_status == "quarantined")
+            else:
+                items_query = items_query.filter(DocumentModel.review_status == review_status)
+
+        total_filtered = items_query.count()
+        docs = items_query.order_by(DocumentModel.created_at.asc()).offset((page - 1) * page_size).limit(page_size).all()
 
         items = [
             BatchFileItem(
@@ -444,20 +712,247 @@ def get_batch_detail(
                 file_name=d.file_name,
                 doc_type=d.doc_type,
                 review_status=d.review_status,
+                plain_status=to_plain_status(d.review_status, d.is_link or False),
                 confidence=d.confidence or 0.0,
-                error_detail=d.quarantine_reason if d.review_status == "quarantined" else None,
+                how_sure=round((d.confidence or 0.0) * 100, 1),
+                review_reason=d.decision_reason or d.quarantine_reason,
+                error_detail=d.quarantine_reason if d.review_status in ("quarantined", "failed") else None,
+                is_link=d.is_link or False,
                 created_at=d.created_at,
             )
             for d in docs
         ]
 
+        b_num = batch_record.number if batch_record else 1
+        b_name = batch_record.name if batch_record else f"Upload #{b_num}"
+        b_created = batch_record.created_at if batch_record else (first_doc.created_at if first_doc else datetime.now(timezone.utc))
+
         return BatchDetailResponse(
             batch_id=batch_id,
+            number=b_num,
+            name=b_name,
             user_id=batch_owner,
+            created_at=b_created,
             progress=progress,
+            progress_percent=progress_pct,
             counts_by_type=type_counts,
+            counts_by_status=plain_status_counts,
+            needs_check_count=plain_status_counts["NEEDS_CHECK"],
+            is_finished=is_finished,
             items=items,
+            total_items=total_filtered,
+            page=page,
+            page_size=page_size,
         )
+    finally:
+        db.close()
+
+
+@router.get("/batches/{batch_id}/export")
+def export_batch_zip(
+    batch_id: str,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Stream a zip archive of sorted files organized by type, plus a 'Needs a quick check' folder and summary.csv."""
+    db = get_db_session()
+    try:
+        from app.adapters.storage import get_storage_adapter
+        docs = db.query(DocumentModel).filter(DocumentModel.batch_id == batch_id).all()
+        if not docs:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found or empty")
+
+        batch_owner = docs[0].user_id
+        is_staff = current_user.role in ("admin", "reviewer", "compliance")
+        if batch_owner and not is_staff and current_user.user_id != batch_owner:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Upload '{batch_id}' not found")
+
+        # Restricted class check:
+        restricted_classes = {"medical_report", "kyc_form", "bank_statement", "claim_form", "prescription"}
+        settings = get_app_settings()
+        has_restricted = any(d.doc_type in restricted_classes for d in docs)
+        if has_restricted:
+            is_prod = getattr(settings, "APP_ENV", "local").lower() == "production"
+            allow_export = getattr(settings, "ALLOW_LOCAL_EXPORT", True)
+            if is_prod or not allow_export:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Security policy: Export of sensitive documents (medical, financial, KYC) is restricted and disabled.",
+                )
+
+        # Build zip in a temporary spool on disk (not in RAM)
+        temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+        temp_zip_path = temp_zip.name
+        temp_zip.close()
+
+        storage = get_storage_adapter()
+        seen_names: Dict[tuple, int] = {}
+
+        try:
+            with zipfile.ZipFile(temp_zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                # 1. Summary CSV
+                csv_buffer = io.StringIO()
+                csv_writer = csv.writer(csv_buffer)
+                csv_writer.writerow(["file", "type", "how_sure", "status", "reason", "key_fields"])
+
+                for d in docs:
+                    p_status = to_plain_status(d.review_status, d.is_link or False)
+                    how_sure_pct = f"{round((d.confidence or 0.0) * 100, 1)}%"
+                    reason = d.decision_reason or d.quarantine_reason or ""
+                    fields = json.loads(d.extracted_fields_json or "{}")
+                    key_fields_str = "; ".join([f"{k}={v}" for k, v in list(fields.items())[:5]])
+
+                    csv_writer.writerow([d.file_name, d.doc_type, how_sure_pct, p_status, reason, key_fields_str])
+
+                    # Get original asset bytes
+                    file_bytes = None
+                    if d.storage_path and os.path.exists(d.storage_path):
+                        try:
+                            with open(d.storage_path, "rb") as f_in:
+                                file_bytes = f_in.read()
+                        except Exception:
+                            pass
+                    elif d.sha256 and storage.exists(d.sha256):
+                        try:
+                            file_bytes = storage.get(d.sha256)
+                        except Exception:
+                            pass
+
+                    if file_bytes is None:
+                        file_bytes = b""
+
+                    # Folder structure: one folder per doc_type
+                    folder = d.doc_type or "unknown"
+                    clean_name = os.path.basename(d.file_name or f"document_{d.uid}.bin")
+
+                    # Disambiguate duplicate names in the same folder
+                    pair = (folder, clean_name)
+                    seen_names[pair] = seen_names.get(pair, 0) + 1
+                    if seen_names[pair] > 1:
+                        p_name, p_ext = os.path.splitext(clean_name)
+                        clean_name = f"{p_name}_{seen_names[pair]}{p_ext}"
+
+                    zf.writestr(f"{folder}/{clean_name}", file_bytes)
+
+                    # Also put a copy in 'Needs a quick check/' if pending_review
+                    if d.review_status == "pending_review":
+                        zf.writestr(f"Needs a quick check/{clean_name}", file_bytes)
+
+                # Write summary.csv at zip root
+                zf.writestr("summary.csv", csv_buffer.getvalue())
+
+            # Log audit trail event
+            audit_evt = AuditEventModel(
+                event_id=f"evt-export-{uuid.uuid4().hex[:8]}",
+                document_uid=batch_id,
+                sha256=docs[0].sha256 or "",
+                event_type="BATCH_EXPORTED",
+                stage_name="export",
+                status="SUCCESS",
+                payload_json=json.dumps({
+                    "batch_id": batch_id,
+                    "exported_by": current_user.username,
+                    "file_count": len(docs),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }),
+            )
+            db.add(audit_evt)
+            db.commit()
+
+            batch_rec = db.query(BatchModel).filter(BatchModel.batch_id == batch_id).first()
+            export_name = f"Upload_{batch_rec.number if batch_rec else batch_id[:8]}_sorted.zip"
+            from starlette.responses import FileResponse
+            from starlette.background import BackgroundTask
+
+            def cleanup_spool():
+                if os.path.exists(temp_zip_path):
+                    try:
+                        os.unlink(temp_zip_path)
+                    except Exception:
+                        pass
+
+            return FileResponse(
+                path=temp_zip_path,
+                media_type="application/zip",
+                filename=export_name,
+                background=BackgroundTask(cleanup_spool),
+            )
+        except Exception:
+            if os.path.exists(temp_zip_path):
+                try:
+                    os.unlink(temp_zip_path)
+                except Exception:
+                    pass
+            raise
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# Notification Endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/notifications", response_model=NotificationListResponse)
+def get_user_notifications(current_user: UserSessionResponse = Depends(get_current_user)):
+    """Retrieve owner-scoped notifications newest first with unread badge count."""
+    db = get_db_session()
+    try:
+        user_id = current_user.user_id if current_user else None
+        is_staff = current_user.role in ("admin", "reviewer", "compliance")
+        query = db.query(NotificationModel)
+        if not is_staff and user_id:
+            query = query.filter((NotificationModel.user_id == user_id) | (NotificationModel.user_id.is_(None)))
+
+        notifs = query.order_by(desc(NotificationModel.created_at)).limit(50).all()
+        unread_count = query.filter(NotificationModel.read == False).count()
+
+        items = [
+            NotificationItem(
+                id=n.id,
+                batch_id=n.batch_id,
+                title=n.title,
+                message=n.message,
+                read=n.read,
+                created_at=n.created_at,
+            )
+            for n in notifs
+        ]
+        return NotificationListResponse(items=items, unread_count=unread_count)
+    finally:
+        db.close()
+
+
+@router.post("/notifications/{notification_id}/read", response_model=NotificationMarkReadResponse)
+def mark_notification_read(
+    notification_id: str,
+    current_user: UserSessionResponse = Depends(get_current_user),
+):
+    """Mark a single notification as read."""
+    db = get_db_session()
+    try:
+        notif = db.query(NotificationModel).filter(NotificationModel.id == notification_id).first()
+        if not notif:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found")
+        notif.read = True
+        db.commit()
+        return NotificationMarkReadResponse(success=True, marked_count=1)
+    finally:
+        db.close()
+
+
+@router.post("/notifications/read-all", response_model=NotificationMarkReadResponse)
+def mark_all_notifications_read(current_user: UserSessionResponse = Depends(get_current_user)):
+    """Mark all notifications for current user as read."""
+    db = get_db_session()
+    try:
+        user_id = current_user.user_id if current_user else None
+        is_staff = current_user.role in ("admin", "reviewer", "compliance")
+        query = db.query(NotificationModel).filter(NotificationModel.read == False)
+        if not is_staff and user_id:
+            query = query.filter((NotificationModel.user_id == user_id) | (NotificationModel.user_id.is_(None)))
+        count = query.count()
+        query.update({NotificationModel.read: True}, synchronize_session=False)
+        db.commit()
+        return NotificationMarkReadResponse(success=True, marked_count=count)
     finally:
         db.close()
 

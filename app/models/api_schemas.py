@@ -17,8 +17,14 @@ class SystemInfoResponse(BaseModel):
     classifier_version: str = Field(description="Active document classifier model version")
     high_risk_floor: float = Field(default=0.92, description="Immutable threshold floor for high-risk classes")
     low_risk_floor: float = Field(default=0.85, description="Immutable threshold floor for low-risk classes")
-    max_upload_mb: int = Field(default=10, description="Maximum upload size in MB")
+    max_upload_mb: int = Field(default=200, description="Maximum upload size in MB")
+    max_upload_size_mb: int = Field(default=200, description="Maximum upload size in MB")
+    max_upload_size_bytes: int = Field(default=200 * 1024 * 1024, description="Maximum upload size in bytes")
     allowed_file_types: str = Field(default="image/jpeg,image/png,application/pdf", description="Allowed upload MIME types")
+    allowed_extensions: List[str] = Field(
+        default_factory=lambda: [".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".eml", ".docx"],
+        description="Allowed upload file extensions",
+    )
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -353,16 +359,92 @@ class BatchFileItem(BaseModel):
     file_name: str
     doc_type: str
     review_status: str
+    plain_status: str = "SORTED_AUTOMATICALLY"
     confidence: float
+    how_sure: float = 0.0
+    review_reason: Optional[str] = None
     error_detail: Optional[str] = None
+    is_link: Optional[bool] = False
     created_at: datetime
 
 
 class BatchDetailResponse(BaseModel):
     """Aggregated batch status, progress breakdown, per-type counts, and per-file items."""
     batch_id: str
+    number: int = 1
+    name: str = "Upload #1"
     user_id: Optional[str] = None
+    created_at: Optional[datetime] = None
     progress: BatchProgressCounts
-    counts_by_type: Dict[str, int]
-    items: List[BatchFileItem]
+    progress_percent: float = 0.0
+    counts_by_type: Dict[str, int] = Field(default_factory=dict)
+    counts_by_status: Dict[str, int] = Field(default_factory=dict)
+    needs_check_count: int = 0
+    is_finished: bool = False
+    items: List[BatchFileItem] = Field(default_factory=list)
+    total_items: int = 0
+    page: int = 1
+    page_size: int = 100
+
+
+class BatchCreateRequest(BaseModel):
+    """Request to initialize a new upload batch."""
+    name: Optional[str] = None
+
+
+class BatchCreateResponse(BaseModel):
+    """Created batch reference."""
+    batch_id: str
+    number: int
+    name: str
+    created_at: datetime
+
+
+class BatchSummaryItem(BaseModel):
+    """Summary of an upload batch for batch list view."""
+    batch_id: str
+    number: int
+    name: str
+    created_at: datetime
+    file_count: int
+    progress_percent: float
+    counts_by_type: Dict[str, int] = Field(default_factory=dict)
+    counts_by_status: Dict[str, int] = Field(default_factory=dict)
+    needs_check_count: int = 0
+    is_finished: bool = False
+
+
+class BatchListResponse(BaseModel):
+    """Paginated list of upload batches for My Uploads."""
+    items: List[BatchSummaryItem]
+    total: int
+    page: int
+    page_size: int
+
+
+# ---------------------------------------------------------------------------
+# Notification Schemas
+# ---------------------------------------------------------------------------
+
+class NotificationItem(BaseModel):
+    """User notification item."""
+    id: str
+    batch_id: Optional[str] = None
+    title: str
+    message: str
+    read: bool = False
+    created_at: datetime
+
+
+class NotificationListResponse(BaseModel):
+    """List of notifications with unread count."""
+    items: List[NotificationItem]
+    unread_count: int
+
+
+class NotificationMarkReadResponse(BaseModel):
+    """Result of marking notifications as read."""
+    success: bool
+    marked_count: int
+
 

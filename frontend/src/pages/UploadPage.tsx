@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AlertOctagon,
@@ -11,7 +11,7 @@ import {
   UploadCloud,
   X,
 } from 'lucide-react';
-import { api, IngestResponse } from '../api/client';
+import { api, IngestResponse, client } from '../api/client';
 
 interface UploadItem {
   id: string;
@@ -30,7 +30,28 @@ interface UploadItem {
 export const UploadPage: React.FC = () => {
   const [items, setItems] = useState<UploadItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [maxUploadMb, setMaxUploadMb] = useState<number>(200);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchLimits() {
+      try {
+        const { data } = await client.GET('/api/v1/system/info');
+        if (!cancelled && data) {
+          const mb =
+            ((data as Record<string, unknown>).max_upload_mb as number) ||
+            ((data as Record<string, unknown>).max_upload_size_mb as number) ||
+            200;
+          setMaxUploadMb(mb);
+        }
+      } catch {
+        // Fallback to 200 MB
+      }
+    }
+    void fetchLimits();
+    return () => { cancelled = true; };
+  }, []);
 
   const sanitizeFileName = (name: string): string => {
     return name.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -39,11 +60,13 @@ export const UploadPage: React.FC = () => {
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
     const newItems: UploadItem[] = [];
+    const maxUploadBytes = maxUploadMb * 1024 * 1024;
 
     Array.from(files).forEach((file) => {
-      // Validate file size (max 25MB)
-      if (file.size > 25 * 1024 * 1024) {
-        alert(`File ${file.name} exceeds 25 MB limit.`);
+      // Validate file size against dynamic limit
+      if (file.size > maxUploadBytes) {
+        const fileMb = (file.size / (1024 * 1024)).toFixed(0);
+        alert(`File is ${fileMb} MB. Maximum allowed is ${maxUploadMb} MB.`);
         return;
       }
 
@@ -222,7 +245,7 @@ export const UploadPage: React.FC = () => {
           Click to browse or drag and drop document files
         </h3>
         <p className="text-xs text-slate-400 mt-1.5">
-          Supported formats: PDF, TIFF, PNG, JPG, DOCX, EML (Up to 25 MB per file)
+          Supported formats: PDF, TIFF, PNG, JPG, DOCX, EML (Up to {maxUploadMb} MB per file)
         </p>
       </div>
 

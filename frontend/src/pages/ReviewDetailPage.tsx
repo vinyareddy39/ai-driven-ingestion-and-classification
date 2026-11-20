@@ -58,7 +58,7 @@ export const ReviewDetailPage: React.FC = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['reviewDetail', documentUid] });
       queryClient.invalidateQueries({ queryKey: ['reviewQueue'] });
-      alert(`Success: ${data.message}`);
+      alert(`Success: ${(data as any).message || 'Action submitted'}`);
       navigate('/review');
     },
     onError: (err: Error) => {

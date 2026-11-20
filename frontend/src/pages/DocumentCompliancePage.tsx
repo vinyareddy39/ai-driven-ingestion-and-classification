@@ -74,7 +74,7 @@ export const DocumentCompliancePage: React.FC = () => {
     return <span className="font-mono text-slate-200">{val}</span>;
   };
 
-  const auditEvents = auditData?.events || [];
+  const auditEvents = (auditData as any)?.events || (auditData as any)?.auditTrail || [];
 
   return (
     <div className="p-8 max-w-6xl mx-auto w-full space-y-6">

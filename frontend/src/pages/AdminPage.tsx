@@ -38,7 +38,7 @@ export const AdminPage: React.FC = () => {
     if (configData && configData.classes) {
       const initial: Record<string, number> = {};
       Object.entries(configData.classes).forEach(([cName, cCfg]) => {
-        initial[cName] = cCfg.current_threshold;
+        initial[cName] = (cCfg as any).current_threshold;
       });
       setProposedThresholds(initial);
     }

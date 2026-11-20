@@ -75,6 +75,11 @@ class Storage(ABC):
         """Store bytes under key and return storage path / URI."""
         pass
 
+    def save_file(self, key: str, file_path: str, content_type: str = "application/octet-stream") -> str:
+        """Store a file from filesystem under key without loading into memory."""
+        with open(file_path, "rb") as f:
+            return self.save(key, f.read(), content_type=content_type)
+
     @abstractmethod
     def get(self, key: str) -> bytes:
         """Retrieve bytes stored under key."""
@@ -176,7 +181,13 @@ class ECMAdapter(ABC):
         pass
 
     @abstractmethod
-    def create_link(self, source_sha256: str, target_record: ECMDocumentRecord) -> ECMDocumentRecord:
+    def create_link(
+        self,
+        source_sha256: str,
+        target_record: ECMDocumentRecord,
+        batch_id: Optional[str] = None,
+        source_uid: Optional[str] = None,
+    ) -> ECMDocumentRecord:
         """Create a lightweight deduplicated reference linking to an existing asset."""
         pass
 
@@ -191,7 +202,7 @@ class ECMAdapter(ABC):
         pass
 
     @abstractmethod
-    def find_by_hash(self, sha256: str) -> Optional[ECMDocumentRecord]:
+    def find_by_hash(self, sha256: str, exclude_uid: Optional[str] = None) -> Optional[ECMDocumentRecord]:
         """Find existing document asset by raw file SHA-256 hash."""
         pass
 

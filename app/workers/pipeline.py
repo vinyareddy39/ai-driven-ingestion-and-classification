@@ -54,7 +54,14 @@ PIPELINE_STATS = {
 }
 
 
-def quarantine_document(uid: str, sha256_hash: str, file_name: str, storage_path: str, reason: str) -> None:
+def quarantine_document(
+    uid: str,
+    sha256_hash: str,
+    file_name: str,
+    storage_path: str,
+    reason: str,
+    batch_id: Optional[str] = None,
+) -> None:
     """Quarantine corrupt, infected, or password-protected document."""
     db = get_db_session()
     try:
@@ -73,11 +80,15 @@ def quarantine_document(uid: str, sha256_hash: str, file_name: str, storage_path
                 review_status="quarantined",
                 quarantine_reason=reason,
                 decision_reason=reason,
+                batch_id=batch_id,
             )
             db.add(doc)
         else:
             doc.review_status = "quarantined"
             doc.quarantine_reason = reason
+            doc.decision_reason = reason
+            if batch_id:
+                doc.batch_id = batch_id
         db.commit()
     finally:
         db.close()
@@ -115,20 +126,20 @@ def process_document_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         STAGE_LATENCY_METRICS["virus_scan"].append(time.time() - t0)
         if v_res.get("status") == "INFECTED":
             registry.commit_stage(sha256_hash, "virus_scan", v_res)
-            quarantine_document(uid, sha256_hash, file_name, storage_path, v_res["reason"])
+            quarantine_document(uid, sha256_hash, file_name, storage_path, v_res["reason"], batch_id=payload.get("batch_id"))
             return {"status": "QUARANTINED", "reason": v_res["reason"]}
         registry.commit_stage(sha256_hash, "virus_scan", v_res)
 
     # 2. Stage: Dedupe
     t0 = time.time()
     if not is_reprocess:
-        d_res = stage_dedupe(sha256_hash)
+        d_res = stage_dedupe(sha256_hash, current_uid=uid)
         STAGE_LATENCY_METRICS["dedupe"].append(time.time() - t0)
         if d_res.get("status") == "DUPLICATE_FOUND":
             # Exact duplicate found: create link reference, do not store copy
             ecm = get_ecm_adapter()
             canonical_rec = d_res["canonical_record"]
-            link_rec = ecm.create_link(sha256_hash, canonical_rec)
+            link_rec = ecm.create_link(sha256_hash, canonical_rec, batch_id=payload.get("batch_id"), source_uid=uid)
             registry.commit_stage(sha256_hash, "dedupe", d_res)
             PIPELINE_STATS["duplicates_linked"] += 1
             PIPELINE_STATS["total_processed"] += 1
@@ -147,7 +158,7 @@ def process_document_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         STAGE_LATENCY_METRICS["preprocess"].append(time.time() - t0)
         if p_res.get("status") in ["CORRUPT", "PASSWORD_PROTECTED"]:
             registry.commit_stage(sha256_hash, "preprocess", p_res)
-            quarantine_document(uid, sha256_hash, file_name, storage_path, p_res["reason"])
+            quarantine_document(uid, sha256_hash, file_name, storage_path, p_res["reason"], batch_id=payload.get("batch_id"))
             return {"status": "QUARANTINED", "reason": p_res["reason"]}
         registry.commit_stage(sha256_hash, "preprocess", p_res)
 
@@ -211,6 +222,8 @@ def process_document_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         "pii_detected": pii_res["pii_detected"],
         "pii_types": pii_res["pii_types"],
         "extracted_text_preview": full_text[:1000],
+        "batch_id": payload.get("batch_id"),
+        "user_id": payload.get("user_id"),
     }
 
     # 10. Stage: ECM Write
@@ -275,6 +288,18 @@ def run_pipeline_worker(queue_type: str = "live", max_items: Optional[int] = Non
             logger.error(f"Error processing item {msg_id}: {e}")
             dlq = DeadLetterQueueHandler()
             dlq.handle_stage_failure(payload.get("sha256", "unknown"), "worker_unhandled", payload, str(e))
+            # Persist failure/quarantine to DocumentModel so batch progress tracks it accurately
+            try:
+                db_err = get_db_session()
+                u_err = db_err.query(DocumentModel).filter(DocumentModel.uid == payload.get("uid")).first()
+                if u_err:
+                    u_err.review_status = "quarantined"
+                    u_err.quarantine_reason = str(e)
+                    u_err.decision_reason = f"Pipeline worker error: {str(e)}"
+                    db_err.commit()
+                db_err.close()
+            except Exception:
+                pass
             queue.ack(queue_name, f"group-{queue_type}", msg_id)
 
         if max_items is not None and items_done >= max_items:

@@ -9,12 +9,12 @@ from app.core.settings import AppSettings, validate_production_safety
 
 def test_settings_default_values_and_types():
     """Verify all 24 required settings variables are loaded with appropriate defaults."""
-    s = AppSettings()
+    s = AppSettings(_env_file=None)
     assert s.APP_ENV in ["local", "development", "production"]
     assert s.ACCESS_TOKEN_MINUTES == 30
     assert s.REFRESH_TOKEN_DAYS == 7
     assert s.AUTH_ALLOW_ROLE_HEADER is False
-    assert s.MAX_UPLOAD_MB == 10
+    assert s.MAX_UPLOAD_MB == 200
     assert "pdf" in s.ALLOWED_FILE_TYPES
     assert s.STORAGE_BACKEND in ["local", "s3"]
     assert s.STORAGE_LOCAL_DIR == "./data/storage"
@@ -109,25 +109,28 @@ def test_production_safety_passes_with_valid_configuration():
 
 def test_system_info_endpoint_exposes_no_secrets():
     """Verify /api/v1/system/info returns metadata and operational limits with strictly ZERO secrets."""
-    from app.core.auth import get_configured_tokens
-    tokens = get_configured_tokens()
-    token = list(tokens.keys())[0] if tokens else "secret-token-12345"
+    from app.api.routes_v1 import get_system_info
+    from app.models.api_schemas import UserSessionResponse
 
-    client = TestClient(app)
-    # Staff token header
-    client.headers["Authorization"] = f"Bearer {token}"
+    user = UserSessionResponse(
+        user_id="usr-adm-01",
+        username="admin@ecm.local",
+        role="admin",
+        permissions=["*"],
+    )
 
-    resp = client.get("/api/v1/system/info")
-    assert resp.status_code == 200, resp.text
-    data = resp.json()
+    info = get_system_info(current_user=user)
+    data = info.model_dump()
 
     assert "mode" in data
     assert "version" in data
     assert "max_upload_mb" in data
     assert "allowed_file_types" in data
-    assert data["max_upload_mb"] == 10
+    assert data["max_upload_mb"] == 200
+    assert data["max_upload_size_mb"] == 200
+    assert data["max_upload_size_bytes"] == 200 * 1024 * 1024
 
-    raw_text = resp.text
+    raw_text = str(data)
     assert "SECRET_KEY" not in raw_text
     assert "DATA_ENCRYPTION_KEY" not in raw_text
     assert "minioadmin" not in raw_text

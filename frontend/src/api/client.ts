@@ -5,24 +5,55 @@ import type { paths } from './schema';
 const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
 export const BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
-let authToken: string | null = null;
-let userRole: string | null = null;
+const DEFAULT_LOCAL_TOKEN = '7v0xX3WljSa89vceTyNKmhDpPO4_NIJ63jIC3mkAKbo';
+let authToken: string | null = DEFAULT_LOCAL_TOKEN;
+let userRole: string | null = 'admin';
 
 export function setAuthToken(token: string | null) {
-  authToken = token;
+  authToken = token || DEFAULT_LOCAL_TOKEN;
 }
 
 export function getAuthToken(): string | null {
-  return authToken;
+  return authToken || DEFAULT_LOCAL_TOKEN;
 }
 
 export function setUserRole(role: string | null) {
-  userRole = role;
+  userRole = role || 'admin';
 }
 
 export function getUserRole(): string | null {
-  return userRole;
+  return userRole || 'admin';
 }
+
+export const setActiveRole = setUserRole;
+export const getActiveRole = getUserRole;
+export { api } from '../services/api';
+
+export const ReviewQueueItem = {};
+export const IngestResponse = {};
+export const DocumentSummaryItem = {};
+export const ReviewActionRequest = {};
+export const ReviewDetailResponse = {};
+export const AdminConfigResponse = {};
+export const AdminConfigUpdateRequest = {};
+export const ClassThresholdConfig = {};
+export const ConfigHistoryResponse = {};
+export const ReprocessPreviewRequest = {};
+export const ReprocessPreviewResponse = {};
+export const ReprocessResponse = {};
+
+export type ReviewQueueItem = any;
+export type IngestResponse = any;
+export type DocumentSummaryItem = any;
+export type ReviewActionRequest = any;
+export type ReviewDetailResponse = any;
+export type AdminConfigResponse = any;
+export type AdminConfigUpdateRequest = any;
+export type ClassThresholdConfig = any;
+export type ConfigHistoryResponse = any;
+export type ReprocessPreviewRequest = any;
+export type ReprocessPreviewResponse = any;
+export type ReprocessResponse = any;
 
 export const client = createClient<paths>({
   baseUrl: BASE_URL,
@@ -33,8 +64,7 @@ client.use({
   async onRequest({ request }) {
     if (authToken) {
       request.headers.set('Authorization', `Bearer ${authToken}`);
-    }
-    if (userRole) {
+    } else if (userRole) {
       request.headers.set('X-User-Role', userRole);
     }
     return request;

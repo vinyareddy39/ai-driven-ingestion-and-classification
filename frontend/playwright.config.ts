@@ -15,9 +15,17 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'npm run dev',
-    port: 5173,
-    reuseExistingServer: true,
-  },
+  webServer: [
+    {
+      command: 'C:\\ml\\.venv311\\Scripts\\python.exe -m uvicorn app.api.app:app --host 127.0.0.1 --port 8000',
+      port: 8000,
+      reuseExistingServer: true,
+      cwd: '..',
+    },
+    {
+      command: 'npm run dev',
+      port: 5173,
+      reuseExistingServer: true,
+    },
+  ],
 });

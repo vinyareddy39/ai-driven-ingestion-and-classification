@@ -1,15 +1,17 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  AlertTriangle,
-  CheckCircle2,
-  CloudUpload,
   FileUp,
   Loader2,
-  RefreshCw,
+  CheckCircle2,
   XCircle,
+  AlertTriangle,
+  FileText,
+  Trash2,
+  ArrowRight,
+  UploadCloud,
 } from 'lucide-react';
-import { BASE_URL, client } from '../api/client';
-import type { IngestResponse } from '../types';
+import { BASE_URL, client, getAuthToken, getActiveRole } from '../api/client';
+import { BatchResultView } from './BatchResultView';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,45 +21,35 @@ interface SystemInfo {
   allowed_extensions: string[];
 }
 
-interface StatusPollResult {
-  status: string;
-  [key: string]: unknown;
+export interface QueuedFileItem {
+  id: string;
+  file: File;
+  name: string;
+  size: number;
+  error?: string | null;
+  progress: number;
+  status: 'idle' | 'uploading' | 'done' | 'error';
+  uid?: string;
+  sha256?: string;
 }
 
-type UploadPhase = 'idle' | 'uploading' | 'polling' | 'done' | 'error';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+interface UploadDeskProps {
+  onNavigateBatch?: (batchId: string) => void;
+  onNavigateTab?: (tab: string) => void;
+}
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
   const mb = bytes / (1024 * 1024);
-  return `${Math.round(mb)} MB`;
+  if (mb >= 1) return `${mb.toFixed(1)} MB`;
+  const kb = bytes / 1024;
+  return `${Math.round(kb)} KB`;
 }
 
-function truncateSha(sha: string): string {
-  return sha.length > 16 ? `${sha.slice(0, 8)}…${sha.slice(-8)}` : sha;
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  QUEUED: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
-  PROCESSING: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
-  CLASSIFIED: 'bg-teal-500/20 text-teal-300 border-teal-500/40',
-  AUTO_ACCEPTED: 'bg-green-500/20 text-green-300 border-green-500/40',
-  PENDING_REVIEW: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
-  QUARANTINED: 'bg-red-500/20 text-red-300 border-red-500/40',
-  ERROR: 'bg-red-500/20 text-red-300 border-red-500/40',
-};
-
-function statusBadgeClass(status: string): string {
-  return (
-    STATUS_COLORS[status.toUpperCase()] ??
-    'bg-slate-700 text-slate-300 border-slate-600'
-  );
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
-export const UploadDesk: React.FC = () => {
+export const UploadDesk: React.FC<UploadDeskProps> = ({
+  onNavigateBatch,
+  onNavigateTab,
+}) => {
   // System info
   const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null);
   const [systemInfoError, setSystemInfoError] = useState<string | null>(null);
@@ -65,20 +57,14 @@ export const UploadDesk: React.FC = () => {
   // Drag state
   const [isDragOver, setIsDragOver] = useState(false);
 
-  // Upload flow
-  const [phase, setPhase] = useState<UploadPhase>('idle');
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [ingestResult, setIngestResult] = useState<IngestResponse | null>(null);
-  const [liveStatus, setLiveStatus] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // File Queue & Batch State
+  const [queue, setQueue] = useState<QueuedFileItem[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pollCountRef = useRef(0);
-  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Fetch system info on mount ────────────────────────────────────────────
-
   useEffect(() => {
     let cancelled = false;
 
@@ -86,156 +72,87 @@ export const UploadDesk: React.FC = () => {
       const { data, error } = await client.GET('/api/v1/system/info');
       if (cancelled) return;
       if (error || !data) {
-        setSystemInfoError(
-          typeof error === 'object' && error !== null && 'detail' in error
-            ? String((error as Record<string, unknown>).detail)
-            : 'Could not load upload limits — upload may still work.',
-        );
+        setSystemInfoError('Could not load upload limits — upload will still work.');
         return;
       }
+      const rawTypes = (data as Record<string, unknown>).allowed_file_types;
+      const allowedTypes = Array.isArray(rawTypes)
+        ? (rawTypes as string[])
+        : typeof rawTypes === 'string'
+          ? (rawTypes as string).split(',').map((t) => t.trim().toLowerCase())
+          : ['application/pdf', 'image/png', 'image/jpeg'];
+      const rawExts = (data as Record<string, unknown>).allowed_extensions;
+      const allowedExtensions = Array.isArray(rawExts)
+        ? (rawExts as string[])
+        : ['.pdf', '.png', '.jpg', '.jpeg', '.tiff', '.eml', '.docx'];
+
+      const maxBytes =
+        ((data as Record<string, unknown>).max_upload_size_bytes as number) ||
+        (((data as Record<string, unknown>).max_upload_mb as number) || 200) * 1024 * 1024;
+
       setSystemInfo({
-        max_upload_size_bytes:
-          (data as Record<string, unknown>).max_upload_size_bytes as number,
-        allowed_file_types:
-          (data as Record<string, unknown>).allowed_file_types as string[],
-        allowed_extensions:
-          (data as Record<string, unknown>).allowed_extensions as string[],
+        max_upload_size_bytes: maxBytes,
+        allowed_file_types: allowedTypes,
+        allowed_extensions: allowedExtensions,
       });
     }
 
     void loadSystemInfo();
-    return () => { cancelled = true; };
-  }, []);
-
-  // ── Cleanup poll timer on unmount ─────────────────────────────────────────
-
-  useEffect(() => {
     return () => {
-      if (pollTimerRef.current !== null) clearTimeout(pollTimerRef.current);
+      cancelled = true;
     };
   }, []);
 
-  // ── Validation ────────────────────────────────────────────────────────────
-
+  // ── Plain Words File Validation ───────────────────────────────────────────
   function validateFile(file: File): string | null {
-    if (!systemInfo) return null; // let backend decide if limits unknown
-
-    if (file.size > systemInfo.max_upload_size_bytes) {
-      const limitMb = formatBytes(systemInfo.max_upload_size_bytes);
-      return `File exceeds limit (${limitMb})`;
+    const maxBytes = systemInfo?.max_upload_size_bytes ?? 200 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      const fileMb = (file.size / (1024 * 1024)).toFixed(0);
+      const limitMb = Math.round(maxBytes / (1024 * 1024));
+      return `Too big (${fileMb} MB). Maximum allowed size is ${limitMb} MB.`;
     }
 
-    const mimeOk = systemInfo.allowed_file_types.includes(file.type);
-    const ext = `.${file.name.split('.').pop()?.toLowerCase() ?? ''}`;
-    const extOk = systemInfo.allowed_extensions.includes(ext);
+    if (systemInfo) {
+      const mimeOk = systemInfo.allowed_file_types.includes(file.type);
+      const ext = `.${file.name.split('.').pop()?.toLowerCase() ?? ''}`;
+      const extOk = systemInfo.allowed_extensions.includes(ext);
 
-    if (!mimeOk && !extOk) {
-      return `File type not allowed. Accepted: ${systemInfo.allowed_extensions.join(', ')}`;
+      if (!mimeOk && !extOk) {
+        return `Wrong file type. Accepted types: ${systemInfo.allowed_extensions.join(', ')}`;
+      }
     }
 
     return null;
   }
 
-  // ── Polling ───────────────────────────────────────────────────────────────
-
-  function startPolling(uid: string) {
-    pollCountRef.current = 0;
-
-    async function poll() {
-      if (pollCountRef.current >= 30) {
-        setPhase('done');
-        return;
-      }
-      pollCountRef.current += 1;
-
-      try {
-        const res = await fetch(
-          `${BASE_URL}/api/v1/documents/${encodeURIComponent(uid)}/status`,
-          { headers: { 'X-User-Role': 'admin' } },
-        );
-        if (res.ok) {
-          const json = (await res.json()) as StatusPollResult;
-          const newStatus = String(json.status ?? '');
-          setLiveStatus(newStatus);
-
-          if (newStatus && newStatus !== 'QUEUED' && newStatus !== 'PROCESSING') {
-            setPhase('done');
-            return;
-          }
-        }
-      } catch {
-        // silent — keep polling
-      }
-
-      pollTimerRef.current = setTimeout(() => void poll(), 2000);
-    }
-
-    setPhase('polling');
-    void poll();
-  }
-
-  // ── Upload ────────────────────────────────────────────────────────────────
-
-  async function handleUpload(file: File) {
-    setValidationError(null);
-    setUploadError(null);
-    setIngestResult(null);
-    setLiveStatus(null);
-    setSelectedFile(file);
-
-    const err = validateFile(file);
-    if (err) {
-      setValidationError(err);
-      return;
-    }
-
-    setPhase('uploading');
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await fetch(`${BASE_URL}/ingest`, {
-        method: 'POST',
-        headers: { 'X-User-Role': 'admin' },
-        body: formData,
+  // ── Add Files to Queue ────────────────────────────────────────────────────
+  function addFiles(files: FileList | File[]) {
+    const newItems: QueuedFileItem[] = [];
+    Array.from(files).forEach((f) => {
+      const err = validateFile(f);
+      newItems.push({
+        id: `${f.name}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        file: f,
+        name: f.name,
+        size: f.size,
+        error: err,
+        progress: 0,
+        status: err ? 'error' : 'idle',
       });
+    });
 
-      const json = (await res.json()) as Record<string, unknown>;
-
-      if (!res.ok) {
-        const msg =
-          typeof json.detail === 'string'
-            ? json.detail
-            : typeof json.message === 'string'
-              ? json.message
-              : `Upload failed: ${res.statusText}`;
-        setUploadError(msg);
-        setPhase('error');
-        return;
-      }
-
-      const result: IngestResponse = {
-        uid: String(json.uid ?? ''),
-        sha256: String(json.sha256 ?? ''),
-        file_name: String(json.file_name ?? file.name),
-        status: String(json.status ?? ''),
-        queue: String(json.queue ?? ''),
-        message: String(json.message ?? ''),
-      };
-
-      setIngestResult(result);
-      setLiveStatus(result.status);
-      startPolling(result.uid);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Network error during upload.';
-      setUploadError(msg);
-      setPhase('error');
-    }
+    setQueue((prev) => [...prev, ...newItems]);
   }
 
-  // ── Drag & Drop handlers ──────────────────────────────────────────────────
+  function removeQueueItem(id: string) {
+    setQueue((prev) => prev.filter((item) => item.id !== id));
+  }
 
+  function clearQueue() {
+    setQueue([]);
+  }
+
+  // ── Drag & Drop Handlers ──────────────────────────────────────────────────
   const onDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragOver(true);
@@ -249,243 +166,312 @@ export const UploadDesk: React.FC = () => {
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       setIsDragOver(false);
-      const file = e.dataTransfer.files?.[0];
-      if (file) void handleUpload(file);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addFiles(e.dataTransfer.files);
+      }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [systemInfo],
   );
 
-  const onFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) void handleUpload(file);
-      // reset input so same file can be re-picked
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [systemInfo],
-  );
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      addFiles(e.target.files);
+      e.target.value = '';
+    }
+  };
 
-  // ── Reset ─────────────────────────────────────────────────────────────────
+  // ── Per-File Upload Worker ────────────────────────────────────────────────
+  async function uploadItem(item: QueuedFileItem, batchId: string): Promise<{ uid?: string; sha256?: string; error?: string }> {
+    return new Promise((resolve) => {
+      const formData = new FormData();
+      formData.append('file', item.file);
+      formData.append('batch_id', batchId);
 
-  function handleReset() {
-    if (pollTimerRef.current !== null) clearTimeout(pollTimerRef.current);
-    setPhase('idle');
-    setValidationError(null);
-    setUploadError(null);
-    setIngestResult(null);
-    setLiveStatus(null);
-    setSelectedFile(null);
-    pollCountRef.current = 0;
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${BASE_URL}/api/v1/ingest`);
+
+      const tok = getAuthToken();
+      if (tok) {
+        xhr.setRequestHeader('Authorization', `Bearer ${tok}`);
+      } else {
+        const r = getActiveRole() || 'admin';
+        if (r) xhr.setRequestHeader('X-User-Role', r);
+      }
+
+      xhr.upload.onprogress = (evt) => {
+        if (evt.lengthComputable) {
+          const percent = Math.round((evt.loaded / evt.total) * 100);
+          setQueue((prev) =>
+            prev.map((i) => (i.id === item.id ? { ...i, progress: percent } : i)),
+          );
+        }
+      };
+
+      xhr.onload = () => {
+        let json: Record<string, unknown> = {};
+        try {
+          json = JSON.parse(xhr.responseText);
+        } catch {
+          json = { detail: xhr.statusText };
+        }
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const uid = String(json.uid ?? '');
+          const sha = String(json.sha256 ?? '');
+          setQueue((prev) =>
+            prev.map((i) =>
+              i.id === item.id
+                ? { ...i, progress: 100, status: 'done', uid, sha256: sha }
+                : i,
+            ),
+          );
+          resolve({ uid, sha256: sha });
+        } else {
+          const msg =
+            typeof json.detail === 'string'
+              ? json.detail
+              : `Upload failed: ${xhr.status} ${xhr.statusText}`;
+          setQueue((prev) =>
+            prev.map((i) =>
+              i.id === item.id ? { ...i, status: 'error', error: msg } : i,
+            ),
+          );
+          resolve({ error: msg });
+        }
+      };
+
+      xhr.onerror = () => {
+        const msg = 'Network error during upload.';
+        setQueue((prev) =>
+          prev.map((i) =>
+            i.id === item.id ? { ...i, status: 'error', error: msg } : i,
+          ),
+        );
+        resolve({ error: msg });
+      };
+
+      xhr.send(formData);
+    });
   }
 
-  // ── Derived values ────────────────────────────────────────────────────────
+  // ── Start Upload Batch ────────────────────────────────────────────────────
+  async function startBatchUpload() {
+    const validItems = queue.filter((i) => !i.error && i.status !== 'done');
+    if (validItems.length === 0) return;
 
-  const isDuplicate =
-    ingestResult !== null &&
-    (ingestResult.is_link === true ||
-      ingestResult.message?.toLowerCase().includes('duplicate'));
+    setIsUploading(true);
 
-  const linkedUid =
-    isDuplicate && typeof ingestResult?.linked_to_uid === 'string'
-      ? ingestResult.linked_to_uid
-      : null;
+    let batchId = `batch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // 1. Create batch record in backend
+    try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      const tok = getAuthToken();
+      if (tok) headers['Authorization'] = `Bearer ${tok}`;
+      else headers['X-User-Role'] = 'admin';
 
-  const limitLabel = systemInfo
-    ? `Max ${formatBytes(systemInfo.max_upload_size_bytes)} · ${systemInfo.allowed_extensions
-        .map((e) => e.replace('.', '').toUpperCase())
-        .join(', ')}`
-    : systemInfoError
-      ? 'Upload limits unavailable'
-      : 'Loading limits…';
+      const res = await fetch(`${BASE_URL}/api/v1/batches`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({}),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.batch_id) batchId = data.batch_id;
+      }
+    } catch {
+      // Fallback to client-generated batchId
+    }
 
-  const isActive = phase === 'uploading' || phase === 'polling';
+    // 2. Mark valid items as uploading
+    setQueue((prev) =>
+      prev.map((i) =>
+        !i.error && i.status !== 'done' ? { ...i, status: 'uploading', progress: 0 } : i,
+      ),
+    );
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Render
-  // ─────────────────────────────────────────────────────────────────────────
+    // 3. Upload files
+    await Promise.all(validItems.map((item) => uploadItem(item, batchId)));
+
+    setIsUploading(false);
+
+    // 4. Go straight to the batch page!
+    if (onNavigateBatch) {
+      onNavigateBatch(batchId);
+    } else {
+      setActiveBatchId(batchId);
+    }
+  }
+
+  // If activeBatchId is set and we're showing results inline:
+  if (activeBatchId) {
+    return (
+      <BatchResultView
+        batchId={activeBatchId}
+        onReset={() => {
+          setActiveBatchId(null);
+          clearQueue();
+        }}
+        onNavigateTab={onNavigateTab}
+      />
+    );
+  }
+
+  const validCount = queue.filter((i) => !i.error && i.status !== 'done').length;
+  const maxMb = systemInfo ? Math.round(systemInfo.max_upload_size_bytes / (1024 * 1024)) : 200;
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-start justify-center px-4 py-10">
-      <div className="w-full max-w-xl space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="pb-4 border-b border-slate-800">
+        <h1 className="text-2xl font-bold text-white flex items-center space-x-2">
+          <UploadCloud className="w-6 h-6 text-teal-400" />
+          <span>Upload files</span>
+        </h1>
+        <p className="text-sm text-slate-400 mt-1">
+          Select or drag documents here. We'll automatically sort them into categories and read the text.
+        </p>
+      </div>
 
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Upload Desk</h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Drag a file into the zone or click to browse.
-          </p>
+      {systemInfoError && (
+        <div className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center space-x-2">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span>{systemInfoError}</span>
         </div>
+      )}
 
-        {/* System info warning */}
-        {systemInfoError && (
-          <div className="flex items-start gap-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{systemInfoError}</span>
-          </div>
-        )}
-
-        {/* Drop zone — hidden when done/error */}
-        {phase !== 'done' && phase !== 'error' && (
-          <div
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
-            onClick={() => !isActive && fileInputRef.current?.click()}
-            className={[
-              'relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed px-6 py-14 transition-colors',
-              isActive
-                ? 'cursor-not-allowed border-slate-600 bg-slate-800/40'
-                : isDragOver
-                  ? 'cursor-copy border-teal-400 bg-teal-900/20'
-                  : 'cursor-pointer border-slate-600 bg-slate-800/60 hover:border-teal-500 hover:bg-slate-800',
-            ].join(' ')}
-          >
-            {phase === 'uploading' ? (
-              <>
-                <Loader2 className="h-10 w-10 animate-spin text-teal-400" />
-                <p className="text-sm text-slate-300">
-                  Uploading <span className="font-medium text-white">{selectedFile?.name}</span>…
-                </p>
-              </>
-            ) : phase === 'polling' ? (
-              <>
-                <RefreshCw className="h-10 w-10 animate-spin text-teal-400" />
-                <p className="text-sm text-slate-300">Processing — waiting for pipeline…</p>
-              </>
-            ) : (
-              <>
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-slate-600 bg-slate-800">
-                  {isDragOver ? (
-                    <CloudUpload className="h-8 w-8 text-teal-300" />
-                  ) : (
-                    <FileUp className="h-8 w-8 text-slate-400" />
-                  )}
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-slate-200">
-                    Drop file here or{' '}
-                    <span className="text-teal-400 underline underline-offset-2">browse</span>
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">{limitLabel}</p>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Hidden file input */}
+      {/* ── One Big Drop Area ── */}
+      <div
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        onClick={() => fileInputRef.current?.click()}
+        className={`relative flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-3xl cursor-pointer transition-all text-center ${
+          isDragOver
+            ? 'border-teal-400 bg-teal-500/10 scale-[1.01]'
+            : 'border-slate-700/80 bg-slate-900/50 hover:border-teal-500/50 hover:bg-slate-900/80'
+        }`}
+      >
         <input
           ref={fileInputRef}
           type="file"
+          multiple
           className="hidden"
-          onChange={onFileChange}
-          disabled={isActive}
+          onChange={onFileInputChange}
+          accept={systemInfo?.allowed_extensions?.join(',') || '.pdf,.png,.jpg,.jpeg,.tiff,.eml,.docx'}
         />
 
-        {/* Validation error */}
-        {validationError && (
-          <div className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-            <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{validationError}</span>
-          </div>
-        )}
+        <div className="w-16 h-16 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-4 shadow-lg shadow-teal-500/10">
+          <FileUp className="w-8 h-8" />
+        </div>
 
-        {/* Upload error */}
-        {phase === 'error' && uploadError && (
-          <div className="space-y-3">
-            <div className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{uploadError}</span>
-            </div>
-            <button
-              onClick={handleReset}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-600 bg-slate-800 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
-            >
-              <RefreshCw className="h-4 w-4" /> Upload another file
-            </button>
-          </div>
-        )}
+        <h3 className="text-lg font-bold text-white mb-1">
+          Drag files here or choose files
+        </h3>
+        <p className="text-xs text-slate-400 max-w-sm mb-3">
+          Upload as many files as you like at once. PDF, images (PNG, JPG), TIFF, and Word docs supported up to {maxMb} MB per file.
+        </p>
 
-        {/* Result card */}
-        {ingestResult && (phase === 'polling' || phase === 'done') && (
-          <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5 space-y-4">
+        <span className="px-4 py-2 rounded-xl text-xs font-semibold bg-teal-500/15 text-teal-300 border border-teal-500/30 shadow-sm hover:bg-teal-500/25 transition">
+          Browse files on your computer
+        </span>
+      </div>
 
-            {/* Duplicate banner */}
-            {isDuplicate && (
-              <div className="flex items-start gap-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  Duplicate detected
-                  {linkedUid ? (
-                    <>
-                      {' '}— linked to{' '}
-                      <span className="font-mono font-semibold">{linkedUid}</span>
-                    </>
-                  ) : (
-                    ''
-                  )}
-                </span>
-              </div>
-            )}
-
-            {/* Status row */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                {phase === 'polling' ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-teal-400" />
-                ) : (
-                  <CheckCircle2 className="h-4 w-4 text-teal-400" />
-                )}
-                <span className="text-sm font-semibold text-white">
-                  {ingestResult.file_name}
-                </span>
-              </div>
-              <span
-                className={[
-                  'rounded-full border px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide',
-                  statusBadgeClass(liveStatus ?? ingestResult.status),
-                ].join(' ')}
-              >
-                {liveStatus ?? ingestResult.status}
+      {/* ── Selected Files List ── */}
+      {queue.length > 0 && (
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 overflow-hidden shadow-sm space-y-4 p-5">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-bold text-white">Selected files</span>
+              <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-slate-800 text-teal-300 border border-slate-700">
+                {queue.length}
               </span>
             </div>
-
-            {/* Meta grid */}
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              <div>
-                <dt className="text-xs text-slate-500 uppercase tracking-wide">UID</dt>
-                <dd className="mt-0.5 font-mono text-slate-200 break-all">{ingestResult.uid}</dd>
-              </div>
-              <div>
-                <dt className="text-xs text-slate-500 uppercase tracking-wide">Queue</dt>
-                <dd className="mt-0.5 font-medium text-slate-200">{ingestResult.queue}</dd>
-              </div>
-              <div className="col-span-2">
-                <dt className="text-xs text-slate-500 uppercase tracking-wide">SHA-256</dt>
-                <dd className="mt-0.5 font-mono text-slate-400">{truncateSha(ingestResult.sha256)}</dd>
-              </div>
-              {ingestResult.message && (
-                <div className="col-span-2">
-                  <dt className="text-xs text-slate-500 uppercase tracking-wide">Message</dt>
-                  <dd className="mt-0.5 text-slate-300">{ingestResult.message}</dd>
-                </div>
-              )}
-            </dl>
-
-            {/* Upload another */}
-            {phase === 'done' && (
+            {!isUploading && (
               <button
-                onClick={handleReset}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-600 bg-slate-700/60 py-2.5 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
+                onClick={clearQueue}
+                className="text-xs text-slate-400 hover:text-rose-400 transition"
               >
-                <FileUp className="h-4 w-4" /> Upload another file
+                Clear all
               </button>
             )}
           </div>
-        )}
-      </div>
+
+          <div className="max-h-72 overflow-y-auto divide-y divide-slate-800/60 pr-1">
+            {queue.map((item) => (
+              <div key={item.id} className="py-2.5 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center space-x-3 min-w-0">
+                  <FileText className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-200 truncate">{item.name}</p>
+                    <span className="text-[11px] text-slate-500">{formatBytes(item.size)}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 flex-shrink-0">
+                  {item.error ? (
+                    <span className="text-xs text-rose-400 flex items-center space-x-1 font-medium">
+                      <XCircle className="w-3.5 h-3.5" />
+                      <span>{item.error}</span>
+                    </span>
+                  ) : item.status === 'uploading' ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-20 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                        <div
+                          className="h-full bg-teal-400 rounded-full transition-all"
+                          style={{ width: `${item.progress}%` }}
+                        />
+                      </div>
+                      <span className="text-[11px] font-mono text-slate-400">{item.progress}%</span>
+                    </div>
+                  ) : item.status === 'done' ? (
+                    <span className="text-xs text-emerald-400 flex items-center space-x-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Uploaded</span>
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">Ready</span>
+                  )}
+
+                  {!isUploading && (
+                    <button
+                      onClick={() => removeQueueItem(item.id)}
+                      className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition"
+                      aria-label="Remove file"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Action Row */}
+          <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+            <span className="text-xs text-slate-400">
+              {validCount} {validCount === 1 ? 'file' : 'files'} ready to sort
+            </span>
+
+            <button
+              onClick={startBatchUpload}
+              disabled={validCount === 0 || isUploading}
+              className="flex items-center space-x-2 px-6 py-2.5 text-sm font-bold bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl shadow-lg shadow-teal-500/25 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                  <span>Uploading files...</span>
+                </>
+              ) : (
+                <>
+                  <span>Upload {validCount > 0 ? `${validCount} files` : ''}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
