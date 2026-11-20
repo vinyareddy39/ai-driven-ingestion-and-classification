@@ -1,114 +1,209 @@
-# Production Deployment Guide: FastAPI Backend on Render & React Frontend on Vercel
+# Production Deployment Guide: Render (Backend + Worker + Postgres), Vercel (Frontend), and Cloudflare R2
 
-This guide provides end-to-end instructions for deploying the document ingestion, classification, and prescription pipeline to production.
+This guide provides exact, ordered steps for deploying the enterprise document ingestion, classification, and prescription pipeline to production.
 
 ---
 
 ## 1. Architecture Overview
 
-- **Frontend**: React 18 + Vite SPA deployed on **Vercel** with client-side SPA routing (`frontend/vercel.json`).
-- **Backend**: FastAPI Dockerized container running on **Render** Web Service (`render.yaml`), bound dynamically to `$PORT`.
-- **Database**: Managed **Render PostgreSQL** database (`ecm-postgres`) with automatic Alembic migrations run in `preDeployCommand`.
-- **File Storage**: **Amazon S3** (or S3-compatible Cloudflare R2 / MinIO) for immutable document asset storage.
-- **Message Queue**: Persistent database-backed queue (`QUEUE_BACKEND=database`) running on PostgreSQL `pipeline_jobs` table to guarantee zero message loss across container restarts.
+- **Frontend**: React 18 + Vite SPA deployed on **Vercel** or **Cloudflare Pages** with client-side SPA routing (`frontend/vercel.json`).
+- **Web Service**: FastAPI container running on **Render** Web Service (`render.yaml`), bound dynamically to `$PORT`. The web service handles API traffic and multipart upload orchestration, and **never runs OCR**.
+- **Background Worker**: Dedicated standalone background worker service (`python -m app.workers.service`) on **Render**, sharing PostgreSQL and R2 / S3. It executes OCR, Presidio PII scanning, document classification, and outbound webhooks.
+- **Database**: Managed **Render PostgreSQL** (`ecm-postgres`) with automatic Alembic migrations run in `preDeployCommand`.
+- **File Storage**: **Cloudflare R2** (S3-compatible object storage) for large file direct-to-storage uploads up to 2 GB with zero proxy egress fees.
+- **Job Queue**: PostgreSQL row-locking queue (`SELECT ... FOR UPDATE SKIP LOCKED` on `pipeline_jobs` table) guaranteeing zero lost jobs and crash recovery across restarts.
 
 ---
 
-## 2. Generating Production Secrets
+## 2. Render Instance Size Recommendations & GPU Constraints
 
-Before deploying, generate cryptographically secure secrets in PowerShell or Python:
-```powershell
-python -c "import secrets; print('SECRET_KEY=' + secrets.token_urlsafe(32)); print('DATA_ENCRYPTION_KEY=' + secrets.token_urlsafe(32)); print('WEBHOOK_SIGNING_SECRET=' + secrets.token_urlsafe(32)); print('ADMIN_TOKEN=' + secrets.token_urlsafe(32))"
-```
-Keep these values secure. **Never commit them to git.**
+> [!WARNING]
+> **Free Tier Limitations**:
+> Render's Free tier instances sleep after 15 minutes of inactivity (causing 50+ second cold start delays) and have only 512 MB of RAM. Processing large PDFs and raster image batches on 512 MB can trigger Linux Out-Of-Memory (OOM) process termination (`kill -9`).
+
+### Recommended Sizing:
+- **Web Service (`ecm-backend`)**:
+  - Minimum: **Starter** (512 MB - 1 GB RAM, 0.5 CPU)
+  - Recommended: **Standard** (2 GB RAM, 1 CPU) for high-concurrency multipart upload sessions.
+- **Background Worker (`ecm-worker`)**:
+  - Minimum: **Starter** (512 MB RAM, 0.5 CPU)
+  - Recommended: **Standard** (2 GB RAM, 1 CPU) to process 500+ file batches and multi-page PDFs with text layer extraction.
+- **PostgreSQL Database (`ecm-postgres`)**:
+  - **Starter** or **Standard** managed database.
+- *(Note: Render plans and pricing change periodically; verify Render's current pricing plans at [render.com/pricing](https://render.com/pricing)).*
+
+> [!NOTE]
+> **No GPU on Render**: Render native web/worker instances do not offer dedicated NVIDIA GPUs. The application is configured to run production OCR using CPU engines (PyMuPDF high-speed text layer extraction first, Tesseract CPU OCR for scanned pages). TrOCR/CUDA is automatically active only when a GPU device is detected.
 
 ---
 
-## 3. Step 1: Object Storage Setup (Amazon S3 / Cloudflare R2)
+## 3. Step 1: Cloudflare R2 Bucket, Token, and CORS Setup
 
-1. Create a dedicated S3 bucket: e.g. `ecm-production-assets`.
-2. Block public access (all document reads and writes are securely routed through authenticated FastAPI backend endpoints).
-3. Configure bucket CORS policy:
+Cloudflare R2 allows browser clients to upload files up to 2 GB directly to object storage via presigned multipart S3 URLs.
+
+### A. Create the Bucket
+1. In Cloudflare Dashboard, navigate to **R2** $\rightarrow$ **Create Bucket**.
+2. Name the bucket (e.g. `ecm-production-assets`).
+3. Set location to **Automatic**.
+
+### B. Configure R2 Bucket CORS Rule
+In bucket **Settings** $\rightarrow$ **CORS Policy**, add:
 ```json
 [
   {
-    "AllowedHeaders": ["*"],
-    "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
-    "AllowedOrigins": ["https://*.vercel.app", "https://your-custom-domain.com"],
-    "ExposeHeaders": ["ETag"]
+    "AllowedOrigins": [
+      "https://*.vercel.app",
+      "https://your-custom-domain.com"
+    ],
+    "AllowedMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "HEAD",
+      "DELETE"
+    ],
+    "AllowedHeaders": [
+      "*"
+    ],
+    "ExposeHeaders": [
+      "ETag"
+    ],
+    "MaxAgeSeconds": 3600
   }
 ]
 ```
-4. Create an IAM user with programmatic access (`s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`, `s3:ListBucket`) on `arn:aws:s3:::ecm-production-assets/*`.
-5. Record `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `S3_BUCKET_NAME`.
+*(The `ExposeHeaders: ["ETag"]` directive is mandatory so the browser can read part ETags for multipart completion).*
+
+### C. Create an API Token (Scoped to One Bucket Only)
+1. Go to **R2** $\rightarrow$ **Manage R2 API Tokens** $\rightarrow$ **Create API Token**.
+2. Set permissions to **Object Read & Write**.
+3. Set scope to **Specific bucket only**: select `ecm-production-assets`.
+4. Copy:
+   - **Access Key ID**
+   - **Secret Access Key**
+   - **Jurisdiction-specific S3 Endpoint URL** (format: `https://<accountid>.r2.cloudflarestorage.com`)
 
 ---
 
-## 4. Step 2: Backend & Database Deployment on Render
+## 4. Step 2: Generate Production Secrets
 
-1. Log in to your [Render Dashboard](https://dashboard.render.com/).
+Generate cryptographically strong 32-byte URL-safe secrets locally:
+```powershell
+python -c "import secrets; print('SECRET_KEY=' + secrets.token_urlsafe(32)); print('DATA_ENCRYPTION_KEY=' + secrets.token_urlsafe(32)); print('WEBHOOK_SIGNING_SECRET=' + secrets.token_urlsafe(32))"
+```
+
+---
+
+## 5. Step 3: Deploy Backend & Worker on Render
+
+1. Log in to [dashboard.render.com](https://dashboard.render.com).
 2. Click **New +** $\rightarrow$ **Blueprint**.
-3. Connect your GitHub repository and select the `main` (or production) branch.
-4. Render automatically parses `render.yaml` and provisions:
-   - PostgreSQL database: `ecm-postgres`
-   - Web service: `ecm-backend`
-5. In the Render Dashboard, open `ecm-backend` $\rightarrow$ **Environment** and populate the `sync: false` secrets:
-   - `SECRET_KEY`: `<generated_secret_key_32_chars>`
-   - `DATA_ENCRYPTION_KEY`: `<generated_encryption_key_32_chars>`
-   - `AUTH_TOKENS`: `<token1>:admin,<token2>:reviewer,<token3>:compliance`
-   - `CORS_ORIGINS`: `https://<your-vercel-app>.vercel.app`
-   - `WEBHOOK_SIGNING_SECRET`: `<generated_webhook_secret>`
+3. Connect your repository and select your deployment branch.
+4. Render detects `render.yaml` and provisions:
+   - `ecm-postgres` (PostgreSQL Database)
+   - `ecm-backend` (Web Service)
+   - `ecm-worker` (Background Worker Service)
+5. Fill in the declared environment variables marked `sync: false`:
+   - `SECRET_KEY`: `<generated_secret_key>`
+   - `DATA_ENCRYPTION_KEY`: `<generated_encryption_key>`
+   - `S3_ENDPOINT_URL`: `https://<accountid>.r2.cloudflarestorage.com`
    - `S3_BUCKET_NAME`: `ecm-production-assets`
-   - `AWS_ACCESS_KEY_ID`: `<your_aws_access_key>`
-   - `AWS_SECRET_ACCESS_KEY`: `<your_aws_secret_key>`
-   - `S3_REGION`: `us-east-1`
-6. Click **Manual Deploy** $\rightarrow$ **Deploy Latest Commit**.
-   - Render automatically executes `preDeployCommand: alembic upgrade head` against PostgreSQL.
-   - The health check tests `GET /api/v1/system/info`.
-7. Note your public backend URL: `https://ecm-backend-xxxx.onrender.com`.
+   - `AWS_ACCESS_KEY_ID`: `<r2_access_key_id>`
+   - `AWS_SECRET_ACCESS_KEY`: `<r2_secret_access_key>`
+   - `CORS_ORIGINS`: `https://your-app.vercel.app` (placeholder initially)
+   - `WEBHOOK_SIGNING_SECRET`: `<generated_webhook_secret>`
+6. Deploy the Blueprint. Render executes `alembic upgrade head` before starting `ecm-backend`.
+7. Once deployed, note the backend public URL: `https://ecm-backend-xxxx.onrender.com`.
+8. Verify readiness:
+   ```bash
+   curl -i https://ecm-backend-xxxx.onrender.com/health/ready
+   # Returns HTTP 200 OK: {"status": "READY", "database": "CONNECTED", "queue": "CONNECTED"}
+   ```
 
 ---
 
-## 5. Step 3: Frontend Deployment on Vercel
+## 6. Step 4: Create the Initial Admin User (One-Off Command)
 
-1. Log in to [Vercel](https://vercel.com/).
-2. Click **Add New...** $\rightarrow$ **Project**.
-3. Import your GitHub repository.
-4. Configure Project Settings:
+> [!IMPORTANT]
+> Never commit credentials or admin passwords to git. Run this one-off command in the **Render Web Shell** (`ecm-backend` $\rightarrow$ **Shell**):
+
+```bash
+python -c "
+from app.models.db import UserModel, get_db_session;
+from app.core.jwt_auth import hash_password;
+import secrets, uuid;
+
+db = get_db_session();
+email = 'admin@enterprise.local';
+pwd = secrets.token_urlsafe(16);
+user = UserModel(
+    id=f'usr-admin-{uuid.uuid4().hex[:8]}',
+    email=email,
+    password_hash=hash_password(pwd),
+    role='admin',
+    disabled=False
+);
+db.merge(user);
+db.commit();
+print(f'ADMIN CREATED: email={email} temporary_password={pwd}');
+"
+```
+Record the temporary password and immediately log in to change it.
+
+---
+
+## 7. Step 5: Deploy Frontend on Vercel
+
+1. Log in to [vercel.com](https://vercel.com) and click **Add New...** $\rightarrow$ **Project**.
+2. Import your GitHub repository.
+3. Configure Project Settings:
    - **Framework Preset**: Vite
    - **Root Directory**: `frontend`
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
-5. Add Environment Variable:
+4. Add Environment Variable:
    - `VITE_API_BASE_URL`: `https://ecm-backend-xxxx.onrender.com`
-6. Click **Deploy**.
-7. Vercel applies the SPA rewrites defined in `frontend/vercel.json`.
+5. Click **Deploy**. Vercel serves the SPA and rewrites all route paths to `/index.html` via `vercel.json`.
+6. Copy your production frontend URL (e.g. `https://ecm-ingest.vercel.app`).
 
 ---
 
-## 6. Step 4: Post-Deployment Smoke Verification
+## 8. Step 6: Update CORS_ORIGINS & Finalize
 
-Run the automated smoke test script locally against the live deployment:
+1. Return to **Render Dashboard** $\rightarrow$ `ecm-backend` $\rightarrow$ **Environment**.
+2. Set `CORS_ORIGINS` to your exact Vercel frontend URL:
+   ```
+   CORS_ORIGINS=https://ecm-ingest.vercel.app
+   ```
+3. Save changes. Render triggers a zero-downtime redeploy.
+
+---
+
+## 9. Step 7: Post-Deployment Smoke Test
+
+Execute the automated smoke verification script against the live endpoint:
 ```powershell
-./scripts/smoke_deployed.ps1 -BackendUrl "https://ecm-backend-xxxx.onrender.com" -AdminToken "<your_admin_token>"
+$env:BACKEND_URL="https://ecm-backend-xxxx.onrender.com"
+$env:AUTH_TOKEN="<your_jwt_access_token>"
+./scripts/smoke_deployed.ps1
 ```
+The smoke test verifies:
+- Service health & readiness probe (`/health/ready`)
+- System information & engine status (`/api/v1/system/info`)
+- CORS preflight headers for Vercel origin
+- JWT authentication matrix (401 on unauthenticated access)
+- Multipart upload initiation (`/api/v1/uploads/init`)
+- Batch results query (`/api/v1/batches/{id}`)
 
-### Manual Verification Matrix:
-1. **Unauthenticated access check**:
-   ```bash
-   curl -i https://ecm-backend-xxxx.onrender.com/api/v1/documents
-   # Returns HTTP 401 Unauthorized
-   ```
-2. **CORS Preflight check**:
-   ```bash
-   curl -i -X OPTIONS https://ecm-backend-xxxx.onrender.com/api/v1/system/info \
-     -H "Origin: https://your-app.vercel.app" \
-     -H "Access-Control-Request-Method: GET"
-   # Returns HTTP 200 OK with Access-Control-Allow-Origin: https://your-app.vercel.app
-   ```
-3. **Health check with token**:
-   ```bash
-   curl -i https://ecm-backend-xxxx.onrender.com/api/v1/system/info \
-     -H "Authorization: Bearer <your_admin_token>"
-   # Returns HTTP 200 OK with {"mode": "REAL SERVICES", "version": "1.0.0"}
-   ```
+---
+
+## 10. Rollback & Secret Rotation
+
+### Rollback:
+- **Render**: Navigate to `ecm-backend` $\rightarrow$ **Events** / **Deploys**, select the previous successful deploy, and click **Rollback to this deploy**.
+- **Vercel**: Navigate to **Deployments**, select the previous deployment, and click **Promote to Production**.
+
+### Secret Rotation:
+1. **Rotate `SECRET_KEY`**: Update `SECRET_KEY` in Render environment variables. Active user JWT sessions will expire and require re-login.
+2. **Rotate `DATA_ENCRYPTION_KEY`**: Run a database migration script re-encrypting `EncryptedText` columns with the new Fernet key before swapping the environment variable.
+3. **Rotate R2 / S3 Keys**: Generate a new R2 API token in Cloudflare, update `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` on Render, and delete the old token from Cloudflare once verified.

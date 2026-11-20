@@ -167,6 +167,10 @@ def validate_production_safety(settings: AppSettings) -> bool:
     if settings.STORAGE_BACKEND == "local":
         errors.append("STORAGE_BACKEND must be 's3' in production because cloud container disks are ephemeral; STORAGE_BACKEND='local' is forbidden.")
 
+    # 7. Demo role selector & static tokens
+    if getattr(settings, "ENABLE_DEMO_TOKENS", False) or os.getenv("ENABLE_DEMO_TOKENS", "false").lower() in ("true", "1"):
+        errors.append("Demo role selector and static demo tokens must be disabled in production mode.")
+
     if errors:
         msg = "PRODUCTION STARTUP REFUSED:\n  - " + "\n  - ".join(errors)
         raise ProductionSecurityError(msg)
