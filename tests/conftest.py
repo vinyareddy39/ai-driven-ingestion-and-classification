@@ -18,6 +18,7 @@ if not live_db_file.exists():
 if live_db_file.exists():
     shutil.copyfile(live_db_file, test_db_file)
 os.environ["DATABASE_URL"] = f"sqlite:///{test_db_file.as_posix()}"
+os.environ["DISABLE_LIFESPAN_WORKER"] = "1"
 
 from app.core.config import get_pipeline_config, load_pipeline_config
 from app.models.db import init_db, _engine

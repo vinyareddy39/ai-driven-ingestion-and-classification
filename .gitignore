@@ -40,4 +40,8 @@ scratch/
 Thumbs.db
 node_modules/
 frontend/dist/
+frontend/data/
+frontend/test-results/
+cloudflared.exe
+data/*.txt
 

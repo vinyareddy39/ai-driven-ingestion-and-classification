@@ -229,7 +229,112 @@ const filteredItems = useMemo(() => {
 
 ---
 
-## 8. API Client Regeneration Note
+## 8. Cloud-Ready Large Files & Batch Upload Specifications (Collaborator Tasks)
+
+### 8.1 Multi-File Select & Drag-and-Drop Batch Upload
+- **Component**: `UploadDesk.tsx` / `MultiUploadZone.tsx`
+- **File Input**: `<input type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.tiff,.eml,.docx" />`
+- **Drag-and-Drop**: Dropzone accepting multiple files simultaneously.
+- **Batch Creation**:
+  1. Call `POST /api/v1/batches` with optional body `{"name": "Upload #N"}` $\rightarrow$ receives `{"batch_id": "batch-...", "number": N}`.
+  2. For small files ($\le 16\text{ MB}$): Can stream via `POST /api/v1/ingest/upload?batch_id={batch_id}`.
+  3. For large files ($> 16\text{ MB}$ up to 2 GB): Use the **Direct-to-Storage Multipart Flow** below.
+
+### 8.2 Direct-to-Storage Multipart Upload Flow (Up to 2 GB)
+1. **Initiation**:
+   - `POST /api/v1/uploads/init`
+   - Body:
+     ```json
+     {
+       "file_name": "quarterly_reports.pdf",
+       "file_size": 157286400,
+       "mime_type": "application/pdf",
+       "batch_id": "batch-12345"
+     }
+     ```
+   - Response (`200 OK`):
+     ```json
+     {
+       "upload_id": "up-abcd1234efgh",
+       "key": "raw/abcd1234efgh_quarterly_reports.pdf",
+       "part_size": 16777216,
+       "part_count": 10,
+       "parts": [
+         { "part_number": 1, "url": "https://<accountid>.r2.cloudflarestorage.com/..." },
+         { "part_number": 2, "url": "https://<accountid>.r2.cloudflarestorage.com/..." }
+       ],
+       "max_upload_mb": 2048
+     }
+     ```
+2. **Parallel Chunk Uploading**:
+   - Split file in browser using `file.slice(start, end)` into chunks of size `part_size`.
+   - PUT each chunk directly to its corresponding `parts[i].url` using `fetch` or `axios`.
+   - Parallelism: Run 3 to 5 chunk uploads concurrently using a worker pool.
+   - Per-Chunk Retry: If a chunk fails due to a dropped connection, retry that chunk up to 3 times with exponential backoff before failing.
+   - Record the `ETag` HTTP response header returned by R2/S3 for each part:
+     ```typescript
+     const etag = response.headers.get("ETag") || response.headers.get("etag");
+     ```
+3. **Completion**:
+   - `POST /api/v1/uploads/{upload_id}/complete`
+   - Body:
+     ```json
+     {
+       "parts": [
+         { "part_number": 1, "etag": "\"a1b2c3...\"" },
+         { "part_number": 2, "etag": "\"d4e5f6...\"" }
+       ]
+     }
+     ```
+   - Response (`200 OK`):
+     ```json
+     {
+       "status": "COMPLETED",
+       "document_uid": "doc-998877",
+       "file_name": "quarterly_reports.pdf",
+       "file_size": 157286400,
+       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+       "batch_id": "batch-12345",
+       "is_duplicate": false
+     }
+     ```
+4. **Cancellation / Abort**:
+   - If user cancels an upload: `POST /api/v1/uploads/{upload_id}/abort`.
+
+### 8.3 Error Message Display & HTTP Status Handlers
+- **HTTP 413 (Payload Too Large)**:
+  - Triggered if `file_size > MAX_UPLOAD_MB * 1024 * 1024`.
+  - UI Alert: *"File size exceeds the 2 GB maximum limit. Please compress the file or split it into smaller documents."*
+- **HTTP 415 (Unsupported Media Type)**:
+  - Triggered if file extension is not permitted.
+  - UI Alert: *"Unsupported file format. Please upload PDF, PNG, JPG, TIFF, EML, or DOCX documents."*
+- **HTTP 429 (Too Many Requests / Backpressure)**:
+  - Check `response.headers.get("Retry-After")` (default 30s).
+  - UI Alert: *"Server processing capacity is currently saturated. Automatically retrying upload in {Retry-After} seconds..."*
+- **HTTP 400 (Signature / Magic Bytes Mismatch)**:
+  - UI Alert: *"File content verification failed: the file contents do not match the declared extension."*
+
+### 8.4 Batch Results Screen with Pagination and Filters
+- **Endpoint**: `GET /api/v1/batches/{batch_id}?page=1&page_size=50&type=all&status=all`
+- **Server Aggregation ($O(1)$)**:
+  - `counts_by_status`: `{"SORTED_AUTOMATICALLY": 450, "NEEDS_CHECK": 42, "FAILED": 8}`
+  - `counts_by_type`: `{"invoice": 300, "receipt": 150, "medical_report": 50}`
+  - `progress_percent`: `100.0`
+  - `is_finished`: `true`
+- **Summary Export**:
+  - Direct download links for batch analytical summary:
+    - JSON: `GET /api/v1/batches/{batch_id}/summary?format=json`
+    - CSV: `GET /api/v1/batches/{batch_id}/summary?format=csv`
+- **Batch Download**:
+  - `POST /api/v1/batches/{batch_id}/downloads` starts preparation of the segregated ZIP archive.
+
+### 8.5 Production JWT Authentication
+- Eliminate the static "Active Role (Stub)" header selector in production builds (`import.meta.env.PROD`).
+- Send `Authorization: Bearer <token>` with genuine signed JWTs from `/api/v1/auth/login`.
+
+---
+
+## 9. API Client Regeneration Note
 
 After merging the backend routes, please run:
 ```bash
