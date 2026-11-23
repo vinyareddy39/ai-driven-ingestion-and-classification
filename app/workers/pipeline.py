@@ -169,7 +169,7 @@ def process_document_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     # 5. Stage: OCR
     t0 = time.time()
-    ocr_res = registry.get_stage_result(sha256_hash, "ocr")
+    ocr_res = None if is_reprocess else registry.get_stage_result(sha256_hash, "ocr")
     if not ocr_res:
         ocr_res = stage_ocr(target_bytes, target_name)
         STAGE_LATENCY_METRICS["ocr"].append(time.time() - t0)
@@ -179,9 +179,11 @@ def process_document_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     # 6. Stage: Classify
     t0 = time.time()
-    cls_res = stage_classify(full_text)
-    STAGE_LATENCY_METRICS["classify"].append(time.time() - t0)
-    registry.commit_stage(sha256_hash, "classify", cls_res)
+    cls_res = None if is_reprocess else registry.get_stage_result(sha256_hash, "classify")
+    if not cls_res:
+        cls_res = stage_classify(full_text)
+        STAGE_LATENCY_METRICS["classify"].append(time.time() - t0)
+        registry.commit_stage(sha256_hash, "classify", cls_res)
 
     predicted_class = cls_res["predicted_class"]
     confidence = cls_res["confidence"]
@@ -189,6 +191,9 @@ def process_document_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     # 7. Stage: Extract Fields
     t0 = time.time()
     extracted_fields, field_confs, is_valid_schema = stage_extract_fields(full_text, predicted_class)
+    if p_res and "page_condition" in p_res:
+        extracted_fields["page_condition"] = p_res["page_condition"]
+        field_confs["page_condition"] = 0.99
     STAGE_LATENCY_METRICS["extract_fields"].append(time.time() - t0)
     registry.commit_stage(
         sha256_hash,

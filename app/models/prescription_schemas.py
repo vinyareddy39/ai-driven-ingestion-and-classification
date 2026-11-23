@@ -24,9 +24,12 @@ class UserLoginRequest(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
-    refresh_token: str
     token_type: str = "bearer"
-    expires_in: int = 1800  # 30 minutes
+    expires_in: int = 28800  # 8 hours
+    name: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    refresh_token: Optional[str] = None
 
 
 class RefreshTokenRequest(BaseModel):
@@ -35,9 +38,29 @@ class RefreshTokenRequest(BaseModel):
 
 class AuthUserResponse(BaseModel):
     user_id: str
+    name: Optional[str] = None
     email: str
     role: str
     created_at: Optional[datetime] = None
+
+
+class AdminUserCreateRequest(BaseModel):
+    name: Optional[str] = None
+    email: str = Field(..., pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    password: str
+    role: str = "uploader"
+
+
+class AdminRoleUpdateRequest(BaseModel):
+    role: str
+
+
+class AdminUserStatusRequest(BaseModel):
+    disabled: bool
+
+
+class AdminPasswordResetRequest(BaseModel):
+    new_password: str
 
 
 # ---------------------------------------------------------------------------

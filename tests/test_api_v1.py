@@ -131,10 +131,13 @@ def setup_test_fixtures():
 
 
 def auth_headers(role: str) -> dict:
-    """Dynamically resolve configured token for a given role."""
+    """Dynamically resolve configured token for a given role, falling back to signed JWT."""
     tokens = get_configured_tokens()
     role_to_token = {r: t for t, r in tokens.items()}
     token = role_to_token.get(role, "")
+    if not token:
+        from app.core.jwt_auth import create_access_token
+        token = create_access_token(data={"sub": f"usr-{role}", "role": role, "email": f"{role}@ecm.local"})
     return {"Authorization": f"Bearer {token}"}
 
 

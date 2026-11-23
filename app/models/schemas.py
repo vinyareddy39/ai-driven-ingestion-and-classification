@@ -22,6 +22,12 @@ class ContractFields(BaseModel):
     party_one: Optional[str] = Field(default=None, description="First contracting party")
     party_two: Optional[str] = Field(default=None, description="Second contracting party")
     parties: Optional[str] = Field(default=None, description="Contracting parties")
+    first_party: Optional[str] = Field(default=None, description="First contracting party")
+    second_party: Optional[str] = Field(default=None, description="Second contracting party")
+    authorized_signatory: Optional[str] = Field(default=None, description="Authorized signatory")
+    notification_email: Optional[str] = Field(default=None, description="Notification email")
+    subject: Optional[str] = Field(default=None, description="Contract subject")
+    page_condition: Optional[str] = Field(default=None, description="Page condition")
 
 
 class KYCFormFields(BaseModel):
@@ -54,10 +60,20 @@ class PurchaseOrderFields(BaseModel):
 
 
 class LetterFields(BaseModel):
-    sender: str = Field(min_length=1, description="Originating sender of correspondence")
-    recipient: str = Field(min_length=1, description="Addressee recipient")
-    letter_date: str = Field(description="Date of letter (YYYY-MM-DD)")
+    sender: Optional[str] = Field(default=None, description="Originating sender of correspondence")
+    sender_name: Optional[str] = Field(default=None, description="Sender name")
+    recipient: Optional[str] = Field(default=None, description="Addressee recipient")
+    recipient_name: Optional[str] = Field(default=None, description="Recipient name")
+    date: Optional[str] = Field(default=None, description="Date of letter")
+    letter_date: Optional[str] = Field(default=None, description="Date of letter (YYYY-MM-DD)")
+    sender_email: Optional[str] = Field(default=None, description="Sender email address")
     subject: str = Field(min_length=1, description="Subject line or topic")
+
+
+class ReceiptFields(BaseModel):
+    store_name: Optional[str] = Field(default=None, description="Store or merchant name")
+    date: Optional[str] = Field(default=None, description="Transaction date")
+    total_amount: Optional[float] = Field(default=None, description="Total amount paid")
 
 
 class ClaimFormFields(BaseModel):
@@ -74,6 +90,7 @@ class UnknownFields(BaseModel):
 
 FIELD_SCHEMA_MAP = {
     "invoice": InvoiceFields,
+    "receipt": ReceiptFields,
     "contract": ContractFields,
     "kyc_form": KYCFormFields,
     "bank_statement": BankStatementFields,

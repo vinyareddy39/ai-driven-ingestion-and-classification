@@ -61,6 +61,7 @@ async def stream_and_save_upload(
     file: UploadFile,
     queue_type: str = "live",
     batch_id: Optional[str] = None,
+    force: bool = False,
     current_user: Optional[UserSessionResponse] = None,
 ) -> IngestResponse:
     """Stream upload to disk in chunks, enforcing MAX_UPLOAD_MB and validating content safely."""
@@ -230,11 +231,11 @@ async def stream_and_save_upload(
         "storage_path": storage_path,
         "batch_id": batch_id,
         "user_id": user_id,
-        "is_reprocess": False,
+        "is_reprocess": force,
         "retries": 0,
     }
     queue.push(queue_name, payload)
-    logger.info(f"Ingested document {doc_uid} ({file_name}, sha256: {sha256_hash}, batch: {batch_id}) to {queue_name}")
+    logger.info(f"Ingested document {doc_uid} ({file_name}, sha256: {sha256_hash}, batch: {batch_id}, force={force}) to {queue_name}")
 
     return IngestResponse(
         uid=doc_uid,
@@ -251,16 +252,18 @@ async def stream_and_save_upload(
 async def ingest_single_file(
     file: UploadFile = File(...),
     batch_id: Optional[str] = Query(None),
+    force: bool = Query(False, description="Upload anyway: bypass deduplication and fully re-extract"),
     current_user: UserSessionResponse = Depends(get_current_user),
 ):
     """Upload a single file (PDF, TIFF, JPG, PNG, DOCX, EML) with streaming chunk validation."""
-    return await stream_and_save_upload(file, queue_type="live", batch_id=batch_id, current_user=current_user)
+    return await stream_and_save_upload(file, queue_type="live", batch_id=batch_id, force=force, current_user=current_user)
 
 
 @router.post("/bulk", response_model=List[IngestResponse], status_code=status.HTTP_202_ACCEPTED)
 async def ingest_bulk_files(
     files: List[UploadFile] = File(...),
     batch_id: Optional[str] = Query(None),
+    force: bool = Query(False, description="Upload anyway: bypass deduplication and fully re-extract"),
     current_user: UserSessionResponse = Depends(get_current_user),
 ):
     """Upload multiple documents in a single bulk operation with streaming chunk validation."""
@@ -268,7 +271,7 @@ async def ingest_bulk_files(
         batch_id = f"batch-{uuid.uuid4().hex[:12]}"
     responses: List[IngestResponse] = []
     for f in files:
-        resp = await stream_and_save_upload(f, queue_type="bulk", batch_id=batch_id, current_user=current_user)
+        resp = await stream_and_save_upload(f, queue_type="bulk", batch_id=batch_id, force=force, current_user=current_user)
         responses.append(resp)
     return responses
 

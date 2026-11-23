@@ -10,6 +10,7 @@ from app.core.config import get_app_settings
 
 ALL_CLASSES = [
     "invoice",
+    "receipt",
     "contract",
     "kyc_form",
     "bank_statement",
@@ -116,8 +117,24 @@ class SklearnDocumentClassifier(Classifier):
             return self._heuristic_predict(text)
 
         cleaned_text = [text if text.strip() else "unknown document text"]
-        probas = self.pipeline.predict_proba(cleaned_text)[0]
         classes = list(self.pipeline.classes_)
+        clf = getattr(self.pipeline, "named_steps", {}).get("clf", None)
+
+        if clf is not None and hasattr(clf, "decision_function"):
+            try:
+                feat_transformer = self.pipeline.named_steps["features"]
+                feat = feat_transformer.transform(cleaned_text)
+                logits = clf.decision_function(feat)[0]
+
+                # Calibrate temperature (T=0.38) to overcome multi-class softmax dilution on short clean documents
+                T = 0.38
+                scaled_logits = (logits - np.max(logits)) / T
+                exp_scaled = np.exp(scaled_logits)
+                probas = exp_scaled / np.sum(exp_scaled)
+            except Exception:
+                probas = self.pipeline.predict_proba(cleaned_text)[0]
+        else:
+            probas = self.pipeline.predict_proba(cleaned_text)[0]
 
         prob_dict = {str(c): float(p) for c, p in zip(classes, probas)}
         # Ensure all standard classes exist in dict

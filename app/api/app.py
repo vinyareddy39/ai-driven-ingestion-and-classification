@@ -52,13 +52,14 @@ async def lifespan(app: FastAPI):
         import threading
         from app.workers.pipeline import run_pipeline_worker
 
-        worker_thread = threading.Thread(
-            target=run_pipeline_worker,
-            kwargs={"queue_type": "live"},
-            daemon=True,
-        )
-        worker_thread.start()
-        logger.info("Pipeline background worker thread started for live queue.")
+        for q_type in ["live", "bulk"]:
+            worker_thread = threading.Thread(
+                target=run_pipeline_worker,
+                kwargs={"queue_type": q_type},
+                daemon=True,
+            )
+            worker_thread.start()
+            logger.info(f"Pipeline background worker thread started for {q_type} queue.")
 
     yield
     logger.info("Shutting down ECM Ingestion Engine...")

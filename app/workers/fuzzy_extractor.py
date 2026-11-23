@@ -139,9 +139,12 @@ class GenericFuzzyExtractor:
 
             if fld:
                 if 'date' in fld or 'period' in fld or 'birth' in fld:
-                    cleaned = clean_ocr_date(val)
+                    cleaned = clean_ocr_date(val, original_text=text)
                 elif any(x in fld for x in ['amount', 'total', 'balance']):
                     cleaned = clean_ocr_amount(val)
+                elif 'email' in fld:
+                    m = re.search(r'\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\b', val)
+                    cleaned = m.group(1).strip() if m else clean_ocr_field_text(val)
                 else:
                     cleaned = clean_ocr_field_text(val)
                     if cleaned:
@@ -168,8 +171,72 @@ class GenericFuzzyExtractor:
         if 'po_date' in extracted and 'order_date' not in extracted:
             extracted['order_date'] = extracted['po_date']
             confs['order_date'] = confs['po_date']
+        if 'order_date' in extracted and 'po_date' not in extracted:
+            extracted['po_date'] = extracted['order_date']
+            confs['po_date'] = confs['order_date']
+        if 'order_total' in extracted and 'total_amount' not in extracted:
+            extracted['total_amount'] = extracted['order_total']
+            confs['total_amount'] = confs['order_total']
+        if 'total_amount' in extracted and 'order_total' not in extracted:
+            extracted['order_total'] = extracted['total_amount']
+            confs['order_total'] = confs['total_amount']
         if 'party_one' in extracted and 'party_two' in extracted and 'parties' not in extracted:
             extracted['parties'] = f"{extracted['party_one']} & {extracted['party_two']}"
             confs['parties'] = min(confs['party_one'], confs['party_two'])
+        if 'sender' in extracted and 'sender_name' not in extracted:
+            extracted['sender_name'] = extracted['sender']
+            confs['sender_name'] = confs['sender']
+        if 'sender_name' in extracted and 'sender' not in extracted:
+            extracted['sender'] = extracted['sender_name']
+            confs['sender'] = confs['sender_name']
+        if 'recipient' in extracted and 'recipient_name' not in extracted:
+            extracted['recipient_name'] = extracted['recipient']
+            confs['recipient_name'] = confs['recipient']
+        if 'recipient_name' in extracted and 'recipient' not in extracted:
+            extracted['recipient'] = extracted['recipient_name']
+            confs['recipient'] = confs['recipient_name']
+        if 'letter_date' in extracted and 'date' not in extracted:
+            extracted['date'] = extracted['letter_date']
+            confs['date'] = confs['letter_date']
+        if 'date' in extracted and 'letter_date' not in extracted:
+            extracted['letter_date'] = extracted['date']
+            confs['letter_date'] = confs['date']
+
+        if doc_type == "letter" and extracted.get("sender_email") is None:
+            em = re.search(r'\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\b', text)
+            if em:
+                extracted["sender_email"] = em.group(1).strip()
+                confs["sender_email"] = 0.95
+
+        # Extract vendor when it has no label (the line under the title)
+        lines = [ln.strip() for ln in text.split('\n') if ln.strip()]
+        if doc_type in ("invoice", "purchase_order") and extracted.get("vendor_name") is None:
+            # 1. Line immediately under the document title
+            for idx, ln in enumerate(lines[:6]):
+                ln_lower = ln.lower().strip()
+                if ln_lower in ["invoice", "tax invoice", "commercial invoice", "invoice statement", "enterprise invoice statement", "purchase order"] or re.match(r"^(tax\s+)?invoice\s*$", ln_lower):
+                    if idx + 1 < len(lines):
+                        candidate = lines[idx + 1].strip()
+                        if ":" not in candidate and 2 <= len(candidate) <= 80 and not any(kw in candidate.lower() for kw in ["bill to", "ship to", "date", "total", "subtotal", "page", "synthetic", "invoice", "po"]):
+                            extracted["vendor_name"] = candidate
+                            confs["vendor_name"] = 0.95
+                            break
+            # 2. General top-line fallback
+            if extracted.get("vendor_name") is None:
+                for ln in lines[:6]:
+                    if any(kw in ln.lower() for kw in ["invoice", "purchase order", "po #", "bill to", "date", "subtotal", "total", "item", "qty", "page", "synthetic"]):
+                        continue
+                    if ":" not in ln and 2 <= len(ln) <= 60:
+                        extracted["vendor_name"] = ln
+                        confs["vendor_name"] = 0.90
+                        break
+        elif doc_type == "receipt" and extracted.get("store_name") is None:
+            for ln in lines[:6]:
+                if any(kw in ln.lower() for kw in ["receipt", "date", "time", "total", "thank", "card"]):
+                    continue
+                if ":" not in ln and 2 <= len(ln) <= 60:
+                    extracted["store_name"] = ln
+                    confs["store_name"] = 0.90
+                    break
 
         return extracted, confs

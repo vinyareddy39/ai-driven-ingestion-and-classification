@@ -117,6 +117,18 @@ class DatabaseECMAdapter(ECMAdapter):
             )
 
             existing_doc = db.query(DocumentModel).filter(DocumentModel.uid == link_uid).first()
+            canonical_doc = db.query(DocumentModel).filter(DocumentModel.uid == target_uid).first()
+            
+            c_fields = canonical_doc.extracted_fields_json if canonical_doc else "{}"
+            c_confs = canonical_doc.field_confidences_json if canonical_doc else "{}"
+            c_verified = canonical_doc.human_verified_fields_json if canonical_doc else "{}"
+            c_ocr_eng = canonical_doc.ocr_engine if canonical_doc else "unknown"
+            c_ocr_ver = canonical_doc.ocr_version if canonical_doc else "1.0"
+            c_cls_mod = canonical_doc.classifier_model if canonical_doc else "unknown"
+            c_cls_ver = canonical_doc.classifier_version if canonical_doc else "v1.0"
+            c_pii = canonical_doc.pii_detected if canonical_doc else False
+            c_pii_types = canonical_doc.pii_types_json if canonical_doc else "[]"
+
             if existing_doc:
                 existing_doc.doc_type = target_type
                 existing_doc.confidence = target_conf
@@ -126,6 +138,15 @@ class DatabaseECMAdapter(ECMAdapter):
                 existing_doc.review_status = "auto_accepted"
                 existing_doc.is_link = True
                 existing_doc.linked_to_uid = target_uid
+                existing_doc.extracted_fields_json = c_fields
+                existing_doc.field_confidences_json = c_confs
+                existing_doc.human_verified_fields_json = c_verified
+                existing_doc.ocr_engine = c_ocr_eng
+                existing_doc.ocr_version = c_ocr_ver
+                existing_doc.classifier_model = c_cls_mod
+                existing_doc.classifier_version = c_cls_ver
+                existing_doc.pii_detected = c_pii
+                existing_doc.pii_types_json = c_pii_types
                 existing_doc.decision_reason = f"Deduplicated reference to canonical asset {target_uid}"
                 if batch_id:
                     existing_doc.batch_id = batch_id
@@ -146,6 +167,15 @@ class DatabaseECMAdapter(ECMAdapter):
                 review_status="auto_accepted",
                 is_link=True,
                 linked_to_uid=target_uid,
+                extracted_fields_json=c_fields,
+                field_confidences_json=c_confs,
+                human_verified_fields_json=c_verified,
+                ocr_engine=c_ocr_eng,
+                ocr_version=c_ocr_ver,
+                classifier_model=c_cls_mod,
+                classifier_version=c_cls_ver,
+                pii_detected=c_pii,
+                pii_types_json=c_pii_types,
                 batch_id=batch_id,
                 decision_reason=f"Deduplicated reference to canonical asset {target_uid}",
             )
@@ -226,7 +256,6 @@ class DatabaseECMAdapter(ECMAdapter):
                 DocumentModel.sha256 == sha256,
                 DocumentModel.is_link == False,
                 DocumentModel.review_status.in_(["auto_accepted", "approved", "pending_review", "human_verified"]),
-                DocumentModel.doc_type != "unknown",
             )
             if exclude_uid:
                 q = q.filter(DocumentModel.uid != exclude_uid)

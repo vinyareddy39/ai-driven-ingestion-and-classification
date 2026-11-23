@@ -45,3 +45,8 @@ frontend/test-results/
 cloudflared.exe
 data/*.txt
 
+
+backup_pre_upgrade/
+*.db-shm
+*.db-wal
+upgrade_prompt.txt

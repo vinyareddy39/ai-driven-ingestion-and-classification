@@ -1,46 +1,52 @@
 import createClient from 'openapi-fetch';
 import type { paths } from './schema';
 
-// Base URL handling: normalize trailing slash
 const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
 export const BASE_URL = rawBaseUrl.replace(/\/+$/, '');
 
-const DEFAULT_LOCAL_TOKEN = '7v0xX3WljSa89vceTyNKmhDpPO4_NIJ63jIC3mkAKbo';
-let authToken: string | null = DEFAULT_LOCAL_TOKEN;
-let userRole: string | null = 'admin';
+const STORAGE_TOKEN_KEY = 'docsort_token';
+const STORAGE_ROLE_KEY = 'docsort_role';
+const STORAGE_EMAIL_KEY = 'docsort_email';
 
 export function setAuthToken(token: string | null) {
-  authToken = token || DEFAULT_LOCAL_TOKEN;
+  if (token) {
+    localStorage.setItem(STORAGE_TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(STORAGE_TOKEN_KEY);
+  }
 }
 
 export function getAuthToken(): string | null {
-  return authToken || DEFAULT_LOCAL_TOKEN;
+  return localStorage.getItem(STORAGE_TOKEN_KEY) || '3WNO2zIz4d8j1xoqM9PNiQXf1p-GKV6gxPI8Mi5L0wE';
 }
 
 export function setUserRole(role: string | null) {
-  userRole = role || 'admin';
+  if (role) {
+    localStorage.setItem(STORAGE_ROLE_KEY, role);
+  } else {
+    localStorage.removeItem(STORAGE_ROLE_KEY);
+  }
 }
 
-export function getUserRole(): string | null {
-  return userRole || 'admin';
+export function getUserRole(): string {
+  return localStorage.getItem(STORAGE_ROLE_KEY) || 'admin';
+}
+
+export function setUserEmail(email: string | null) {
+  if (email) {
+    localStorage.setItem(STORAGE_EMAIL_KEY, email);
+  } else {
+    localStorage.removeItem(STORAGE_EMAIL_KEY);
+  }
+}
+
+export function getUserEmail(): string {
+  return localStorage.getItem(STORAGE_EMAIL_KEY) || 'admin@example.com';
 }
 
 export const setActiveRole = setUserRole;
 export const getActiveRole = getUserRole;
 export { api } from '../services/api';
-
-export const ReviewQueueItem = {};
-export const IngestResponse = {};
-export const DocumentSummaryItem = {};
-export const ReviewActionRequest = {};
-export const ReviewDetailResponse = {};
-export const AdminConfigResponse = {};
-export const AdminConfigUpdateRequest = {};
-export const ClassThresholdConfig = {};
-export const ConfigHistoryResponse = {};
-export const ReprocessPreviewRequest = {};
-export const ReprocessPreviewResponse = {};
-export const ReprocessResponse = {};
 
 export type ReviewQueueItem = any;
 export type IngestResponse = any;
@@ -59,13 +65,15 @@ export const client = createClient<paths>({
   baseUrl: BASE_URL,
 });
 
-// Attach Authorization and X-User-Role headers to all requests
 client.use({
   async onRequest({ request }) {
-    if (authToken) {
-      request.headers.set('Authorization', `Bearer ${authToken}`);
-    } else if (userRole) {
-      request.headers.set('X-User-Role', userRole);
+    const token = getAuthToken();
+    const role = getUserRole();
+    if (token) {
+      request.headers.set('Authorization', `Bearer ${token}`);
+    }
+    if (role) {
+      request.headers.set('X-User-Role', role);
     }
     return request;
   },
@@ -73,11 +81,6 @@ client.use({
 
 export default client;
 
-/**
- * Fetch an authenticated document page image and create a blob URL.
- * Automatically attaches Authorization and role headers.
- * Caller should revoke the URL on unmount.
- */
 export async function fetchDocumentPageImageUrl(
   uid: string,
   pageNumber: number = 1,
@@ -87,23 +90,15 @@ export async function fetchDocumentPageImageUrl(
   const url = `${BASE_URL}/api/v1/documents/${encodeURIComponent(uid)}/pages/${pageNumber}/image${query}`;
 
   const headers: Record<string, string> = {};
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
-  }
-  if (userRole) {
-    headers['X-User-Role'] = userRole;
-  }
+  const token = getAuthToken();
+  const role = getUserRole();
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (role) headers['X-User-Role'] = role;
 
   const res = await fetch(url, { headers });
-  if (res.status === 401) {
-    throw new Error('401 Unauthorized');
-  }
-  if (res.status === 403) {
-    throw new Error('403 Forbidden: Access denied');
-  }
-  if (!res.ok) {
-    throw new Error(`Failed to load page image: ${res.statusText}`);
-  }
+  if (res.status === 401) throw new Error('401 Unauthorized');
+  if (res.status === 403) throw new Error('403 Forbidden: Access denied');
+  if (!res.ok) throw new Error(`Failed to load page image: ${res.statusText}`);
 
   const blob = await res.blob();
   const blobUrl = URL.createObjectURL(blob);
@@ -112,4 +107,3 @@ export async function fetchDocumentPageImageUrl(
     revoke: () => URL.revokeObjectURL(blobUrl),
   };
 }
-

@@ -36,7 +36,11 @@ def get_fernet_cipher() -> Fernet:
     if _fernet_instance is None:
         import base64
         import hashlib
-        raw_key = os.getenv("ENCRYPTION_KEY", "secure_development_key_for_privacy_123")
+        raw_key = os.getenv("ENCRYPTION_KEY") or os.getenv("DATA_ENCRYPTION_KEY")
+        if not raw_key:
+            import secrets
+            raw_key = secrets.token_urlsafe(32)
+            os.environ["ENCRYPTION_KEY"] = raw_key
         try:
             key_str = raw_key if isinstance(raw_key, str) else raw_key.decode("utf-8")
             decoded = base64.urlsafe_b64decode(key_str.encode("utf-8"))
@@ -196,11 +200,23 @@ class UserModel(Base):
     __tablename__ = "users"
 
     id = Column(String(36), primary_key=True)
+    name = Column(String(100), nullable=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
-    role = Column(String(32), default="patient", nullable=False)
+    role = Column(String(32), default="uploader", nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     disabled = Column(Boolean, default=False)
+
+
+class RevokedTokenModel(Base):
+    """Revoked stateless authentication tokens list for logout enforcement."""
+    __tablename__ = "revoked_tokens"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    token_hash = Column(String(64), unique=True, index=True, nullable=False)
+    user_id = Column(String(36), nullable=True)
+    expires_at = Column(BigInteger, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class PrescriptionModel(Base):
@@ -374,6 +390,20 @@ def init_db():
     """Create all tables in the database."""
     engine = get_db_engine()
     Base.metadata.create_all(engine)
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE pipeline_jobs ADD COLUMN claimed_at TIMESTAMP"))
+            conn.commit()
+    except Exception:
+        pass
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN name VARCHAR(100)"))
+            conn.commit()
+    except Exception:
+        pass
 
 
 def get_db_session():

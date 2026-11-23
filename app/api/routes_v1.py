@@ -168,6 +168,29 @@ def get_auth_me(current_user: UserSessionResponse = Depends(get_current_user)):
     return current_user
 
 
+@router.get("/document-types")
+def get_document_types(current_user: UserSessionResponse = Depends(get_current_user)):
+    """Return configuration-driven list of document types and their field definitions."""
+    cfg_path = Path("config/document_types.json")
+    if cfg_path.exists():
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {"document_types": {}}
+
+
+@router.get("/document-types/{doc_type}")
+def get_document_type_detail(doc_type: str, current_user: UserSessionResponse = Depends(get_current_user)):
+    """Return field list and schema for a specific document type."""
+    cfg_path = Path("config/document_types.json")
+    if cfg_path.exists():
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            types = data.get("document_types", {})
+            if doc_type in types:
+                return types[doc_type]
+    raise HTTPException(status_code=404, detail=f"Document type '{doc_type}' not found in configuration")
+
+
 # ---------------------------------------------------------------------------
 # Review Queue Endpoints
 # ---------------------------------------------------------------------------
@@ -751,22 +774,37 @@ def get_batch_detail(
         total_filtered = items_query.count()
         docs = items_query.order_by(DocumentModel.created_at.asc()).offset((page - 1) * page_size).limit(page_size).all()
 
-        items = [
-            BatchFileItem(
-                uid=d.uid,
-                file_name=d.file_name,
-                doc_type=d.doc_type,
-                review_status=d.review_status,
-                plain_status=to_plain_status(d.review_status, d.is_link or False),
-                confidence=d.confidence or 0.0,
-                how_sure=round((d.confidence or 0.0) * 100, 1),
-                review_reason=d.decision_reason or d.quarantine_reason,
-                error_detail=d.quarantine_reason if d.review_status in ("quarantined", "failed") else None,
-                is_link=d.is_link or False,
-                created_at=d.created_at,
+        items = []
+        for d in docs:
+            f_json = json.loads(d.extracted_fields_json or "{}") if d.extracted_fields_json else {}
+            v = f_json.get("vendor_name") or f_json.get("vendor") or f_json.get("store_name") or f_json.get("merchant") or f_json.get("supplier")
+            amt = f_json.get("total_amount") or f_json.get("total") or f_json.get("amount")
+            if amt is not None and isinstance(amt, (int, float)):
+                amt_str = f"${amt:,.2f}"
+            elif amt is not None:
+                amt_str = str(amt)
+            else:
+                amt_str = None
+            ext_method = "OCR" if ("ocr" in (d.ocr_engine or "").lower() or "trocr" in (d.ocr_engine or "").lower()) else "direct text"
+            items.append(
+                BatchFileItem(
+                    uid=d.uid,
+                    file_name=d.file_name,
+                    doc_type=d.doc_type,
+                    review_status=d.review_status,
+                    plain_status=to_plain_status(d.review_status, d.is_link or False),
+                    confidence=d.confidence or 0.0,
+                    how_sure=round((d.confidence or 0.0) * 100, 1),
+                    review_reason=d.decision_reason or d.quarantine_reason,
+                    error_detail=d.quarantine_reason if d.review_status in ("quarantined", "failed") else None,
+                    is_link=d.is_link or False,
+                    extraction_method=ext_method,
+                    vendor=str(v) if v else None,
+                    amount=amt_str,
+                    extracted_fields=f_json,
+                    created_at=d.created_at,
+                )
             )
-            for d in docs
-        ]
 
         b_num = batch_record.number if batch_record else 1
         b_name = batch_record.name if batch_record else f"Upload #{b_num}"
@@ -1295,6 +1333,12 @@ def build_batch_zip_file(batch_id: str, db, target_path: str, exported_by: str):
     storage = get_storage_adapter()
     seen_names = {}
 
+    def sanitize_csv_cell(val: Any) -> str:
+        s = str(val or "")
+        if s and s[0] in ("=", "+", "-", "@", "\t", "\r"):
+            return f"'{s}"
+        return s
+
     try:
         with zipfile.ZipFile(temp_target, "w", zipfile.ZIP_DEFLATED) as zf:
             csv_buffer = io.StringIO()
@@ -1308,7 +1352,14 @@ def build_batch_zip_file(batch_id: str, db, target_path: str, exported_by: str):
                 fields = json.loads(d.extracted_fields_json or "{}")
                 key_fields_str = "; ".join([f"{k}={v}" for k, v in list(fields.items())[:5]])
 
-                csv_writer.writerow([d.file_name, d.doc_type, how_sure_pct, p_status, reason, key_fields_str])
+                csv_writer.writerow([
+                    sanitize_csv_cell(d.file_name),
+                    sanitize_csv_cell(d.doc_type),
+                    sanitize_csv_cell(how_sure_pct),
+                    sanitize_csv_cell(p_status),
+                    sanitize_csv_cell(reason),
+                    sanitize_csv_cell(key_fields_str),
+                ])
 
                 file_bytes = None
                 if d.storage_path and os.path.exists(d.storage_path):
@@ -1335,12 +1386,11 @@ def build_batch_zip_file(batch_id: str, db, target_path: str, exported_by: str):
                     p_name, p_ext = os.path.splitext(clean_name)
                     clean_name = f"{p_name}_{seen_names[pair]}{p_ext}"
 
+                # Write single copy under type folder (no duplicate copy in 'Needs a quick check')
                 zf.writestr(f"{folder}/{clean_name}", file_bytes)
 
-                if d.review_status == "pending_review":
-                    zf.writestr(f"Needs a quick check/{clean_name}", file_bytes)
-
-            zf.writestr("summary.csv", csv_buffer.getvalue())
+            # Write single index.csv (no summary.csv)
+            zf.writestr("index.csv", csv_buffer.getvalue())
 
         if os.path.exists(target_path):
             try:
@@ -1998,7 +2048,8 @@ def get_page_image(
 ):
     """Render and serve an authenticated page as a PNG image, with optional thumbnail resizing."""
     # Verify user has read access
-    if "documents:read" not in current_user.permissions and "review:read" not in current_user.permissions:
+    is_staff = current_user.role in ("admin", "reviewer", "compliance")
+    if not is_staff and "documents:read" not in current_user.permissions and "documents:read_own" not in current_user.permissions and "review:read" not in current_user.permissions:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"User role '{current_user.role}' lacks permission to view document images",
@@ -2009,6 +2060,9 @@ def get_page_image(
         doc = db.query(DocumentModel).filter(DocumentModel.uid == document_uid).first()
         if not doc or not doc.storage_path or not os.path.exists(doc.storage_path):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document file not found")
+
+        if not is_staff and doc.user_id and doc.user_id != current_user.user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied for document")
 
         path_lower = doc.storage_path.lower()
         if path_lower.endswith((".png", ".jpg", ".jpeg")):

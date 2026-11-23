@@ -32,13 +32,13 @@ class AppSettings(BaseSettings):
 
     # JWT Authentication & Tokens
     SECRET_KEY: str = Field(
-        default="dev_insecure_jwt_secret_key_change_in_production_987654321",
-        description="Secret key for signing RFC 7519 JWT tokens",
+        default="",
+        description="Secret key for signing RFC 7519 JWT tokens (read from environment or .env)",
     )
-    ACCESS_TOKEN_MINUTES: int = Field(default=30, description="Access token expiration window")
+    ACCESS_TOKEN_MINUTES: int = Field(default=480, description="Access token expiration window in minutes (8 hours)")
     REFRESH_TOKEN_DAYS: int = Field(default=7, description="Refresh token expiration window")
     AUTH_TOKENS: str = Field(
-        default="secret-token-12345:reviewer,admin-token-67890:admin,compliance-token-99999:compliance",
+        default="",
         description="Static staff bearer token mappings formatted as token:role,token:role",
     )
     AUTH_ALLOW_ROLE_HEADER: bool = Field(

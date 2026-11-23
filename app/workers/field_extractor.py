@@ -55,7 +55,13 @@ CLASS_SCHEMAS: Dict[str, Dict[str, Dict[str, str]]] = {
         "recipient_name": {"type": "string", "desc": "recipient name deliver to addressee attention to"},
         "date": {"type": "date", "desc": "date correspondence date dispatch date notice"},
         "letter_date": {"type": "date", "desc": "letter date correspondence date date of letter"},
+        "sender_email": {"type": "email", "desc": "sender email email email address electronic mail"},
         "subject": {"type": "string", "desc": "subject subject header re reference regarding memorandum"}
+    },
+    "receipt": {
+        "store_name": {"type": "string", "desc": "store merchant shop seller business"},
+        "date": {"type": "date", "desc": "date transaction date purchase date"},
+        "total_amount": {"type": "float", "desc": "total amount total paid card cash sum"}
     },
     "claim_form": {
         "claim_id": {"type": "id", "desc": "claim id claim record id policy claim docket reference"},
@@ -92,8 +98,9 @@ class SemanticGroundedExtractor(FieldExtractor):
         ocr_lower = ocr_text.lower()
         if val_str in ocr_lower:
             return True
-        clean_val = re.sub(r"[\s$,:]", "", val_str)
-        clean_ocr = re.sub(r"[\s$,:]", "", ocr_lower)
+        # Normalize separators (/ - . : , $ space) to support grounded dates and currency
+        clean_val = re.sub(r"[\s$,:.\-/]", "", val_str)
+        clean_ocr = re.sub(r"[\s$,:.\-/]", "", ocr_lower)
         if clean_val and clean_val in clean_ocr:
             return True
         try:
@@ -192,6 +199,10 @@ class SemanticGroundedExtractor(FieldExtractor):
                     m = re.search(r"\b([A-Za-z0-9-]{4,25})\b", best_val)
                     if m:
                         parsed_val = m.group(1)
+                elif ftype == "email":
+                    m = re.search(r"\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\b", best_val)
+                    if m:
+                        parsed_val = m.group(1).strip()
                 else:
                     clean_s = re.sub(r"^[^\w]+|[^\w]+$", "", best_val)
                     if len(clean_s) >= 2:
@@ -220,6 +231,44 @@ class SemanticGroundedExtractor(FieldExtractor):
                     if fb_val is not None and self._is_grounded(fb_val, ocr_text):
                         fields[mf] = fb_val
                         confidences[mf] = 0.85
+
+        # Heuristic fallbacks for document headers and unlabelled fields
+        if doc_class in ("invoice", "purchase_order") and fields.get("vendor_name") is None:
+            for ln in lines[:5]:
+                ln_clean = ln.strip()
+                if not ln_clean or any(kw in ln_clean.lower() for kw in ["invoice", "bill to", "date:", "subtotal", "total", "item", "qty", "page", "synthetic"]):
+                    continue
+                if ":" not in ln_clean and 2 <= len(ln_clean) <= 60:
+                    fields["vendor_name"] = ln_clean
+                    confidences["vendor_name"] = 0.90
+                    break
+        elif doc_class == "receipt" and fields.get("store_name") is None:
+            for ln in lines[:5]:
+                ln_clean = ln.strip()
+                if not ln_clean or any(kw in ln_clean.lower() for kw in ["receipt", "date:", "time:", "total", "thank", "card"]):
+                    continue
+                if ":" not in ln_clean and 2 <= len(ln_clean) <= 60:
+                    fields["store_name"] = ln_clean
+                    confidences["store_name"] = 0.90
+                    break
+        elif doc_class == "letter":
+            if fields.get("sender_email") is None:
+                em = re.search(r"\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\b", ocr_text)
+                if em:
+                    fields["sender_email"] = em.group(1).strip()
+                    confidences["sender_email"] = 0.95
+            if fields.get("subject") is None:
+                sm = re.search(r"(?:Subject|Re|Regarding|Memorandum\s*on)\s*[:;-]?\s*(.+)$", ocr_text, flags=re.M | re.I)
+                if sm:
+                    fields["subject"] = sm.group(1).strip()
+                    confidences["subject"] = 0.95
+            if fields.get("date") is None:
+                dm = re.search(r"\b(\d{4}[-/.]\d{2}[-/.]\d{2})\b|\b(\d{2}[-/.]\d{2}[-/.]\d{4})\b", ocr_text)
+                if dm:
+                    d_val = dm.group(1) or dm.group(2)
+                    fields["date"] = d_val.replace("/", "-").replace(".", "-")
+                    fields["letter_date"] = fields["date"]
+                    confidences["date"] = 0.90
 
         is_valid = all(fields.get(k) is not None for k in schema.keys())
         self.latency_records.append(time.time() - t0)

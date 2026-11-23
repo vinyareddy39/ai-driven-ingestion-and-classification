@@ -32,11 +32,12 @@ class SystemInfoResponse(BaseModel):
 
 
 class UserSessionResponse(BaseModel):
-    """Stub user session representing role-gated access."""
+    """User session representing role-gated access."""
     user_id: str
     username: str
-    role: str = Field(description="Active role: reviewer, admin, compliance, or viewer")
+    role: str = Field(description="Active role: uploader, reviewer, admin, compliance, or viewer")
     permissions: List[str]
+    name: Optional[str] = None
 
 
 class ReviewQueueItem(BaseModel):
@@ -368,6 +369,10 @@ class BatchFileItem(BaseModel):
     review_reason: Optional[str] = None
     error_detail: Optional[str] = None
     is_link: Optional[bool] = False
+    extraction_method: Optional[str] = "direct text"
+    vendor: Optional[str] = None
+    amount: Optional[str] = None
+    extracted_fields: Optional[Dict[str, Any]] = None
     created_at: datetime
 
 

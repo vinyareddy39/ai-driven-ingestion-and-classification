@@ -21,8 +21,13 @@ SCHEMA_SYNONYMS: Dict[str, Dict[str, List[str]]] = {
         "contract_id": ["contract id", "agreement ref", "contract no", "agreement no", "covenant reference #", "contract tracking code", "instrument number", "contract #", "covenant reference"],
         "effective_date": ["effective date", "commencement date", "execution date", "effective covenant date", "execution date", "date"],
         "parties": ["principal signatories", "counterparties", "engaged parties", "parties", "first party", "party one", "disclosing entity"],
+        "first_party": ["first party", "party one", "disclosing entity", "principal signatories"],
         "party_one": ["party one", "first party", "disclosing entity", "principal signatories", "counterparties", "engaged parties"],
+        "second_party": ["second party", "party two", "receiving entity", "counterparties"],
         "party_two": ["party two", "second party", "receiving entity"],
+        "authorized_signatory": ["authorized signatory", "signatory", "authorized by", "signatory name"],
+        "notification_email": ["notification email", "email address", "email", "notice email"],
+        "subject": ["subject", "agreement subject", "purpose", "re"],
     },
     "kyc_form": {
         "customer_name": ["subject full legal name", "applicant complete name", "full identity name", "customer name", "full name", "legal name", "applicant name", "name"],
@@ -52,8 +57,11 @@ SCHEMA_SYNONYMS: Dict[str, Dict[str, List[str]]] = {
         "order_total": ["aggregate commitment", "authorized requisition sum", "total purchase value", "aggregate requisition value", "order total", "total cost", "total purchase amount", "total"],
     },
     "letter": {
-        "sender": ["transmitted by", "originator / from", "from", "sender", "originator", "dispatched by"],
-        "recipient": ["deliver to", "recipient / to", "to", "recipient", "addressee"],
+        "sender": ["sender name", "transmitted by", "originator / from", "from", "sender", "originator", "dispatched by"],
+        "sender_name": ["sender name", "transmitted by", "originator / from", "from", "sender", "originator", "dispatched by"],
+        "recipient": ["recipient name", "deliver to", "recipient / to", "to", "recipient", "addressee"],
+        "recipient_name": ["recipient name", "deliver to", "recipient / to", "to", "recipient", "addressee"],
+        "sender_email": ["sender email", "email address", "email", "from email", "originator email", "sender's email"],
         "date": ["dispatch date", "correspondence date", "date", "date of notice"],
         "letter_date": ["dispatch date", "correspondence date", "date", "date of notice"],
         "subject": ["subject header", "re / in reference to", "subject", "re", "subject matter", "regarding"],
@@ -75,24 +83,60 @@ def clean_ocr_field_text(text: Optional[str]) -> Optional[str]:
     if not text:
         return None
     val = text.strip()
-    val = val.strip("`'\"‘“”—-=[](){}:;,.*")
+    has_honorific_dot = any(val.endswith(abbrev) for abbrev in ["Jr.", "Mr.", "Mrs.", "Ms.", "Dr.", "Inc.", "Corp.", "Ltd.", "Co."])
+    val = val.strip("`'\"‘“”—-=[](){}:;,*")
+    if not has_honorific_dot:
+        val = val.strip(".")
     val = re.sub(r"\s+", " ", val).strip()
     return val if val else None
 
-def clean_ocr_date(val: Optional[str]) -> Optional[str]:
-    """Clean and standardize date strings (YYYY-MM-DD) or date ranges."""
+def clean_ocr_date(val: Optional[str], original_text: Optional[str] = None) -> Optional[str]:
+    """Clean and ground date strings, preserving dates written with '/' exactly as written."""
     if not val:
         return None
     val = val.strip().strip("`'\"‘“”—-=[](){}:;,")
+    
     # Date range first
     m_range = re.search(r'(\d{4}[./-]\d{1,2}[./-]\d{1,2}\s*(?:to|-)\s*\d{4}[./-]\d{1,2}[./-]\d{1,2})', val, re.I)
     if m_range:
         return m_range.group(1).strip()
-    # Single date
-    m = re.search(r"\b(\d{4})[./-](\d{1,2})[./-](\d{1,2})\b", val)
-    if m:
-        y, mo, d = m.groups()
-        return f"{int(y):04d}-{int(mo):02d}-{int(d):02d}"
+    
+    # 1. Dates written with '/' (e.g. DD/MM/YYYY, MM/DD/YYYY, YYYY/MM/DD) - keep exactly as written
+    m_slash = re.search(r"\b(\d{1,4}/\d{1,2}/\d{1,4})\b", val)
+    if m_slash:
+        matched = m_slash.group(1)
+        if original_text and matched in original_text:
+            return matched
+        return matched
+        
+    # 2. Dates written with '-' (YYYY-MM-DD or DD-MM-YYYY)
+    m_dash = re.search(r"\b(\d{4}-\d{1,2}-\d{1,2})\b", val)
+    if m_dash:
+        matched = m_dash.group(1)
+        if original_text and matched in original_text:
+            return matched
+        return matched
+        
+    m_dmy_dash = re.search(r"\b(\d{1,2}-\d{1,2}-\d{4})\b", val)
+    if m_dmy_dash:
+        matched = m_dmy_dash.group(1)
+        if original_text and matched in original_text:
+            return matched
+        return matched
+
+    # 3. Dates written with '.'
+    m_dot = re.search(r"\b(\d{1,4}\.\d{1,2}\.\d{1,4})\b", val)
+    if m_dot:
+        matched = m_dot.group(1)
+        if original_text and matched in original_text:
+            return matched
+        return matched
+
+    # Fallback pattern
+    m_gen = re.search(r"\b(\d{1,4}[./-]\d{1,2}[./-]\d{1,4})\b", val)
+    if m_gen:
+        return m_gen.group(1)
+        
     return None
 
 def clean_ocr_amount(val: Optional[str]) -> Optional[float]:

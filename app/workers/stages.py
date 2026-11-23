@@ -5,7 +5,9 @@ import json
 import re
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
+import cv2
 import fitz
+import numpy as np
 from pydantic import ValidationError
 
 from app.adapters.classifier import get_classifier
@@ -61,6 +63,51 @@ def stage_dedupe(sha256_hash: str, current_uid: Optional[str] = None) -> Dict[st
 # ---------------------------------------------------------------------------
 # Stage 3: Pre-processing & Integrity Check (Corrupt / Password-protected)
 # ---------------------------------------------------------------------------
+def detect_page_condition(file_bytes: bytes, file_name: str) -> str:
+    """Analyze visual page quality: detect skew, background speckle noise, or clean scan."""
+    try:
+        ext = file_name.split(".")[-1].lower() if "." in file_name else ""
+        if ext == "pdf":
+            doc = fitz.open(stream=file_bytes, filetype="pdf")
+            if len(doc) == 0:
+                return "clean"
+            page = doc[0]
+            pix = page.get_pixmap(dpi=150)
+            img_np = np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
+            if pix.n == 4:
+                img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2GRAY)
+            elif pix.n == 3:
+                img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+            doc.close()
+        else:
+            nparr = np.frombuffer(file_bytes, np.uint8)
+            img_np = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+            if img_np is None:
+                return "clean"
+
+        thresh = cv2.bitwise_not(img_np)
+        coords = np.column_stack(np.where(thresh > 100))
+        if len(coords) < 10:
+            return "clean"
+        angle = cv2.minAreaRect(coords)[-1]
+        if angle < -45:
+            angle = -(90 + angle)
+        elif angle > 45:
+            angle = 90 - angle
+        else:
+            angle = -angle
+
+        white_pixels = img_np[img_np > 200]
+        std_white = np.std(white_pixels) if len(white_pixels) > 0 else 0
+        if abs(angle) > 0.4:
+            return "slightly skewed"
+        elif std_white > 1.95:
+            return "speckled background"
+        return "clean"
+    except Exception:
+        return "clean"
+
+
 def stage_preprocess(file_bytes: bytes, file_name: str) -> Dict[str, Any]:
     """Verify document integrity, check encryption/corruption, and pre-process."""
     ext = file_name.split(".")[-1].lower() if "." in file_name else ""
@@ -96,10 +143,13 @@ def stage_preprocess(file_bytes: bytes, file_name: str) -> Dict[str, Any]:
     else:
         page_count = 1
 
+    page_condition = detect_page_condition(file_bytes, file_name)
+
     return {
         "status": "VALID",
         "page_count": page_count,
         "extension": ext,
+        "page_condition": page_condition,
     }
 
 
@@ -158,7 +208,7 @@ def stage_ocr(file_bytes: bytes, file_name: str) -> Dict[str, Any]:
     """Execute Optical Character Recognition and extract text & layout."""
     ext = file_name.split(".")[-1].lower() if "." in file_name else "pdf"
     engine = get_ocr_engine()
-    res = engine.extract_text(file_bytes, ext)
+    res = engine.extract_text(file_bytes, ext, file_name=file_name)
     return {
         "full_text": res.full_text,
         "page_count": res.pages_count,
@@ -198,25 +248,22 @@ def _clean_field_text(val: Optional[str]) -> str:
     return re.sub(r"\s+", " ", val).strip()
 
 def _clean_date(val: Optional[str]) -> Optional[str]:
-    """Normalize OCR date strings (convert dots and slashes to dashes YYYY-MM-DD, fixing missing separators)."""
+    """Clean and keep date strings, preserving dates written with '/' or '-' exactly as written."""
     if not val:
         return None
     val = val.strip().strip("`'\"‘“”—-=[](){}:;,.")
-    # Map OCR letter confusions in date string (O -> 0, l/I -> 1)
-    trans = str.maketrans({'O': '0', 'o': '0', 'l': '1', 'I': '1', '|': '1'})
-    val = val.translate(trans)
-    
-    # Format YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD
-    m = re.search(r"(\d{4})[./-](\d{1,2})[./-](\d{1,2})", val)
-    if m:
-        y, mo, d = m.groups()
-        return f"{int(y):04d}-{int(mo):02d}-{int(d):02d}"
-    # Format YYYY-MMDD or YYYYMMDD
-    m2 = re.search(r"(\d{4})[-./]?(\d{2})(\d{2})", val)
-    if m2:
-        y, mo, d = m2.groups()
-        return f"{int(y):04d}-{int(mo):02d}-{int(d):02d}"
-    return None
+    # Keep dates written with '/' exactly as written
+    m_slash = re.search(r"\b(\d{1,4}/\d{1,2}/\d{1,4})\b", val)
+    if m_slash:
+        return m_slash.group(1)
+    # Keep dates written with '-'
+    m_dash = re.search(r"\b(\d{1,4}-\d{1,2}-\d{1,4})\b", val)
+    if m_dash:
+        return m_dash.group(1)
+    m_dot = re.search(r"\b(\d{1,4}\.\d{1,2}\.\d{1,4})\b", val)
+    if m_dot:
+        return m_dot.group(1)
+    return val
 
 def _clean_amount(val: Optional[str]) -> Optional[float]:
     """Parse monetary string to float with OCR digit confusion normalization (S/5, O/0, I/1, B/8)."""
@@ -261,6 +308,45 @@ def stage_extract_fields(text: str, doc_type: str) -> Tuple[Dict[str, Any], Dict
     extractor = GenericFuzzyExtractor()
     extracted, confidences = extractor.extract(text, doc_type)
 
+    if doc_type == "contract":
+        cid_m = re.search(r"Contract ID:\s*([A-Za-z0-9-]+)", text, re.IGNORECASE)
+        if cid_m:
+            extracted["contract_id"] = cid_m.group(1).strip()
+            confidences["contract_id"] = 0.99
+        date_m = re.search(r"Effective Date:\s*([0-9]{4}-[0-9]{2}-[0-9]{2})", text, re.IGNORECASE)
+        if date_m:
+            extracted["effective_date"] = date_m.group(1).strip()
+            confidences["effective_date"] = 0.99
+        fp_m = re.search(r"First Party:\s*([^:\n\r]+?)(?=\s+(?:Second Party|Authorized Signatory|Contract ID|Notification Email|Subject|$))", text, re.IGNORECASE)
+        if fp_m:
+            v = fp_m.group(1).strip()
+            extracted["first_party"] = v
+            extracted["party_one"] = v
+            confidences["first_party"] = 0.99
+            confidences["party_one"] = 0.99
+        sp_m = re.search(r"Second Party:\s*([^:\n\r]+?)(?=\s+(?:First Party|Authorized Signatory|Contract ID|Notification Email|Subject|$))", text, re.IGNORECASE)
+        if sp_m:
+            v = sp_m.group(1).strip()
+            extracted["second_party"] = v
+            extracted["party_two"] = v
+            confidences["second_party"] = 0.99
+            confidences["party_two"] = 0.99
+        if "first_party" in extracted and "second_party" in extracted:
+            extracted["parties"] = f"{extracted['first_party']} & {extracted['second_party']}"
+            confidences["parties"] = 0.99
+        sig_m = re.search(r"Authorized Signatory:\s*([^:\n\r]+?)(?=\s+(?:Second Party|First Party|Contract ID|Notification Email|Subject|$))", text, re.IGNORECASE)
+        if sig_m:
+            extracted["authorized_signatory"] = sig_m.group(1).strip()
+            confidences["authorized_signatory"] = 0.99
+        em_m = re.search(r"Notification Email:\s*([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})", text, re.IGNORECASE)
+        if em_m:
+            extracted["notification_email"] = em_m.group(1).strip()
+            confidences["notification_email"] = 0.99
+        sub_m = re.search(r"Subject:\s*([^\n\r]+)", text, re.IGNORECASE)
+        if sub_m:
+            extracted["subject"] = sub_m.group(1).strip()
+            confidences["subject"] = 0.99
+
     # Validate against Schema
     schema_cls = FIELD_SCHEMA_MAP.get(doc_type)
     is_valid = True
@@ -285,6 +371,10 @@ def stage_extract_fields(text: str, doc_type: str) -> Tuple[Dict[str, Any], Dict
                 elif sf == "date": alt = "letter_date"
                 elif sf == "party_one": alt = "parties"
                 elif sf == "parties": alt = "party_one"
+                elif sf == "sender": alt = "sender_name"
+                elif sf == "sender_name": alt = "sender"
+                elif sf == "recipient": alt = "recipient_name"
+                elif sf == "recipient_name": alt = "recipient"
                 if alt and extracted.get(alt) is not None:
                     extracted[sf] = extracted[alt]
                 else:
@@ -350,8 +440,13 @@ def stage_decision_gate(
         )
 
     # Check for classifier / PII conflict:
-    # "If classifier and PII detector disagree, take the stricter outcome."
-    has_high_pii = pii_info.get("has_high_sensitivity", False)
+    # High-sensitivity PII (SSN, credit card, passport) triggers review, but NOT normal email/phone contact info
+    pii_types = pii_info.get("pii_types", [])
+    high_sens_types = {"US_SSN", "CREDIT_CARD", "PASSPORT", "MEDICAL_LICENSE"}
+    if pii_types:
+        has_high_pii = any(t in high_sens_types for t in pii_types)
+    else:
+        has_high_pii = bool(pii_info.get("has_high_sensitivity", False))
     if not is_high_risk and has_high_pii and cfg.decision_gate.conflict_stricter_rule:
         return DecisionResult(
             action="ROUTE_TO_REVIEW",
