@@ -25,8 +25,6 @@ export default function App() {
   const [activeFileIndex, setActiveFileIndex] = useState(0);
   const [draftFields, setDraftFields] = useState<FieldItem[]>([]);
   const [savedToast, setSavedToast] = useState('');
-  const [hideSensitive, setHideSensitive] = useState(false);
-  const [revealedSensIndexes, setRevealedSensIndexes] = useState<Set<number>>(new Set());
   const [highlightedBbox, setHighlightedBbox] = useState<number[] | null>(null);
   const [activeDetailIdx, setActiveDetailIdx] = useState<number | null>(null);
   const [unlockPassword, setUnlockPassword] = useState('');
@@ -216,20 +214,6 @@ export default function App() {
     setUnlockPassword('');
     setUnlockError('');
     setView('view');
-  };
-
-  const toggleHideSensitive = () => {
-    setHideSensitive((prev) => !prev);
-    setRevealedSensIndexes(new Set());
-  };
-
-  const toggleRevealIndex = (idx: number) => {
-    setRevealedSensIndexes((prev) => {
-      const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx);
-      else next.add(idx);
-      return next;
-    });
   };
 
   const handleDetailClick = (idx: number, bbox?: number[] | null) => {
@@ -947,9 +931,6 @@ export default function App() {
                                 <span style={{ fontWeight: 600, color: 'var(--muted)' }}>
                                   {x.label || '(no label)'}
                                 </span>
-                                {x.detector_tag && (
-                                  <span className="detector-badge">{x.detector_tag}</span>
-                                )}
                               </div>
 
                               {/* Right Column: Editable wrapping value */}
