@@ -1,0 +1,14 @@
+{
+  "total_evaluated_documents": 30,
+  "share_handled_by_rules_pct": 100.0,
+  "share_reaching_local_model_pct": 0.0,
+  "share_sensitive_pct": 100.0,
+  "rule_parser": {
+    "precision": 0.105,
+    "recall": 0.217,
+    "f1": 0.141
+  },
+  "pii_recall": 0.167,
+  "pii_detected_count": 10,
+  "pii_expected_count": 60
+}

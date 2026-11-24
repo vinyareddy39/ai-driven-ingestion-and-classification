@@ -1,9 +1,17 @@
-"""Database models for documents, stages, audit trail, and human review tasks."""
+"""Database models and connection handling.
+
+Unified Data Layer supporting both:
+1. Document Reader Application (UserModel, BatchModel, FileModel, FieldModel, CorrectionModel)
+2. Asynchronous ECM Ingestion & Classification Pipeline (DocumentModel, StageExecutionModel,
+   AuditEventModel, ReviewTaskModel, ConfigHistoryModel, PipelineJobModel)
+"""
 
 import os
+import uuid
 from datetime import datetime, timezone
-import json
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Generator, Optional
+
+from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy import (
     BigInteger,
     Boolean,
@@ -17,17 +25,27 @@ from sqlalchemy import (
     Text,
     TypeDecorator,
     create_engine,
+    event,
+    inspect,
+    text,
 )
-from sqlalchemy.orm import declarative_base, sessionmaker, scoped_session
-from cryptography.fernet import Fernet, InvalidToken
-from app.core.config import get_app_settings
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import declarative_base, relationship, scoped_session, sessionmaker
 
 Base = declarative_base()
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def gen_uuid() -> str:
+    return str(uuid.uuid4())
+
 
 # ---------------------------------------------------------------------------
 # Column-Level Health Data Encryption at Rest (Fernet / AES-128-CBC + HMAC)
 # ---------------------------------------------------------------------------
-
 _fernet_instance = None
 
 
@@ -82,9 +100,101 @@ class EncryptedText(TypeDecorator):
         return value
 
 
+# ---------------------------------------------------------------------------
+# User & Batch Models
+# ---------------------------------------------------------------------------
+class UserModel(Base):
+    __tablename__ = "users"
 
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    name = Column(String(255), nullable=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(String(32), default="uploader", nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+    disabled = Column(Boolean, default=False)
+
+    batches = relationship("BatchModel", back_populates="user", cascade="all, delete-orphan")
+    corrections = relationship("CorrectionModel", back_populates="user", cascade="all, delete-orphan")
+
+
+class BatchModel(Base):
+    __tablename__ = "batches"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    batch_id = Column(String(64), index=True, nullable=True)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(255), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+    user = relationship("UserModel", back_populates="batches")
+    files = relationship("FileModel", back_populates="batch", cascade="all, delete-orphan", order_by="FileModel.created_at")
+
+
+class FileModel(Base):
+    __tablename__ = "files"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    batch_id = Column(String(36), ForeignKey("batches.id", ondelete="CASCADE"), nullable=False, index=True)
+    original_name = Column(String(512), nullable=False)
+    stored_path = Column(String(1024), nullable=False)
+    sha256 = Column(String(64), nullable=False, index=True)
+    cache_key = Column(String(128), index=True, nullable=True)
+    stage_timings = Column(Text, nullable=True)
+    status = Column(String(64), default="Waiting")
+    stage = Column(String(64), default="Waiting")
+    error = Column(Text, nullable=True)
+    doc_type = Column(String(255), nullable=True)
+    page_condition = Column(String(255), nullable=True)
+    duplicate_of = Column(String(512), nullable=True)
+    page_count = Column(Integer, default=1)
+    provider_name = Column(String(64), nullable=True)
+    model_name = Column(String(128), nullable=True)
+    is_fallback = Column(Boolean, default=False)
+    prompt_version = Column(String(32), nullable=True)
+    started_at = Column(DateTime(timezone=True), nullable=True)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+    batch = relationship("BatchModel", back_populates="files")
+    fields = relationship("FieldModel", back_populates="file", cascade="all, delete-orphan", order_by="FieldModel.position")
+
+
+class FieldModel(Base):
+    __tablename__ = "fields"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    file_id = Column(String(36), ForeignKey("files.id", ondelete="CASCADE"), nullable=False, index=True)
+    label = Column(String(255), nullable=False)
+    value = Column(Text, nullable=False)
+    original_value = Column(Text, nullable=False)
+    confidence = Column(Float, default=1.0)
+    source = Column(String(32), default="read")
+    position = Column(Integer, default=0)
+
+    file = relationship("FileModel", back_populates="fields")
+
+
+class CorrectionModel(Base):
+    __tablename__ = "corrections"
+
+    id = Column(String(36), primary_key=True, default=gen_uuid)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    doc_type = Column(String(255), nullable=False)
+    label = Column(String(255), nullable=False)
+    original_value = Column(Text, nullable=False)
+    corrected_value = Column(Text, nullable=False)
+    layout_hint = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+    user = relationship("UserModel", back_populates="corrections")
+
+
+# ---------------------------------------------------------------------------
+# ECM Ingest & Classification Pipeline Models
+# ---------------------------------------------------------------------------
 class DocumentModel(Base):
-    """Primary document and metadata storage record."""
+    """Primary document and metadata storage record in enterprise ECM."""
     __tablename__ = "ecm_documents"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -122,7 +232,6 @@ class DocumentModel(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
-    # Enterprise Batch, Ownership, and Retention extensions
     batch_id = Column(String(64), index=True, nullable=True)
     user_id = Column(String(36), ForeignKey("users.id"), index=True, nullable=True)
     legal_hold = Column(Boolean, default=False, index=True)
@@ -191,95 +300,6 @@ class ConfigHistoryModel(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
-# ---------------------------------------------------------------------------
-# Patient Prescription & Timetable Data Models
-# ---------------------------------------------------------------------------
-
-class UserModel(Base):
-    """User account record for patient and staff authentication."""
-    __tablename__ = "users"
-
-    id = Column(String(36), primary_key=True)
-    name = Column(String(100), nullable=True)
-    email = Column(String(255), unique=True, index=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    role = Column(String(32), default="uploader", nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    disabled = Column(Boolean, default=False)
-
-
-class RevokedTokenModel(Base):
-    """Revoked stateless authentication tokens list for logout enforcement."""
-    __tablename__ = "revoked_tokens"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    token_hash = Column(String(64), unique=True, index=True, nullable=False)
-    user_id = Column(String(36), nullable=True)
-    expires_at = Column(BigInteger, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-
-class PrescriptionModel(Base):
-    """Patient prescription scan and job tracking record."""
-    __tablename__ = "prescriptions"
-
-    id = Column(String(36), primary_key=True)
-    user_id = Column(String(36), ForeignKey("users.id"), index=True, nullable=False)
-    file_key = Column(String(255), index=True, nullable=False)
-    sha256 = Column(String(64), index=True, nullable=True)
-    status = Column(String(32), default="QUEUED", index=True, nullable=False)  # QUEUED, PROCESSING, NEEDS_REVIEW, CONFIRMED, FAILED
-    raw_text = Column(EncryptedText, nullable=True)
-    error_message = Column(String(255), nullable=True)
-    model_version = Column(String(50), default="v1.0")
-    ocr_engine = Column(String(50), default="HybridPyMuPDF-Tesseract")
-    pii_detected = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-
-class ExtractedItemModel(Base):
-    """Medication item extracted from a prescription."""
-    __tablename__ = "extracted_items"
-
-    id = Column(String(36), primary_key=True)
-    prescription_id = Column(String(36), ForeignKey("prescriptions.id"), index=True, nullable=False)
-    raw_text = Column(EncryptedText, default="")
-    drug_name = Column(String(255), nullable=False)
-    strength = Column(String(100), default="")
-    dose = Column(String(100), default="")
-    frequency = Column(String(100), default="")
-    timing = Column(String(100), default="")
-    duration_days = Column(Integer, nullable=True)
-    schedule_rule = Column(String(255), default="")
-    confidence_json = Column(Text, default="{}")
-    verified_by_user = Column(Boolean, default=False, index=True)
-    verified_at = Column(DateTime, nullable=True)
-
-
-class TimetableSlotModel(Base):
-    """Discrete scheduled dose slot for patient adherence tracking."""
-    __tablename__ = "timetable_slots"
-
-    id = Column(String(36), primary_key=True)
-    user_id = Column(String(36), ForeignKey("users.id"), index=True, nullable=False)
-    prescription_id = Column(String(36), ForeignKey("prescriptions.id"), index=True, nullable=False)
-    extracted_item_id = Column(String(36), ForeignKey("extracted_items.id"), index=True, nullable=False)
-    scheduled_at = Column(DateTime, nullable=False, index=True)
-    instruction = Column(String(255), default="")
-    status = Column(String(32), default="pending", index=True)  # pending, taken, skipped
-    status_changed_at = Column(DateTime, nullable=True)
-
-
-class ReminderModel(Base):
-    """Medication reminder notification dispatch record."""
-    __tablename__ = "reminders"
-
-    id = Column(String(36), primary_key=True)
-    slot_id = Column(String(36), ForeignKey("timetable_slots.id"), index=True, nullable=False)
-    channel = Column(String(32), default="email")
-    send_at = Column(DateTime, nullable=False, index=True)
-    sent_at = Column(DateTime, nullable=True)
-
-
 class PipelineJobModel(Base):
     """Persistent job queue model surviving process restarts across PostgreSQL and SQLite."""
     __tablename__ = "pipeline_jobs"
@@ -296,120 +316,89 @@ class PipelineJobModel(Base):
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
 
-class BatchModel(Base):
-    """Enterprise batch upload session record."""
-    __tablename__ = "batches"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    batch_id = Column(String(64), unique=True, index=True, nullable=False)
-    number = Column(Integer, default=1, index=True, nullable=False)
-    name = Column(String(100), nullable=True)
-    user_id = Column(String(36), index=True, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
-
-
-class NotificationModel(Base):
-    """User notifications for completed batches and system events."""
-    __tablename__ = "notifications"
-
-    id = Column(String(64), primary_key=True)
-    user_id = Column(String(36), index=True, nullable=True)
-    batch_id = Column(String(64), index=True, nullable=True)
-    title = Column(String(200), nullable=False)
-    message = Column(Text, nullable=False)
-    read = Column(Boolean, default=False, index=True, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-
-
-class DownloadModel(Base):
-    """User requested batch export archive record and download tracker."""
-    __tablename__ = "downloads"
-
-    id = Column(String(64), primary_key=True)
-    owner = Column(String(36), index=True, nullable=False)
-    batch_id = Column(String(64), index=True, nullable=False)
-    status = Column(String(32), default="PREPARING", index=True, nullable=False)  # PREPARING, READY, DOWNLOADED, FAILED, EXPIRED
-    file_count = Column(Integer, default=0, nullable=False)
-    size_bytes = Column(Integer, default=0, nullable=False)
-    file_path = Column(String(500), nullable=True)
-    requested_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
-    completed_at = Column(DateTime, nullable=True)
-    last_downloaded_at = Column(DateTime, nullable=True)
-    error_message = Column(String(500), nullable=True)
-
-
-class MultipartUploadModel(Base):
-    """Multipart file upload sessions for large files (direct-to-storage / R2 / S3)."""
-    __tablename__ = "multipart_uploads"
-
-    id = Column(String(64), primary_key=True)  # upload_id or uuid
-    storage_key = Column(String(255), nullable=False)
-    file_name = Column(String(255), nullable=False)
-    mime_type = Column(String(100), nullable=False)
-    file_size = Column(BigInteger, nullable=False)
-    part_size = Column(Integer, nullable=False)
-    part_count = Column(Integer, nullable=False)
-    owner = Column(String(100), nullable=False, index=True)
-    batch_id = Column(String(64), nullable=True, index=True)
-    status = Column(String(32), default="INITIATED", index=True)  # INITIATED, COMPLETED, ABORTED, EXPIRED
-    sha256 = Column(String(64), nullable=True, index=True)
-    document_uid = Column(String(64), nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    completed_at = Column(DateTime, nullable=True)
-
-
-
-# Database Engine and Session Factory
+# ---------------------------------------------------------------------------
+# Engine and Session Setup
+# ---------------------------------------------------------------------------
 _engine = None
 _SessionFactory = None
+
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    """Enable SQLite WAL mode, normal synchronous, and 30s busy timeout for high concurrency."""
+    try:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
+        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.close()
+    except Exception:
+        pass
+
+
+def get_db_url() -> str:
+    return os.getenv("DATABASE_URL", "sqlite:///./data/ecm_pipeline.db")
+
+
+def init_db(db_url: str = None):
+    global _engine, _SessionFactory
+    if db_url is None:
+        db_url = get_db_url()
+
+    if db_url.startswith("sqlite:///"):
+        path = db_url.replace("sqlite:///", "")
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+
+    connect_args = {"check_same_thread": False, "timeout": 30.0} if "sqlite" in db_url else {}
+    _engine = create_engine(db_url, connect_args=connect_args)
+    Base.metadata.create_all(bind=_engine)
+
+    # Idempotent migrations for files table
+    try:
+        insp = inspect(_engine)
+        if "files" in insp.get_table_names():
+            existing_cols = [c["name"] for c in insp.get_columns("files")]
+            with _engine.connect() as conn:
+                columns_to_add = [
+                    ("cache_key", "VARCHAR(128)"),
+                    ("stage_timings", "TEXT"),
+                    ("provider_name", "VARCHAR(64)"),
+                    ("model_name", "VARCHAR(128)"),
+                    ("is_fallback", "BOOLEAN DEFAULT 0"),
+                    ("prompt_version", "VARCHAR(32)"),
+                ]
+                for col_name, col_type in columns_to_add:
+                    if col_name not in existing_cols:
+                        conn.execute(text(f"ALTER TABLE files ADD COLUMN {col_name} {col_type}"))
+                conn.commit()
+    except Exception:
+        pass
+
+    _SessionFactory = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=_engine))
+    return _engine
 
 
 def get_db_engine():
     global _engine
     if _engine is None:
-        db_url = os.getenv("DATABASE_URL")
-        if not db_url:
-            settings = get_app_settings()
-            db_url = settings.DATABASE_URL
-        connect_args = {"check_same_thread": False, "timeout": 30.0} if "sqlite" in db_url else {}
-        _engine = create_engine(db_url, connect_args=connect_args)
-        if "sqlite" in db_url:
-            from sqlalchemy import event
-
-            @event.listens_for(_engine, "connect")
-            def set_sqlite_pragma(dbapi_connection, connection_record):
-                cursor = dbapi_connection.cursor()
-                cursor.execute("PRAGMA journal_mode=WAL")
-                cursor.execute("PRAGMA busy_timeout=30000")
-                cursor.close()
+        init_db()
     return _engine
 
 
-def init_db():
-    """Create all tables in the database."""
-    engine = get_db_engine()
-    Base.metadata.create_all(engine)
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            conn.execute(text("ALTER TABLE pipeline_jobs ADD COLUMN claimed_at TIMESTAMP"))
-            conn.commit()
-    except Exception:
-        pass
-    try:
-        from sqlalchemy import text
-        with engine.connect() as conn:
-            conn.execute(text("ALTER TABLE users ADD COLUMN name VARCHAR(100)"))
-            conn.commit()
-    except Exception:
-        pass
-
-
 def get_db_session():
-    """Create a scoped SQLAlchemy session."""
+    """Create or return a scoped SQLAlchemy session."""
     global _SessionFactory
     if _SessionFactory is None:
-        engine = get_db_engine()
-        _SessionFactory = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
+        init_db()
     return _SessionFactory()
+
+
+def get_db() -> Generator:
+    global _SessionFactory
+    if _SessionFactory is None:
+        init_db()
+    db = _SessionFactory()
+    try:
+        yield db
+    finally:
+        db.close()

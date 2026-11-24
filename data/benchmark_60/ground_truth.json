@@ -1,0 +1,507 @@
+{
+  "bench_01_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Apex Logistics",
+      "Invoice Number": "INV-2026-1000",
+      "Date": "2026-11-10",
+      "Total": "$150.00"
+    }
+  },
+  "bench_02_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Globex Global",
+      "Invoice Number": "INV-2026-1001",
+      "Date": "2026-11-11",
+      "Total": "$197.50"
+    }
+  },
+  "bench_03_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Acme Industrial",
+      "Invoice Number": "INV-2026-1002",
+      "Date": "2026-11-12",
+      "Total": "$245.00"
+    }
+  },
+  "bench_04_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Soylent Corp",
+      "Invoice Number": "INV-2026-1003",
+      "Date": "2026-11-13",
+      "Total": "$292.50"
+    }
+  },
+  "bench_05_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Initech Software",
+      "Invoice Number": "INV-2026-1004",
+      "Date": "2026-11-14",
+      "Total": "$340.00"
+    }
+  },
+  "bench_06_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Wayne Enterprises",
+      "Invoice Number": "INV-2026-1005",
+      "Date": "2026-11-15",
+      "Total": "$387.50"
+    }
+  },
+  "bench_07_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Stark Logistics",
+      "Invoice Number": "INV-2026-1006",
+      "Date": "2026-11-16",
+      "Total": "$435.00"
+    }
+  },
+  "bench_08_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Umbrella Bio",
+      "Invoice Number": "INV-2026-1007",
+      "Date": "2026-11-17",
+      "Total": "$482.50"
+    }
+  },
+  "bench_09_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Cyberdyne Systems",
+      "Invoice Number": "INV-2026-1008",
+      "Date": "2026-11-18",
+      "Total": "$530.00"
+    }
+  },
+  "bench_10_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Hooli Cloud",
+      "Invoice Number": "INV-2026-1009",
+      "Date": "2026-11-19",
+      "Total": "$577.50"
+    }
+  },
+  "bench_11_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Apex Logistics",
+      "Invoice Number": "INV-2026-1010",
+      "Date": "2026-11-20",
+      "Total": "$625.00"
+    }
+  },
+  "bench_12_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Globex Global",
+      "Invoice Number": "INV-2026-1011",
+      "Date": "2026-11-21",
+      "Total": "$672.50"
+    }
+  },
+  "bench_13_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Acme Industrial",
+      "Invoice Number": "INV-2026-1012",
+      "Date": "2026-11-22",
+      "Total": "$720.00"
+    }
+  },
+  "bench_14_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Soylent Corp",
+      "Invoice Number": "INV-2026-1013",
+      "Date": "2026-11-23",
+      "Total": "$767.50"
+    }
+  },
+  "bench_15_invoice.pdf": {
+    "class": "invoice",
+    "expected_fields": {
+      "Vendor": "Initech Software",
+      "Invoice Number": "INV-2026-1014",
+      "Date": "2026-11-24",
+      "Total": "$815.00"
+    }
+  },
+  "bench_16_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Eleanor Vance",
+      "Date of Birth": "1980-05-12",
+      "National ID": "ID-987-4000"
+    }
+  },
+  "bench_17_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Marcus Brody",
+      "Date of Birth": "1981-05-13",
+      "National ID": "ID-987-4001"
+    }
+  },
+  "bench_18_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Sarah Connor",
+      "Date of Birth": "1982-05-14",
+      "National ID": "ID-987-4002"
+    }
+  },
+  "bench_19_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Arthur Dent",
+      "Date of Birth": "1983-05-15",
+      "National ID": "ID-987-4003"
+    }
+  },
+  "bench_20_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Dana Scully",
+      "Date of Birth": "1984-05-16",
+      "National ID": "ID-987-4004"
+    }
+  },
+  "bench_21_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Fox Mulder",
+      "Date of Birth": "1985-05-17",
+      "National ID": "ID-987-4005"
+    }
+  },
+  "bench_22_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "James Holden",
+      "Date of Birth": "1986-05-18",
+      "National ID": "ID-987-4006"
+    }
+  },
+  "bench_23_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Naomi Nagata",
+      "Date of Birth": "1987-05-19",
+      "National ID": "ID-987-4007"
+    }
+  },
+  "bench_24_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Amos Burton",
+      "Date of Birth": "1988-05-20",
+      "National ID": "ID-987-4008"
+    }
+  },
+  "bench_25_kyc.pdf": {
+    "class": "kyc_form",
+    "expected_fields": {
+      "Full Name": "Chrisjen Avasarala",
+      "Date of Birth": "1989-05-21",
+      "National ID": "ID-987-4009"
+    }
+  },
+  "bench_26_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Apex Logistics",
+      "Party Two": "Partner Firm 1 LLC",
+      "Effective Date": "2026-01-15",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_27_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Globex Global",
+      "Party Two": "Partner Firm 2 LLC",
+      "Effective Date": "2026-01-16",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_28_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Acme Industrial",
+      "Party Two": "Partner Firm 3 LLC",
+      "Effective Date": "2026-01-17",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_29_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Soylent Corp",
+      "Party Two": "Partner Firm 4 LLC",
+      "Effective Date": "2026-01-18",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_30_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Initech Software",
+      "Party Two": "Partner Firm 5 LLC",
+      "Effective Date": "2026-01-19",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_31_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Wayne Enterprises",
+      "Party Two": "Partner Firm 6 LLC",
+      "Effective Date": "2026-01-20",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_32_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Stark Logistics",
+      "Party Two": "Partner Firm 7 LLC",
+      "Effective Date": "2026-01-21",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_33_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Umbrella Bio",
+      "Party Two": "Partner Firm 8 LLC",
+      "Effective Date": "2026-01-22",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_34_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Cyberdyne Systems",
+      "Party Two": "Partner Firm 9 LLC",
+      "Effective Date": "2026-01-23",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_35_contract.pdf": {
+    "class": "contract",
+    "expected_fields": {
+      "Party One": "Hooli Cloud",
+      "Party Two": "Partner Firm 10 LLC",
+      "Effective Date": "2026-01-24",
+      "Governing Law": "Delaware, United States"
+    }
+  },
+  "bench_36_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Arthur Dent",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202600"
+    }
+  },
+  "bench_37_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Dana Scully",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202601"
+    }
+  },
+  "bench_38_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Fox Mulder",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202602"
+    }
+  },
+  "bench_39_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "James Holden",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202603"
+    }
+  },
+  "bench_40_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Naomi Nagata",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202604"
+    }
+  },
+  "bench_41_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Amos Burton",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202605"
+    }
+  },
+  "bench_42_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Chrisjen Avasarala",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202606"
+    }
+  },
+  "bench_43_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Eleanor Vance",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202607"
+    }
+  },
+  "bench_44_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Marcus Brody",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202608"
+    }
+  },
+  "bench_45_medical.pdf": {
+    "class": "medical_report",
+    "expected_fields": {
+      "Patient Name": "Sarah Connor",
+      "Attending Physician": "Dr. Julian Bashir MD",
+      "Lab Test ID": "LAB-202609"
+    }
+  },
+  "bench_46_bank.pdf": {
+    "class": "bank_statement",
+    "expected_fields": {
+      "Account Number": "ACCT-4490-2180",
+      "Closing Balance": "$12450.50",
+      "Account Holder": "Eleanor Vance"
+    }
+  },
+  "bench_47_bank.pdf": {
+    "class": "bank_statement",
+    "expected_fields": {
+      "Account Number": "ACCT-4490-2181",
+      "Closing Balance": "$13280.75",
+      "Account Holder": "Marcus Brody"
+    }
+  },
+  "bench_48_bank.pdf": {
+    "class": "bank_statement",
+    "expected_fields": {
+      "Account Number": "ACCT-4490-2182",
+      "Closing Balance": "$14111.00",
+      "Account Holder": "Sarah Connor"
+    }
+  },
+  "bench_49_bank.pdf": {
+    "class": "bank_statement",
+    "expected_fields": {
+      "Account Number": "ACCT-4490-2183",
+      "Closing Balance": "$14941.25",
+      "Account Holder": "Arthur Dent"
+    }
+  },
+  "bench_50_bank.pdf": {
+    "class": "bank_statement",
+    "expected_fields": {
+      "Account Number": "ACCT-4490-2184",
+      "Closing Balance": "$15771.50",
+      "Account Holder": "Dana Scully"
+    }
+  },
+  "bench_51_memo.pdf": {
+    "class": "memorandum",
+    "expected_fields": {
+      "To": "Eleanor Vance",
+      "From": "Fox Mulder",
+      "Subject": "Q4 Infrastructure Optimization Milestone 1"
+    }
+  },
+  "bench_52_memo.pdf": {
+    "class": "memorandum",
+    "expected_fields": {
+      "To": "Marcus Brody",
+      "From": "James Holden",
+      "Subject": "Q4 Infrastructure Optimization Milestone 2"
+    }
+  },
+  "bench_53_memo.pdf": {
+    "class": "memorandum",
+    "expected_fields": {
+      "To": "Sarah Connor",
+      "From": "Naomi Nagata",
+      "Subject": "Q4 Infrastructure Optimization Milestone 3"
+    }
+  },
+  "bench_54_memo.pdf": {
+    "class": "memorandum",
+    "expected_fields": {
+      "To": "Arthur Dent",
+      "From": "Amos Burton",
+      "Subject": "Q4 Infrastructure Optimization Milestone 4"
+    }
+  },
+  "bench_55_memo.pdf": {
+    "class": "memorandum",
+    "expected_fields": {
+      "To": "Dana Scully",
+      "From": "Chrisjen Avasarala",
+      "Subject": "Q4 Infrastructure Optimization Milestone 5"
+    }
+  },
+  "bench_56_receipt.pdf": {
+    "class": "receipt",
+    "expected_fields": {
+      "Merchant": "QuickStop Mart Store #501",
+      "Receipt ID": "REC-9940",
+      "Total": "$34.75"
+    }
+  },
+  "bench_57_receipt.pdf": {
+    "class": "receipt",
+    "expected_fields": {
+      "Merchant": "QuickStop Mart Store #502",
+      "Receipt ID": "REC-9941",
+      "Total": "$45.95"
+    }
+  },
+  "bench_58_receipt.pdf": {
+    "class": "receipt",
+    "expected_fields": {
+      "Merchant": "QuickStop Mart Store #503",
+      "Receipt ID": "REC-9942",
+      "Total": "$57.15"
+    }
+  },
+  "bench_59_receipt.pdf": {
+    "class": "receipt",
+    "expected_fields": {
+      "Merchant": "QuickStop Mart Store #504",
+      "Receipt ID": "REC-9943",
+      "Total": "$68.35"
+    }
+  },
+  "bench_60_receipt.pdf": {
+    "class": "receipt",
+    "expected_fields": {
+      "Merchant": "QuickStop Mart Store #505",
+      "Receipt ID": "REC-9944",
+      "Total": "$79.55"
+    }
+  }
+}

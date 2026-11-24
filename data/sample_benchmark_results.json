@@ -1,0 +1,46 @@
+[
+  {
+    "burst_files": 10,
+    "total_time_s": 0.15,
+    "throughput_docs_per_min": 4039.0,
+    "p50_latency_ms": 117.3,
+    "p95_latency_ms": 148.4,
+    "primary_success": 9,
+    "fallback_count": 1,
+    "simulated_429s": 1,
+    "breaker_state": "CLOSED"
+  },
+  {
+    "burst_files": 50,
+    "total_time_s": 0.15,
+    "throughput_docs_per_min": 19474.5,
+    "p50_latency_ms": 92.8,
+    "p95_latency_ms": 153.7,
+    "primary_success": 46,
+    "fallback_count": 4,
+    "simulated_429s": 4,
+    "breaker_state": "CLOSED"
+  },
+  {
+    "burst_files": 100,
+    "total_time_s": 0.16,
+    "throughput_docs_per_min": 38236.0,
+    "p50_latency_ms": 94.0,
+    "p95_latency_ms": 156.3,
+    "primary_success": 81,
+    "fallback_count": 19,
+    "simulated_429s": 19,
+    "breaker_state": "CLOSED"
+  },
+  {
+    "burst_files": 500,
+    "total_time_s": 0.16,
+    "throughput_docs_per_min": 192119.4,
+    "p50_latency_ms": 91.0,
+    "p95_latency_ms": 152.8,
+    "primary_success": 422,
+    "fallback_count": 78,
+    "simulated_429s": 78,
+    "breaker_state": "CLOSED"
+  }
+]

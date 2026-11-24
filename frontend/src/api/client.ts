@@ -1,109 +1,197 @@
-import createClient from 'openapi-fetch';
-import type { paths } from './schema';
+/** API client for frontend. */
 
-const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
-export const BASE_URL = rawBaseUrl.replace(/\/+$/, '');
+const API_BASE = '/api';
 
-const STORAGE_TOKEN_KEY = 'docsort_token';
-const STORAGE_ROLE_KEY = 'docsort_role';
-const STORAGE_EMAIL_KEY = 'docsort_email';
-
-export function setAuthToken(token: string | null) {
-  if (token) {
-    localStorage.setItem(STORAGE_TOKEN_KEY, token);
-  } else {
-    localStorage.removeItem(STORAGE_TOKEN_KEY);
-  }
+function getAuthHeader(): Record<string, string> {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export function getAuthToken(): string | null {
-  return localStorage.getItem(STORAGE_TOKEN_KEY) || '3WNO2zIz4d8j1xoqM9PNiQXf1p-GKV6gxPI8Mi5L0wE';
+export interface User {
+  id: string;
+  name: string;
+  email: string;
 }
 
-export function setUserRole(role: string | null) {
-  if (role) {
-    localStorage.setItem(STORAGE_ROLE_KEY, role);
-  } else {
-    localStorage.removeItem(STORAGE_ROLE_KEY);
-  }
+export interface FieldItem {
+  id?: string;
+  label: string;
+  value: string;
+  orig?: string;
+  conf?: number;
+  src?: string;
 }
 
-export function getUserRole(): string {
-  return localStorage.getItem(STORAGE_ROLE_KEY) || 'admin';
+export interface FileItem {
+  id: string;
+  name: string;
+  type: string;
+  cond: string;
+  dup?: string;
+  status: string;
+  stage: string;
+  error?: string;
+  fields: FieldItem[];
 }
 
-export function setUserEmail(email: string | null) {
-  if (email) {
-    localStorage.setItem(STORAGE_EMAIL_KEY, email);
-  } else {
-    localStorage.removeItem(STORAGE_EMAIL_KEY);
-  }
+export interface BatchItem {
+  id: string;
+  name: string;
+  created_at?: string;
+  file_count: number;
+  done_count: number;
+  failed_count: number;
+  progress_pct: number;
+  corrections_count: number;
+  files: FileItem[];
 }
 
-export function getUserEmail(): string {
-  return localStorage.getItem(STORAGE_EMAIL_KEY) || 'admin@example.com';
-}
-
-export const setActiveRole = setUserRole;
-export const getActiveRole = getUserRole;
-export { api } from '../services/api';
-
-export type ReviewQueueItem = any;
-export type IngestResponse = any;
-export type DocumentSummaryItem = any;
-export type ReviewActionRequest = any;
-export type ReviewDetailResponse = any;
-export type AdminConfigResponse = any;
-export type AdminConfigUpdateRequest = any;
-export type ClassThresholdConfig = any;
-export type ConfigHistoryResponse = any;
-export type ReprocessPreviewRequest = any;
-export type ReprocessPreviewResponse = any;
-export type ReprocessResponse = any;
-
-export const client = createClient<paths>({
-  baseUrl: BASE_URL,
-});
-
-client.use({
-  async onRequest({ request }) {
-    const token = getAuthToken();
-    const role = getUserRole();
-    if (token) {
-      request.headers.set('Authorization', `Bearer ${token}`);
-    }
-    if (role) {
-      request.headers.set('X-User-Role', role);
-    }
-    return request;
+export const api = {
+  async register(name: string, email: string, pw: string) {
+    const res = await fetch(`${API_BASE}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password: pw }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Registration failed');
+    return data;
   },
-});
 
-export default client;
+  async login(email: string, pw: string) {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Login failed');
+    if (data.token) localStorage.setItem('token', data.token);
+    return data;
+  },
 
-export async function fetchDocumentPageImageUrl(
-  uid: string,
-  pageNumber: number = 1,
-  width?: number
-): Promise<{ url: string; revoke: () => void }> {
-  const query = width ? `?width=${width}` : '';
-  const url = `${BASE_URL}/api/v1/documents/${encodeURIComponent(uid)}/pages/${pageNumber}/image${query}`;
+  async logout() {
+    try {
+      await fetch(`${API_BASE}/logout`, { method: 'POST', headers: getAuthHeader() });
+    } finally {
+      localStorage.removeItem('token');
+    }
+  },
 
-  const headers: Record<string, string> = {};
-  const token = getAuthToken();
-  const role = getUserRole();
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  if (role) headers['X-User-Role'] = role;
+  async getMe(): Promise<User | null> {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    const res = await fetch(`${API_BASE}/me`, { headers: getAuthHeader() });
+    if (!res.ok) {
+      localStorage.removeItem('token');
+      return null;
+    }
+    return res.json();
+  },
 
-  const res = await fetch(url, { headers });
-  if (res.status === 401) throw new Error('401 Unauthorized');
-  if (res.status === 403) throw new Error('403 Forbidden: Access denied');
-  if (!res.ok) throw new Error(`Failed to load page image: ${res.statusText}`);
+  async uploadBatch(files: File[]): Promise<{ id: string; name: string }> {
+    const formData = new FormData();
+    files.forEach((f) => formData.append('files', f));
+    const res = await fetch(`${API_BASE}/batches`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: formData,
+    });
+    if (!res.ok) {
+      if (res.status === 401) {
+        localStorage.removeItem('token');
+        throw new Error('Your session expired. Please sign in again.');
+      }
+      const text = await res.text();
+      let msg = `Upload failed (${res.status})`;
+      try {
+        const j = JSON.parse(text);
+        if (j.detail) msg = j.detail;
+      } catch {
+        if (res.status === 413) msg = 'Files too large for proxy. Please upload fewer files at once.';
+        else if (res.status >= 500) msg = 'Server connection error. Please try again.';
+      }
+      throw new Error(msg);
+    }
+    return res.json();
+  },
 
-  const blob = await res.blob();
-  const blobUrl = URL.createObjectURL(blob);
-  return {
-    url: blobUrl,
-    revoke: () => URL.revokeObjectURL(blobUrl),
-  };
-}
+  async listBatches(): Promise<any[]> {
+    const res = await fetch(`${API_BASE}/batches`, { headers: getAuthHeader() });
+    if (!res.ok) throw new Error('Failed to load past batches');
+    return res.json();
+  },
+
+  async getBatch(id: string): Promise<BatchItem> {
+    const res = await fetch(`${API_BASE}/batches/${id}`, { headers: getAuthHeader() });
+    if (res.status === 404) {
+      const err: any = new Error('Batch not found (404)');
+      err.status = 404;
+      throw err;
+    }
+    if (!res.ok) throw new Error(`Failed to fetch batch (${res.status})`);
+    return res.json();
+  },
+
+  async deleteBatch(id: string) {
+    const res = await fetch(`${API_BASE}/batches/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+    if (!res.ok) throw new Error('Failed to delete batch');
+    return res.json();
+  },
+
+  async clearAllBatches() {
+    const res = await fetch(`${API_BASE}/batches`, {
+      method: 'DELETE',
+      headers: getAuthHeader(),
+    });
+    if (!res.ok) throw new Error('Failed to clear batches');
+    return res.json();
+  },
+
+  async updateFields(fileId: string, fields: FieldItem[]) {
+    const res = await fetch(`${API_BASE}/files/${fileId}/fields`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify({ fields }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to save fields');
+    return data;
+  },
+
+  async retryFile(fileId: string) {
+    const res = await fetch(`${API_BASE}/files/${fileId}/retry`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to retry file');
+    return data;
+  },
+
+  async retryBatchRateLimited(batchId: string) {
+    const res = await fetch(`${API_BASE}/batches/${batchId}/retry-rate-limited`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to retry rate-limited files');
+    return data;
+  },
+
+  getPageImageUrl(fileId: string, pageNum: number = 1): string {
+    const token = localStorage.getItem('token') || '';
+    return `${API_BASE}/files/${fileId}/page/${pageNum}?token=${encodeURIComponent(token)}`;
+  },
+
+  getDownloadUrl(batchId: string): string {
+    const token = localStorage.getItem('token') || '';
+    return `${API_BASE}/batches/${batchId}/download?token=${encodeURIComponent(token)}`;
+  },
+};

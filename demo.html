@@ -1,0 +1,199 @@
+<title>Document Reader Demo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap">
+<style>
+/* Layout: one app shell (top bar + single working area). Teal accent, slate neutrals. */
+:root{--bg:#f4f6f7;--panel:#ffffff;--line:#d9e0e3;--fg:#15222a;--muted:#5b6b73;--accent:#0f766e;--accent-fg:#ffffff;--ok-bg:#d9f2e4;--ok-fg:#14633a;--warn-bg:#fdf0cf;--warn-fg:#7a5200;--bad-bg:#fbdede;--bad-fg:#8a1c1c;--chip:#e7eef0;--paper:#fffefb;--ink:#1d1d1b;--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;--serif:'Source Serif 4',Georgia,'Times New Roman',serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10171b;--panel:#182128;--line:#2b3942;--fg:#e5edf0;--muted:#93a4ad;--accent:#2dd4bf;--accent-fg:#06211e;--ok-bg:#16382a;--ok-fg:#7ee2a8;--warn-bg:#3b3015;--warn-fg:#f1cf79;--bad-bg:#431d1d;--bad-fg:#f5a3a3;--chip:#22313a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10171b;--panel:#182128;--line:#2b3942;--fg:#e5edf0;--muted:#93a4ad;--accent:#2dd4bf;--accent-fg:#06211e;--ok-bg:#16382a;--ok-fg:#7ee2a8;--warn-bg:#3b3015;--warn-fg:#f1cf79;--bad-bg:#431d1d;--bad-fg:#f5a3a3;--chip:#22313a;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+.wrap{max-width:1040px;margin:0 auto}
+.demo{background:var(--warn-bg);color:var(--warn-fg);border-radius:8px;padding:8px 12px;margin:16px 0 0;font-size:13px}
+header.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:20px}
+header.bar b{font-size:16px;letter-spacing:-.01em}
+.sp{flex:1}
+.who{color:var(--muted);font-size:13px;min-width:0;overflow-wrap:anywhere}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);padding:8px 14px;min-height:38px}
+button:hover{border-color:var(--accent)}
+button.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+button.link{border:0;background:none;color:var(--accent);padding:4px 6px;min-height:0;text-decoration:underline}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1{font-size:22px;margin:0 0 4px;letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:16px;margin:0 0 10px}
+p.sub{color:var(--muted);margin:0 0 18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px}
+.auth{max-width:380px;margin:40px auto}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 4px}
+input{font:inherit;width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);min-width:0}
+.err{color:var(--bad-fg);font-size:13px;margin-top:8px;min-height:18px}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:34px 16px;text-align:center}
+.drop p{margin:0 0 14px;color:var(--muted)}
+ul.rules{margin:18px 0 0;padding-left:18px;color:var(--muted)}
+ul.rules li{margin:4px 0}
+.prog{height:10px;background:var(--chip);border-radius:99px;overflow:hidden;margin:8px 0 6px}
+.prog i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+.rows{display:grid;gap:8px;margin-top:16px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:10px;flex-wrap:wrap}
+.row .nm{overflow-wrap:anywhere;min-width:0}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;background:var(--chip);color:var(--muted);white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok-fg)}
+.pill.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.pill.bad{background:var(--bad-bg);color:var(--bad-fg)}
+.grp{margin-top:22px}
+.grp h2 span{background:var(--chip);color:var(--muted);border-radius:99px;padding:1px 9px;font-size:12px;margin-left:6px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td.empty{color:var(--muted)}
+.note{font-size:12px;color:var(--muted);margin-top:3px;white-space:normal}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media (max-width:760px){.split{grid-template-columns:1fr}}
+.paperbox{background:var(--chip);border-radius:12px;padding:14px;overflow:hidden}
+.paper{background:var(--paper);color:var(--ink);font-family:var(--serif);aspect-ratio:1/1.3;padding:8% 7%;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.18);position:relative;overflow:hidden;font-size:clamp(11px,1.9vw,17px)}
+.paper .in{transform-origin:center}
+.paper h3{font-size:1.35em;text-align:center;margin:0 0 1.4em;letter-spacing:.01em}
+.paper p{margin:0 0 .9em}
+.paper.speck::after{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,rgba(0,0,0,.45) 0 1px,transparent 1.4px),radial-gradient(circle,rgba(0,0,0,.3) 0 1px,transparent 1.4px);background-size:7px 7px,11px 11px;background-position:0 0,3px 5px;opacity:.5;pointer-events:none}
+.cap{font-size:12px;color:var(--muted);margin-top:8px}
+.fr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) auto;gap:8px;align-items:center;margin-bottom:8px}
+.fr .meta{grid-column:1/-1;font-size:12px;color:var(--muted);margin-top:-4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.toast{color:var(--ok-fg);background:var(--ok-bg);border-radius:8px;padding:4px 10px;font-size:13px}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px;padding:0;list-style:none}
+.steps li{padding:3px 10px;border-radius:99px;background:var(--chip);color:var(--muted);font-size:12px}
+.steps li.on{background:var(--accent);color:var(--accent-fg);font-weight:600}
+@media (prefers-reduced-motion:reduce){.prog i{transition:none}}
+</style>
+<div class="wrap">
+  <div class="demo"><b>Demo.</b> This is a walk-through of how the app should work, using sample data. No real reading happens here. The sample files are your 6 test files.</div>
+  <header class="bar"><b>Document Reader</b><span class="sp"></span><span class="who" id="who"></span><button id="out" hidden>Sign out</button></header>
+  <ol class="steps" id="steps"></ol>
+  <main id="main"></main>
+</div>
+<script>
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+function mk(label,val,conf){return {label:label,value:val,orig:val,conf:conf,src:'read'}}
+var SAMPLE=[
+ {name:'v3_contract_0001.pdf',type:'Contract',cond:'slightly skewed',title:'MASTER SERVICES AGREEMENT',
+  f:[['Contract ID','CNT-99990001',.99],['Effective date','2027-02-14',.98],['First party','McDonald and dePaul Ltd',.96],['Second party','iNova Works, Patel and Singh',.94],['Authorized signatory',"Maria O'Neil PhD",.95],['Notification email','trap1@example.org',.97],['Subject','Enterprise procurement covenant',.98]]},
+ {name:'trap_02_lab_report.pdf',type:'Medical report',cond:'clean',title:'LABORATORY REPORT',
+  f:[['Report No','LAB-5521-X',.99],['Patient','Ravi Kumar Naidu',.98],['Specimen','Blood serum',.97],['Collected on','2026-10-30',.99],['Hemoglobin','13.8 g/dL',.96],['Physician','Dr. Anita Rao MD',.97],['Remarks','Within normal range',.98]]},
+ {name:'trap_03_mixed_case.pdf',type:'Letter',cond:'clean',title:'LETTER OF INTENT',
+  f:[['Date','2026-11-02',.99],['From','eBright Solutions of Hyderabad',.95],['To','Dr. Kavya reddy, GreenLeaf Pvt Ltd',.93],['Reference','LOI/2026/0042',.97],['Subject','Supply of iPads and MacBooks',.98],['Contact','kavya.r@example.in',.96]]},
+ {name:'trap_04_almost_empty.pdf',type:'Notice',cond:'clean',title:'NOTICE',
+  f:[['Title','NOTICE',.99],['Text','Please see attached.',.97]]},
+ {name:'trap_05_noisy_skewed.pdf',type:'Contract',cond:'skewed, speckled background',title:'MASTER SERVICES AGREEMENT',
+  f:[['Contract ID','CNT-77770005',.88],['Effective date','2026-06-19',.9],['First party','Moore-Fields and Sons',.71],['Second party','Lopez, Grant and Ibrahim',.84],['Authorized signatory','Tom Wu Jr.',.86],['Notification email','noisy5@example.com',.82],['Subject','Enterprise procurement covenant',.91]]},
+ {name:'trap_06_duplicate_of_05.pdf',type:'Contract',cond:'skewed, speckled background',title:'MASTER SERVICES AGREEMENT',dup:'trap_05_noisy_skewed.pdf',
+  f:[['Contract ID','CNT-77770005',.87],['Effective date','2026-06-19',.9],['First party','Moore-Fields and Sons',.72],['Second party','Lopez, Grant and Ibrahim',.83],['Authorized signatory','Tom Wu Jr.',.85],['Notification email','noisy5@example.com',.83],['Subject','Enterprise procurement covenant',.9]]}
+];
+var S={user:null,view:'auth',mode:'in',files:[],idx:0,draft:null,saved:'',timers:[]};
+var main=document.getElementById('main'),who=document.getElementById('who'),outb=document.getElementById('out'),stepsEl=document.getElementById('steps');
+function clearT(){S.timers.forEach(clearTimeout);S.timers=[]}
+function go(v){S.view=v;render()}
+function renderSteps(){
+ var names={auth:'1 Sign in',dash:'2 Upload',proc:'3 Reading',results:'4 Results',view:'5 Check and edit'};
+ stepsEl.innerHTML=Object.keys(names).map(function(k){return '<li class="'+(S.view===k?'on':'')+'">'+names[k]+'</li>'}).join('');
+}
+function render(){
+ renderSteps();
+ who.textContent=S.user?S.user.email:'';outb.hidden=!S.user;
+ ({auth:rAuth,dash:rDash,proc:rProc,results:rResults,view:rView})[S.view]();
+}
+outb.onclick=function(){clearT();S.user=null;S.files=[];S.draft=null;go('auth')};
+/* 1. auth */
+function rAuth(){
+ var reg=S.mode==='reg';
+ main.innerHTML='<div class="card auth"><h1>'+(reg?'Create your account':'Sign in')+'</h1><p class="sub">'+(reg?'Register once, then sign in.':'Sign in to upload and check documents.')+'</p>'+
+ '<form id="af">'+(reg?'<label class="f" for="nm">Name</label><input id="nm" autocomplete="name">':'')+
+ '<label class="f" for="em">Email</label><input id="em" type="email" autocomplete="email">'+
+ '<label class="f" for="pw">Password</label><input id="pw" type="password" autocomplete="'+(reg?'new-password':'current-password')+'">'+
+ '<div class="err" id="er"></div><button class="pri" style="width:100%;margin-top:6px">'+(reg?'Register':'Sign in')+'</button></form>'+
+ '<p class="sub" style="margin:14px 0 0;text-align:center">'+(reg?'Already registered?':'New here?')+' <button class="link" id="sw">'+(reg?'Sign in':'Register')+'</button></p></div>';
+ document.getElementById('sw').onclick=function(){S.mode=reg?'in':'reg';render()};
+ document.getElementById('af').onsubmit=function(e){e.preventDefault();
+  var em=document.getElementById('em').value.trim(),pw=document.getElementById('pw').value,er=document.getElementById('er');
+  if(reg&&!document.getElementById('nm').value.trim()){er.textContent='Enter your name.';return}
+  if(!/^\S+@\S+\.\S+$/.test(em)){er.textContent='Enter a valid email address.';return}
+  if(pw.length<6){er.textContent='Password needs at least 6 characters.';return}
+  if(reg){S.mode='in';S.registered=em;go('auth');var e2=document.getElementById('er');e2.style.color='var(--ok-fg)';e2.textContent='Registered. Now sign in.';document.getElementById('em').value=em;return}
+  S.user={email:em};go('dash')};
+}
+/* 2. upload */
+function rDash(){
+ main.innerHTML='<h1>Upload documents</h1><p class="sub">Add one or more files. Each one is read from scratch.</p>'+
+ '<div class="drop"><p>Drop files here, or choose them from your computer.</p><button class="pri" id="up">Add the 6 sample files</button></div>'+
+ '<ul class="rules"><li>Every upload is read again, even if the filename or content matches an earlier one.</li><li>The app decides the document type and finds every detail that is on the page.</li><li>Nothing is filled in. If a detail is not on the page, it stays empty.</li></ul>';
+ document.getElementById('up').onclick=function(){
+  S.files=SAMPLE.map(function(s){return {name:s.name,type:s.type,cond:s.cond,title:s.title,dup:s.dup,stage:'Waiting',fields:s.f.map(function(a){return mk(a[0],a[1],a[2])})}});
+  S.idx=0;go('proc');runProc()};
+}
+/* 3. processing */
+function rProc(){
+ var done=S.files.filter(function(f){return f.stage==='Done'}).length;
+ var part=S.files.reduce(function(a,f){return a+({Waiting:0,Reading:.35,Extracting:.7,Done:1}[f.stage]||0)},0);
+ var pct=Math.round(part/S.files.length*100);
+ main.innerHTML='<h1>Reading your files</h1><p class="sub">'+done+' of '+S.files.length+' files finished</p><div class="prog"><i style="width:'+pct+'%"></i></div><div class="sub" style="margin:0">'+pct+'% complete</div>'+
+ '<div class="rows">'+S.files.map(function(f){
+   var c=f.stage==='Done'?'ok':(f.stage==='Waiting'?'':'warn');
+   return '<div class="row"><span class="nm">'+esc(f.name)+(f.dup&&f.stage!=='Waiting'?'<div class="note">Same content as '+esc(f.dup)+'. Read again anyway.</div>':'')+'</span><span class="pill '+c+'">'+f.stage+'</span></div>'}).join('')+'</div>';
+}
+function runProc(){
+ clearT();var t=300;
+ S.files.forEach(function(f,i){
+  S.timers.push(setTimeout(function(){f.stage='Reading';if(S.view==='proc')rProc()},t));
+  S.timers.push(setTimeout(function(){f.stage='Extracting';if(S.view==='proc')rProc()},t+700));
+  S.timers.push(setTimeout(function(){f.stage='Done';if(S.view==='proc')rProc();if(i===S.files.length-1)S.timers.push(setTimeout(function(){if(S.view==='proc')go('results')},700))},t+1400));
+  t+=1500});
+}
+/* 4. results */
+function rResults(){
+ var groups={};S.files.forEach(function(f,i){(groups[f.type]=groups[f.type]||[]).push(i)});
+ var html='<div class="toolbar"><h1 style="margin:0">Results</h1><span class="sp"></span><button id="again">Upload more</button></div><p class="sub">'+S.files.length+' files, grouped by the type the app found. Each table shows only the details found in that group.</p>';
+ Object.keys(groups).forEach(function(g){
+  var idxs=groups[g],cols=[];
+  idxs.forEach(function(i){S.files[i].fields.forEach(function(x){if(cols.indexOf(x.label)<0)cols.push(x.label)})});
+  html+='<div class="grp"><h2>'+esc(g)+'<span>'+idxs.length+'</span></h2><div class="tw"><table><thead><tr><th>File</th>'+cols.map(function(c){return '<th>'+esc(c)+'</th>'}).join('')+'<th>Status</th><th></th></tr></thead><tbody>';
+  idxs.forEach(function(i){var f=S.files[i];
+   var low=f.fields.some(function(x){return x.conf<.85});
+   html+='<tr><td>'+esc(f.name)+(f.dup?'<div class="note">Same content as '+esc(f.dup)+'</div>':'')+'</td>'+cols.map(function(c){
+     var x=f.fields.filter(function(y){return y.label===c})[0];return x?'<td>'+esc(x.value)+(x.src!=='read'?' <span class="pill" style="font-size:10px">'+x.src+'</span>':'')+'</td>':'<td class="empty">—</td>'}).join('')+
+   '<td><span class="pill '+(low?'warn':'ok')+'">'+(low?'Done, check':'Done')+'</span></td><td><button class="link" data-i="'+i+'">View</button></td></tr>'});
+  html+='</tbody></table></div></div>'});
+ html+='<p class="cap">"Done, check" means at least one value was read with low confidence. Click View to compare it with the original page.</p>';
+ main.innerHTML=html;
+ document.getElementById('again').onclick=function(){go('dash')};
+ main.querySelectorAll('button[data-i]').forEach(function(b){b.onclick=function(){S.idx=+b.dataset.i;S.saved='';S.draft=null;go('view')}});
+}
+/* 5. view / edit */
+function rView(){
+ var f=S.files[S.idx];
+ if(!S.draft)S.draft=f.fields.map(function(x){return Object.assign({},x)});
+ var rot=f.cond.indexOf('skew')>=0?(f.name.indexOf('0001')>=0?-2:3):0;
+ var paper='<div class="paperbox"><div class="paper'+(f.cond.indexOf('speck')>=0?' speck':'')+'"><div class="in" style="transform:rotate('+rot+'deg)"><h3>'+esc(f.title)+'</h3>'+
+  f.fields.map(function(x){return '<p>'+esc(x.label)+': '+esc(x.orig)+'</p>'}).join('')+'</div></div><div class="cap">Original page. Page condition detected: '+esc(f.cond)+'.</div></div>';
+ var rows=S.draft.map(function(x,i){
+  var tag=x.src==='edited'?'<span class="pill warn">edited</span>':x.src==='added'?'<span class="pill warn">added</span>':'';
+  var conf=x.src==='added'?'':'<span>Read with '+Math.round(x.conf*100)+'% confidence</span>'+(x.conf<.85?' <span class="pill warn">check this</span>':'');
+  return '<div class="fr"><input data-k="label" data-i="'+i+'" value="'+esc(x.label)+'" aria-label="Detail name"><input data-k="value" data-i="'+i+'" value="'+esc(x.value)+'" aria-label="Value"><button data-rm="'+i+'" aria-label="Remove '+esc(x.label)+'">Remove</button><div class="meta">'+conf+tag+'</div></div>'}).join('');
+ main.innerHTML='<div class="toolbar"><button id="bk">Back to results</button><span class="sp"></span><button id="pv"'+(S.idx===0?' disabled':'')+'>Previous</button><span>'+(S.idx+1)+' of '+S.files.length+'</span><button id="nx"'+(S.idx===S.files.length-1?' disabled':'')+'>Next</button></div>'+
+ '<h1 style="overflow-wrap:anywhere">'+esc(f.name)+'</h1><p class="sub">Type found: '+esc(f.type)+(f.dup?'. Same content as '+esc(f.dup)+', read again.':'')+'</p>'+
+ '<div class="split">'+paper+'<div class="card"><h2>Details found</h2>'+rows+
+ '<div class="toolbar" style="margin:12px 0 0"><button id="add">Add a detail</button><button class="pri" id="sv">Save changes</button>'+(S.saved?'<span class="toast">'+esc(S.saved)+'</span>':'')+'</div></div></div>';
+ document.getElementById('bk').onclick=function(){S.draft=null;go('results')};
+ document.getElementById('pv').onclick=function(){S.idx--;S.draft=null;S.saved='';render()};
+ document.getElementById('nx').onclick=function(){S.idx++;S.draft=null;S.saved='';render()};
+ main.querySelectorAll('input[data-k]').forEach(function(inp){inp.oninput=function(){S.draft[+inp.dataset.i][inp.dataset.k]=inp.value;S.saved=''}});
+ main.querySelectorAll('button[data-rm]').forEach(function(b){b.onclick=function(){S.draft.splice(+b.dataset.rm,1);S.saved='';rView()}});
+ document.getElementById('add').onclick=function(){S.draft.push({label:'',value:'',orig:'',conf:1,src:'added'});S.saved='';rView()};
+ document.getElementById('sv').onclick=function(){
+  S.draft=S.draft.filter(function(x){return x.label.trim()||x.value.trim()});
+  S.draft.forEach(function(x){if(x.src==='read'&&x.value!==x.orig)x.src='edited';else if(x.src==='edited'&&x.value===x.orig)x.src='read'});
+  f.fields=S.draft.map(function(x){return Object.assign({},x)});S.draft=null;
+  var t=new Date();S.saved='Saved at '+t.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})+'. It stays after a refresh.';rView()};
+}
+render();
+</script>

@@ -1,0 +1,40 @@
+{
+  "benchmark_name": "STEP_1_BASELINE_BEFORE",
+  "timestamp": "2026-11-24T06:54:31.134478+00:00",
+  "total_documents": 60,
+  "total_batch_time_seconds": 104.578,
+  "throughput_docs_per_sec": 0.57,
+  "p50_per_file_ms": 8192.49,
+  "p95_per_file_ms": 10222.41,
+  "mean_per_file_ms": 6838.39,
+  "count_429": 168,
+  "total_retries": 168,
+  "total_failures": 0,
+  "accuracy": {
+    "expected_fields": 205,
+    "matched_fields": 205,
+    "accuracy_percentage": 100.0
+  },
+  "per_stage_timing_ms": {
+    "mean": {
+      "hash_ms": 0.03,
+      "queue_wait_ms": 41703.2,
+      "text_layer_check_ms": 3.48,
+      "render_ms": 8.35,
+      "deskew_ms": 0.02,
+      "ocr_ms": 0.0,
+      "model_call_ms": 6817.38,
+      "db_write_ms": 1.06
+    },
+    "p95": {
+      "hash_ms": 0.03,
+      "queue_wait_ms": 93157.6,
+      "text_layer_check_ms": 4.72,
+      "render_ms": 13.08,
+      "deskew_ms": 0.03,
+      "ocr_ms": 0.0,
+      "model_call_ms": 10203.09,
+      "db_write_ms": 1.24
+    }
+  }
+}

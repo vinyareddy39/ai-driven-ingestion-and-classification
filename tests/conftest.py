@@ -10,13 +10,16 @@ import pytest
 # Ensure workspace root is always in sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Direct all test operations to a copy of the database
+# Direct all test operations to a fresh isolated test database
 test_db_file = Path("data/test_ecm_pipeline.db")
-live_db_file = Path("data/ecm_pipeline.backup.db")
-if not live_db_file.exists():
-    live_db_file = Path("data/ecm_pipeline.db")
-if live_db_file.exists():
-    shutil.copyfile(live_db_file, test_db_file)
+for ext in ["", "-wal", "-shm"]:
+    p = Path(f"data/test_ecm_pipeline.db{ext}")
+    if p.exists():
+        try:
+            p.unlink()
+        except Exception:
+            pass
+
 os.environ["DATABASE_URL"] = f"sqlite:///{test_db_file.as_posix()}"
 os.environ["DISABLE_LIFESPAN_WORKER"] = "1"
 
