@@ -67,6 +67,8 @@ class ExtractedDetail:
     bbox: Optional[List[float]] = None  # [ymin, xmin, ymax, xmax] normalized 0-1000
     is_sensitive: bool = False
     source: str = "read"
+    detector_tag: Optional[str] = None
+    is_unlabelled: bool = False
 
 
 @dataclass
@@ -141,57 +143,87 @@ PERSON_NAME_HINTS = re.compile(
 )
 
 
-def is_sensitive_detail(label: str, value: str) -> bool:
-    """Classify whether a detail is sensitive based on its label or value."""
-    text = f"{label} {value}".lower()
+def classify_sensitive_detail(label: str, value: str) -> Tuple[bool, Optional[str]]:
+    """Classify whether a detail is sensitive and return (is_sensitive, detector_tag).
     
-    # 1. Health & Medical
-    if HEALTH_TERMS_REGEX.search(text):
-        return True
-    
+    Preserves the document's own printed label and assigns a separate detector tag.
+    """
+    lbl_clean = label.strip()
+    val_clean = value.strip()
+    lbl_low = lbl_clean.lower()
+    val_low = val_clean.lower()
+    comb_low = f"{lbl_low} {val_low}"
+
+    # 1. Health Information & Medical Test Results
+    # Test results/measurements with units, diagnoses, medicines, treatments, specimen/sample, doctor & patient names
+    health_units = re.compile(
+        r"\b\d+(?:\.\d+)?(?:\s*(?:/|-)\s*\d+(?:\.\d+)?)?\s*(?:mg/dl|g/dl|mmol/l|umol/l|mmhg|bpm|iu/l|ng/ml|pg/ml|u/l|meq/l|cells/mcl|x10\^[0-9]+/ul|fl|pg|g/l|mg|mcg|ml|tablet|capsule|%|f|c|kg/m2)\b",
+        re.IGNORECASE,
+    )
+    health_keywords = [
+        "blood pressure", "bp", "systolic", "diastolic", "pulse", "heart rate",
+        "hemoglobin", "hb", "glucose", "sugar", "cholesterol", "wbc", "rbc", "platelet",
+        "creatinine", "urea", "bun", "bilirubin", "alt", "ast", "alp", "hba1c", "tsh",
+        "diagnosis", "diagnoses", "condition", "symptom", "impression", "findings",
+        "medication", "medicine", "prescription", "rx", "dosage", "treatment", "therapy",
+        "specimen", "sample", "biopsy", "pathology", "patient", "patient name", "doctor",
+        "doctor name", "physician", "surgeon", "mrn", "medical record", "hospital", "clinic",
+        "admission", "discharge", "temperature", "spo2", "oxygen saturation", "test name",
+        "test result", "lab result", "reference range", "normal range", "units", "clinical",
+        "hematology", "biochemistry", "urinalysis", "radiology", "ultrasound", "scan", "dr.",
+    ]
+    if any(k in lbl_low for k in health_keywords) or (HEALTH_TERMS_REGEX.search(comb_low) and (health_units.search(val_low) or any(k in lbl_low for k in ["result", "unit", "range", "finding", "test"]))):
+        return True, "Health"
+
     # 2. Government & Tax IDs
-    if any(k in text for k in ["aadhaar", "pan", "ssn", "social security", "passport", "driving licence", "dl no", "national id", "tax id", "gstin"]):
-        return True
-    if AADHAAR_REGEX.search(value) or PAN_REGEX.search(value) or SSN_REGEX.search(value) or PASSPORT_REGEX.search(value):
-        return True
+    if any(k in lbl_low for k in ["aadhaar", "pan", "ssn", "social security", "passport", "driving licence", "dl no", "national id", "tax id", "gstin"]):
+        return True, "Govt ID"
+    if AADHAAR_REGEX.search(val_clean) or PAN_REGEX.search(val_clean) or SSN_REGEX.search(val_clean) or PASSPORT_REGEX.search(val_clean):
+        return True, "Govt ID"
 
-    # 3. Bank & Cards
-    if any(k in text for k in ["account number", "acct no", "bank a/c", "iban", "swift", "sort code", "card number", "routing"]):
-        return True
-    if IBAN_REGEX.search(value) or validate_luhn(value):
-        return True
+    # 3. Bank & Payment Details
+    if any(k in lbl_low for k in ["account number", "acct no", "bank a/c", "iban", "swift", "sort code", "card number", "routing", "ifsc"]):
+        return True, "Bank / Card"
+    if IBAN_REGEX.search(val_clean) or validate_luhn(val_clean) or BANK_ACCOUNT_REGEX.search(comb_low):
+        return True, "Bank / Card"
 
-    # 4. Phone & Email
-    if PHONE_REGEX.search(value) or any(k in label.lower() for k in ["phone", "mobile", "tel", "contact no"]):
-        return True
-    if EMAIL_REGEX.search(value) or "email" in label.lower():
-        return True
+    # 4. Contact Info (Phone & Email)
+    if PHONE_REGEX.search(val_clean) or any(k in lbl_low for k in ["phone", "mobile", "tel", "contact no"]):
+        return True, "Phone"
+    if EMAIL_REGEX.search(val_clean) or "email" in lbl_low:
+        return True, "Email"
 
     # 5. Dates of Birth
-    if any(k in label.lower() for k in ["birth", "dob", "born"]):
-        return True
+    if any(k in lbl_low for k in ["birth", "dob", "born"]):
+        return True, "DOB"
 
     # 6. Personal Salary, Compensation, Balances
-    if PERSONAL_FINANCE_TERMS.search(label.lower()):
-        return True
+    if PERSONAL_FINANCE_TERMS.search(lbl_low):
+        return True, "Financial"
 
     # 7. Passwords, Access codes, Tokens
-    if any(k in label.lower() for k in ["password", "pwd", "access code", "token", "key", "pin", "secret"]):
-        return True
+    if any(k in lbl_low for k in ["password", "pwd", "access code", "token", "key", "pin", "secret", "api key"]):
+        return True, "Credential"
 
     # 8. Signatures & "Signed by"
-    if any(k in label.lower() for k in ["signed by", "signature", "signatory"]):
-        return True
+    if any(k in lbl_low for k in ["signed by", "signature", "signatory", "authorized sign"]):
+        return True, "Signature"
 
     # 9. Home / Postal Address
-    if any(k in label.lower() for k in ["home address", "residential address", "postal address", "permanent address"]):
-        return True
+    if any(k in lbl_low for k in ["home address", "residential address", "postal address", "permanent address", "street address"]):
+        return True, "Address"
 
     # 10. Names of people
-    if any(k in label.lower() for k in ["patient name", "employee name", "cardholder", "account holder", "doctor name", "physician", "father's name"]):
-        return True
+    if any(k in lbl_low for k in ["patient name", "full name", "employee name", "cardholder", "account holder", "doctor name", "physician", "father's name"]):
+        return True, "Name"
 
-    return False
+    return False, None
+
+
+def is_sensitive_detail(label: str, value: str) -> bool:
+    """Classify whether a detail is sensitive based on its label or value."""
+    is_sens, _ = classify_sensitive_detail(label, value)
+    return is_sens
 
 
 def locate_text_bbox(page: fitz.Page, search_val: str) -> Optional[List[float]]:
@@ -573,116 +605,266 @@ class UniversalDocumentReader:
     def _extract_all_details_from_text(
         text: str, page_num: int = 1, page_obj: Optional[fitz.Page] = None
     ) -> List[ExtractedDetail]:
-        """Extract labelled pairs, table rows, and unlabelled entities from text."""
+        """Extract labelled pairs, table rows, and unlabelled entities from text line by line."""
         details: List[ExtractedDetail] = []
         seen_keys: Set[Tuple[str, str]] = set()
+        captured_values_norm: Set[str] = set()
 
-        def add_detail(lbl: str, val: str, conf: float = 0.95, is_sens: Optional[bool] = None):
+        def add_detail(
+            lbl: str,
+            val: str,
+            conf: float = 0.98,
+            is_sens: Optional[bool] = None,
+            tag: Optional[str] = None,
+            is_unlabelled: bool = False,
+        ):
             lbl_clean = lbl.strip()
-            val_clean = val.strip().strip(",;.")
+            val_clean = val.strip().strip(",;")
             if not lbl_clean or not val_clean or len(val_clean) < 1:
                 return
 
-            # Part 1, Point 3: Anti-Hallucination Gate. Stored ONLY if appears in text!
-            # Strip non-alphanumeric punctuation for substring verification
+            # Anti-Hallucination Gate: Stored ONLY if appears in text!
             clean_search = re.sub(r"\s+", " ", val_clean).lower()
             norm_doc = re.sub(r"\s+", " ", text).lower()
             if clean_search not in norm_doc and val_clean.lower() not in norm_doc:
-                # Value not present in text: drop it!
                 return
 
+            # Deduplication key
             key = (lbl_clean.lower(), val_clean.lower())
             if key in seen_keys:
                 return
             seen_keys.add(key)
 
-            sens = is_sens if is_sens is not None else is_sensitive_detail(lbl_clean, val_clean)
+            # Completeness & Quality Checks (Rule 3)
+            # A value that is only a unit, only punctuation, or a bare title is incomplete -> conf = 0.40
+            known_units = {
+                "mg", "kg", "g", "mcg", "ml", "l", "dl", "g/dl", "mg/dl", "mmol/l", "umol/l",
+                "mmhg", "bpm", "iu/l", "ng/ml", "pg/ml", "u/l", "meq/l", "cells/mcl", "fl",
+                "pg", "g/l", "%", "usd", "eur", "inr", "gbp", "$", "€", "£", "₹", "cm", "mm",
+                "m", "in", "ft", "years", "yrs", "days", "hrs", "mins", "sec", "units", "degrees",
+                "kg/m2", "f", "c"
+            }
+            bare_titles = {
+                "dr", "dr.", "mr", "mr.", "mrs", "mrs.", "ms", "ms.", "prof", "prof.", "mx", "mx.", "sir", "madam"
+            }
+            incomplete_placeholders = {
+                "-", "--", "—", "–", ":", ".", "..", "...", "/", "\\", "?", "!", "n/a", "na", "none", "null", "nil", "_"
+            }
+
+            final_conf = conf
+            val_lower = val_clean.lower()
+            if val_lower in known_units:
+                final_conf = 0.40
+            elif val_lower in incomplete_placeholders:
+                final_conf = 0.40
+            elif val_lower.strip(".") in bare_titles:
+                final_conf = 0.40
+            elif len(lbl_clean) <= 1:
+                final_conf = 0.50
+            elif re.search(r"\d{4,}[A-Za-z]", lbl_clean):
+                final_conf = 0.50
+
+            # Classification
+            sens = is_sens
+            det_tag = tag
+            if sens is None:
+                sens, det_tag = classify_sensitive_detail(lbl_clean, val_clean)
+
             bbox = locate_text_bbox(page_obj, val_clean) if page_obj else None
 
             details.append(ExtractedDetail(
                 label=lbl_clean,
                 value=val_clean,
-                confidence=conf,
+                confidence=final_conf,
                 page=page_num,
                 bbox=bbox,
                 is_sensitive=sens,
+                detector_tag=det_tag,
+                is_unlabelled=is_unlabelled,
             ))
+            # Track normalized value to suppress unlabelled duplicates if captured under printed label
+            if lbl_clean != "(no label)":
+                captured_values_norm.add(re.sub(r"\s+", "", val_clean.lower()))
 
-        # 1. Labelled Pairs ("Label: value")
-        for m in LABEL_PAIR_REGEX.finditer(text):
-            raw_lbl = m.group(1).strip()
-            raw_val = m.group(2).strip()
-            # Clean up trailing label markers
-            if ":" in raw_val:
-                # Sub-split if another label: value was merged
-                sub_parts = re.split(r"(?<=[A-Za-z0-9])\s{2,}(?=[A-Za-z0-9]{2,}:)", raw_val)
-                for sp in sub_parts:
-                    if ":" in sp:
-                        p_lbl, p_val = sp.split(":", 1)
-                        add_detail(p_lbl, p_val, conf=0.98)
-                    else:
-                        add_detail(raw_lbl, sp, conf=0.98)
+        lines = [line.rstrip() for line in text.splitlines()]
+        num_lines = len(lines)
+        i = 0
+        table_headers: Optional[List[str]] = None
+
+        doc_heading_keywords = {
+            "internal memorandum", "memorandum", "tax invoice", "invoice", "receipt",
+            "medical report", "patient report", "lab report", "prescription", "kyc form",
+            "identity verification", "bank statement", "account statement", "agreement",
+            "contract", "summary", "log sheet", "certificate", "confidential"
+        }
+
+        # Identify page title at the very top (Rule 5: Keep page title separate, not part of any label)
+        page_title: Optional[str] = None
+        first_non_empty_idx = -1
+        for idx_check, raw_l in enumerate(lines[:4]):
+            sl = raw_l.strip()
+            if sl:
+                first_non_empty_idx = idx_check
+                # If first line has no separator and looks like a heading or document title
+                if ":" not in sl and "=" not in sl and not sl.startswith("|") and (
+                    sl.lower() in doc_heading_keywords or sl.isupper() or len(sl.split()) <= 6
+                ):
+                    page_title = sl
+                break
+
+        while i < num_lines:
+            raw_line = lines[i]
+            line = raw_line.strip()
+            if not line:
+                table_headers = None
+                i += 1
+                continue
+
+            # Skip document title / page title line so it is never merged into a field label
+            if i == first_non_empty_idx and page_title and line == page_title:
+                i += 1
+                continue
+
+            # Layout 1: Markdown Table Row (| Cell 1 | Cell 2 |)
+            if line.startswith("|") and line.endswith("|"):
+                cells = [c.strip() for c in line[1:-1].split("|")]
+                # Check if separator row (|---|---|)
+                if all(re.match(r"^:?-+:?$", c) for c in cells if c):
+                    i += 1
+                    continue
+                if table_headers is None:
+                    table_headers = cells
+                else:
+                    for h_idx, cell_val in enumerate(cells):
+                        if h_idx < len(table_headers) and cell_val:
+                            h_lbl = table_headers[h_idx]
+                            if h_lbl:
+                                add_detail(h_lbl, cell_val, conf=0.98)
+                i += 1
+                continue
             else:
-                add_detail(raw_lbl, raw_val, conf=0.98)
+                table_headers = None
 
-        # 2. Government & Tax IDs (Unlabelled or weakly labelled)
+            # Layout 2: Colon Separator(s) on line ("Label: value")
+            if ":" in line:
+                # Find all distinct label-value pairs on this single line
+                # E.g. "Name: John Doe    Age: 45    Status: Active"
+                parts = re.split(r"(?<=[^\s])\s{2,}(?=[^\s:][^:\n]*:)", line)
+                for part in parts:
+                    if ":" in part:
+                        c_idx = part.find(":")
+                        lbl = part[:c_idx].strip()
+                        val = part[c_idx+1:].strip()
+                        if lbl:
+                            add_detail(lbl, val if val else "", conf=0.98 if val else 0.40)
+                    else:
+                        if part.strip():
+                            add_detail("(no label)", part.strip(), conf=0.85, is_unlabelled=True)
+                i += 1
+                continue
+
+            # Layout 3: Dash or Equals Separator ("Label - Value" or "Label = Value")
+            dash_match = re.split(r"\s+[-—–=]\s+", line, maxsplit=1)
+            if len(dash_match) == 2:
+                lbl, val = dash_match[0].strip(), dash_match[1].strip()
+                if len(lbl.split()) <= 6 and not lbl.endswith((".", "?", "!")):
+                    add_detail(lbl, val, conf=0.96)
+                    i += 1
+                    continue
+
+            # Layout 4: Labels without a colon (Two-column layout separated by >= 2 spaces or tab)
+            if "\t" in line or re.search(r"\s{2,}", line):
+                parts = re.split(r"\t+|\s{2,}", line, maxsplit=1)
+                if len(parts) == 2:
+                    lbl, val = parts[0].strip(), parts[1].strip()
+                    if 1 <= len(lbl.split()) <= 5 and not lbl.endswith((".", "?", "!")) and not lbl.isdigit():
+                        add_detail(lbl, val, conf=0.96)
+                        i += 1
+                        continue
+
+            # Layout 5: Label directly above its value (Vertical / Stacked layout)
+            # Only if line is a short alphabetic heading (1-4 words) and next line has value
+            if (
+                re.match(r"^[A-Za-z][A-Za-z\s/&'()_-]{1,35}$", line)
+                and len(line.split()) <= 4
+                and not line.endswith((".", "?", "!"))
+                and line.lower() not in doc_heading_keywords
+                and i + 1 < num_lines
+            ):
+                next_line = lines[i+1].strip()
+                if next_line and ":" not in next_line and not next_line.startswith("|") and next_line.lower() not in doc_heading_keywords:
+                    add_detail(line, next_line, conf=0.95)
+                    i += 2
+                    continue
+
+            # Layout 6: Unlabelled text line (Keep everything, never drop or hide)
+            if line and line.lower() not in doc_heading_keywords:
+                add_detail("(no label)", line, conf=0.85, is_unlabelled=True)
+
+            i += 1
+
+        # -------------------------------------------------------------------
+        # Rule 2: Unlabelled Entities
+        # Extract without inventing labels (Strictly "(no label)" as label)
+        # -------------------------------------------------------------------
+        def is_already_captured(val_str: str) -> bool:
+            clean = re.sub(r"\s+", "", val_str.lower())
+            if not clean:
+                return True
+            for cap in captured_values_norm:
+                if clean == cap or clean in cap:
+                    return True
+            return False
+
+        # 1. Govt IDs
         for m in AADHAAR_REGEX.finditer(text):
-            clean_adh = re.sub(r"\s+", "", m.group(0))
-            if validate_aadhaar(clean_adh):
-                add_detail("Aadhaar Number", m.group(0), conf=0.99, is_sens=True)
+            val = m.group(0).strip()
+            if not is_already_captured(val) and validate_aadhaar(re.sub(r"\s+", "", val)):
+                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
         for m in PAN_REGEX.finditer(text):
-            if validate_pan(m.group(0)):
-                add_detail("PAN Number", m.group(0), conf=0.99, is_sens=True)
+            val = m.group(0).strip()
+            if not is_already_captured(val) and validate_pan(val):
+                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
         for m in GSTIN_REGEX.finditer(text):
-            if validate_gstin(m.group(0)):
-                add_detail("GSTIN", m.group(0), conf=0.99, is_sens=True)
+            val = m.group(0).strip()
+            if not is_already_captured(val) and validate_gstin(val):
+                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
         for m in IFSC_REGEX.finditer(text):
-            if validate_ifsc(m.group(0)):
-                add_detail("IFSC Code", m.group(0), conf=0.99, is_sens=True)
+            val = m.group(0).strip()
+            if not is_already_captured(val) and validate_ifsc(val):
+                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Bank Code", is_unlabelled=True)
         for m in SSN_REGEX.finditer(text):
-            add_detail("SSN", m.group(0), conf=0.99, is_sens=True)
+            val = m.group(0).strip()
+            if not is_already_captured(val):
+                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
         for m in PASSPORT_REGEX.finditer(text):
-            add_detail("Passport Number", m.group(0), conf=0.95, is_sens=True)
+            val = m.group(0).strip()
+            if not is_already_captured(val):
+                add_detail("(no label)", val, conf=0.90, is_sens=True, tag="Govt ID", is_unlabelled=True)
 
-        # 3. Bank & Cards
-        for m in BANK_ACCOUNT_REGEX.finditer(text):
-            add_detail("Bank Account Number", m.group(1), conf=0.96, is_sens=True)
-        for m in IBAN_REGEX.finditer(text):
-            add_detail("IBAN", m.group(0), conf=0.97, is_sens=True)
-        for m in SWIFT_REGEX.finditer(text):
-            add_detail("SWIFT Code", m.group(0), conf=0.95, is_sens=True)
-        for m in CARD_REGEX.finditer(text):
-            if validate_luhn(m.group(0)):
-                add_detail("Payment Card Number", m.group(0), conf=0.99, is_sens=True)
-
-        # 4. Contacts (Email, Phone, URLs)
+        # 2. Contacts
         for m in EMAIL_REGEX.finditer(text):
-            add_detail("Email Address", m.group(0), conf=0.99, is_sens=True)
+            val = m.group(0).strip()
+            if not is_already_captured(val):
+                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Email", is_unlabelled=True)
         for m in PHONE_REGEX.finditer(text):
-            # Exclude dates matching phone-like numbers
-            ph_val = m.group(0).strip()
-            if len(re.sub(r"\D", "", ph_val)) >= 10:
-                add_detail("Phone Number", ph_val, conf=0.95, is_sens=True)
+            val = m.group(0).strip()
+            if len(re.sub(r"\D", "", val)) >= 10 and not is_already_captured(val):
+                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Phone", is_unlabelled=True)
         for m in URL_REGEX.finditer(text):
-            add_detail("Web Link", m.group(0), conf=0.98, is_sens=False)
+            val = m.group(0).strip()
+            if not is_already_captured(val):
+                add_detail("(no label)", val, conf=0.95, is_sens=False, tag="Web Link", is_unlabelled=True)
 
-        # 5. Amounts
+        # 3. Amounts & Dates
         for m in AMOUNT_REGEX.finditer(text):
-            add_detail("Amount", m.group(0), conf=0.90, is_sens=False)
-
-        # 6. Dates
+            val = m.group(0).strip()
+            if not is_already_captured(val):
+                add_detail("(no label)", val, conf=0.90, is_sens=False, tag="Amount", is_unlabelled=True)
         for m in DATE_REGEX.finditer(text):
-            add_detail("Date", m.group(0), conf=0.90, is_sens=False)
-
-        # 7. Passwords, Tokens, Signatures
-        for m in PASSWORD_TOKEN_REGEX.finditer(text):
-            add_detail("Access Token / Password", m.group(1), conf=0.98, is_sens=True)
-        for m in SIGNATURE_REGEX.finditer(text):
-            add_detail("Signature", m.group(1), conf=0.95, is_sens=True)
-
-        # 8. Person Names with Titles
-        for m in PERSON_NAME_HINTS.finditer(text):
-            add_detail("Person Name", m.group(0), conf=0.92, is_sens=True)
+            val = m.group(0).strip()
+            if not is_already_captured(val):
+                add_detail("(no label)", val, conf=0.90, is_sens=False, tag="Date", is_unlabelled=True)
 
         return details
 

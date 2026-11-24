@@ -364,6 +364,7 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
                 page=d.page,
                 bbox=json.dumps(d.bbox) if d.bbox else None,
                 is_sensitive=d.is_sensitive,
+                detector_tag=getattr(d, "detector_tag", None),
             ))
 
         total_ms = round((time.perf_counter() - t0) * 1000, 2)
@@ -583,6 +584,8 @@ def get_batch(
                 "page": fld.page or 1,
                 "bbox": json.loads(fld.bbox) if fld.bbox else None,
                 "is_sensitive": bool(fld.is_sensitive),
+                "detector_tag": getattr(fld, "detector_tag", None),
+                "is_unlabelled": bool(fld.label.startswith("Unlabelled")),
             }
             for fld in f.fields
         ]
@@ -703,6 +706,8 @@ def get_file(
             "page": fld.page or 1,
             "bbox": json.loads(fld.bbox) if fld.bbox else None,
             "is_sensitive": bool(fld.is_sensitive),
+            "detector_tag": getattr(fld, "detector_tag", None),
+            "is_unlabelled": bool(fld.label.startswith("Unlabelled")),
         }
         for fld in f.fields
     ]
@@ -825,6 +830,7 @@ def unlock_file(
                 page=d.page,
                 bbox=json.dumps(d.bbox) if d.bbox else None,
                 is_sensitive=d.is_sensitive,
+                detector_tag=getattr(d, "detector_tag", None),
             ))
         db.add_all(new_fields)
         f.doc_type = reader_res.doc_type

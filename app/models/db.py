@@ -174,6 +174,7 @@ class FieldModel(Base):
     page = Column(Integer, default=1)
     bbox = Column(Text, nullable=True)
     is_sensitive = Column(Boolean, default=False)
+    detector_tag = Column(String(64), nullable=True)
 
     file = relationship("FileModel", back_populates="fields")
 
@@ -401,6 +402,7 @@ def init_db(db_url: str = None):
                     ("page", "INTEGER DEFAULT 1"),
                     ("bbox", "TEXT"),
                     ("is_sensitive", "BOOLEAN DEFAULT 0"),
+                    ("detector_tag", "VARCHAR(64)"),
                 ]
                 for col_name, col_type in field_cols_to_add:
                     if col_name not in existing_field_cols:

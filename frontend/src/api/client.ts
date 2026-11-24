@@ -23,6 +23,8 @@ export interface FieldItem {
   page?: number;
   bbox?: number[] | null;
   is_sensitive?: boolean;
+  detector_tag?: string | null;
+  is_unlabelled?: boolean;
 }
 
 export interface FileItem {

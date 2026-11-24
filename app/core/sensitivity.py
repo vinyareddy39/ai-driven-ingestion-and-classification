@@ -219,32 +219,4 @@ def split_line_into_pairs(line: str) -> List[Tuple[str, str]]:
     return pairs
 
 
-# ---------------------------------------------------------------------------
-# Fixed Field Schemas per Document Type
-# ---------------------------------------------------------------------------
-DOCUMENT_SCHEMAS: Dict[str, List[str]] = {
-    "Invoice": [
-        "Invoice Number", "Invoice Date", "Due Date", "Vendor",
-        "Bill To", "Subtotal", "Tax", "Total Amount",
-    ],
-    "Medical Prescription": [
-        "Patient Name", "Age", "Gender", "Date", "Doctor",
-        "Clinic", "Diagnosis", "Medication", "Dosage", "Refills",
-    ],
-    "Medical Report": [
-        "Patient Name", "Patient ID", "MRN", "Test Date",
-        "Test Name", "Result", "Normal Range", "Doctor",
-    ],
-    "Contract": [
-        "Title", "Parties", "Effective Date", "Termination Date",
-        "Governing Law", "Contract Value",
-    ],
-    "KYC Form": [
-        "Full Name", "Document Type", "ID Number", "Date of Birth",
-        "Address", "Nationality",
-    ],
-    "Bank Statement": [
-        "Account Holder", "Account Number", "Bank Name", "IFSC",
-        "Statement Date", "Opening Balance", "Closing Balance",
-    ],
-}
+

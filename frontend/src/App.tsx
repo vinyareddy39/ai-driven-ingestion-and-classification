@@ -848,19 +848,6 @@ export default function App() {
                     >
                       🔄 Do again
                     </button>
-                    <button
-                      id="btn-hide-sens"
-                      style={{
-                        marginLeft: '8px',
-                        backgroundColor: hideSensitive ? 'var(--accent)' : 'var(--panel)',
-                        color: hideSensitive ? 'var(--accent-fg)' : 'var(--fg)',
-                        fontWeight: 600,
-                      }}
-                      onClick={toggleHideSensitive}
-                      title="Hide sensitive values for safe screen sharing"
-                    >
-                      {hideSensitive ? '👁️ Showing masked values' : 'Hide sensitive values'}
-                    </button>
                     <span className="sp"></span>
                     <button
                       id="pv"
@@ -943,22 +930,11 @@ export default function App() {
 
                     {/* Right Panel: Editable Details Found */}
                     <div className="card">
-                      {/* Part 2: Sensitive details group at the top */}
+                      {/* Single unified list: Details found in reading order */}
                       {(() => {
-                        const sensitiveDrafts = draftFields
-                          .map((item, idx) => ({ item, idx }))
-                          .filter(({ item }) => item.is_sensitive);
-                        const generalDrafts = draftFields
-                          .map((item, idx) => ({ item, idx }))
-                          .filter(({ item }) => !item.is_sensitive);
-
                         const renderFieldRow = (x: FieldItem, i: number) => {
                           const confPct = Math.round((x.conf ?? 1.0) * 100);
                           const isLow = (x.conf ?? 1.0) < 0.85;
-                          const isMasked =
-                            Boolean(x.is_sensitive) &&
-                            hideSensitive &&
-                            !revealedSensIndexes.has(i);
 
                           return (
                             <div
@@ -966,47 +942,43 @@ export default function App() {
                               key={i}
                               onClick={() => handleDetailClick(i, x.bbox)}
                             >
-                              <input
-                                value={x.label}
-                                onChange={(e) =>
-                                  updateDraft(i, 'label', e.target.value)
-                                }
-                                placeholder="Detail name"
-                                aria-label="Detail name"
-                              />
-                              {isMasked ? (
-                                <span
-                                  className="masked-value"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleRevealIndex(i);
-                                    handleDetailClick(i, x.bbox);
-                                  }}
-                                  title="Click to reveal sensitive value"
-                                >
-                                  ••••••••••••
+                              {/* Left Column: Exact printed label or (no label) */}
+                              <div className="fr-label">
+                                <span style={{ fontWeight: 600, color: 'var(--muted)' }}>
+                                  {x.label || '(no label)'}
                                 </span>
-                              ) : (
-                                <input
+                                {x.detector_tag && (
+                                  <span className="detector-badge">{x.detector_tag}</span>
+                                )}
+                              </div>
+
+                              {/* Right Column: Editable wrapping value */}
+                              <div style={{ width: '100%' }}>
+                                <textarea
+                                  className="fr-value-area"
+                                  rows={Math.max(1, Math.ceil(x.value.length / 55))}
                                   value={x.value}
                                   onChange={(e) =>
                                     updateDraft(i, 'value', e.target.value)
                                   }
                                   placeholder="Value"
-                                  aria-label="Value"
+                                  aria-label={`Value for ${x.label || 'detail'}`}
                                 />
-                              )}
+                              </div>
+
                               <button
                                 type="button"
-                                onClick={() => removeDraftRow(i)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeDraftRow(i);
+                                }}
                                 aria-label={`Remove ${x.label || 'detail'}`}
+                                style={{ padding: '4px 8px', fontSize: '12px' }}
                               >
-                                Remove
+                                ✕
                               </button>
+
                               <div className="meta">
-                                {x.is_sensitive && (
-                                  <span className="pill sensitive">Sensitive</span>
-                                )}
                                 {x.src !== 'added' && (
                                   <span>Read with {confPct}% confidence</span>
                                 )}
@@ -1029,27 +1001,13 @@ export default function App() {
 
                         return (
                           <div>
-                            {sensitiveDrafts.length > 0 && (
-                              <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--line)', paddingBottom: '16px' }}>
-                                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#991b1b' }}>
-                                  Sensitive details
-                                  <span className="pill sensitive">Sensitive</span>
-                                </h2>
-                                {sensitiveDrafts.map(({ item, idx }) =>
-                                  renderFieldRow(item, idx)
-                                )}
-                              </div>
+                            <h2 style={{ margin: '0 0 12px 0' }}>Details found</h2>
+                            {draftFields.length === 0 && (
+                              <p className="sub">No details extracted.</p>
                             )}
-
-                            <div>
-                              <h2>All details found</h2>
-                              {draftFields.length === 0 && (
-                                <p className="sub">No details extracted.</p>
-                              )}
-                              {generalDrafts.map(({ item, idx }) =>
-                                renderFieldRow(item, idx)
-                              )}
-                            </div>
+                            {draftFields.map((item, idx) =>
+                              renderFieldRow(item, idx)
+                            )}
                           </div>
                         );
                       })()}

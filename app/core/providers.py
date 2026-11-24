@@ -37,7 +37,6 @@ import httpx
 
 from app.core.preprocessing import load_document_pages, preprocess_image
 from app.core.sensitivity import (
-    DOCUMENT_SCHEMAS,
     evaluate_document_sensitivity,
     split_line_into_pairs,
 )
@@ -412,8 +411,6 @@ class LocalOcrProvider(BaseExtractionProvider):
                     fields.append({"label": lbl_clean, "value": val_clean, "confidence": conf})
                     seen_labels.add(lbl_clean)
 
-        # Apply schema defaults if available
-        schema_labels = DOCUMENT_SCHEMAS.get(doc_type, [])
         # Check financial math if invoice
         if doc_type == "Invoice":
             math_valid, _ = validate_invoice_math(fields)
