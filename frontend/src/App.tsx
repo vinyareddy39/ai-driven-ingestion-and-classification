@@ -25,6 +25,13 @@ export default function App() {
   const [activeFileIndex, setActiveFileIndex] = useState(0);
   const [draftFields, setDraftFields] = useState<FieldItem[]>([]);
   const [savedToast, setSavedToast] = useState('');
+  const [hideSensitive, setHideSensitive] = useState(false);
+  const [revealedSensIndexes, setRevealedSensIndexes] = useState<Set<number>>(new Set());
+  const [highlightedBbox, setHighlightedBbox] = useState<number[] | null>(null);
+  const [activeDetailIdx, setActiveDetailIdx] = useState<number | null>(null);
+  const [unlockPassword, setUnlockPassword] = useState('');
+  const [unlockError, setUnlockError] = useState('');
+  const [isUnlocking, setIsUnlocking] = useState(false);
 
   // Initial auth check
   useEffect(() => {
@@ -148,11 +155,25 @@ export default function App() {
   };
 
   // Upload Handlers
+  const SUPPORTED_EXTS = ['.pdf', '.png', '.jpg', '.jpeg', '.tiff', '.tif', '.bmp', '.txt', '.csv', '.docx', '.xlsx', '.eml'];
+
   const handleFilesSelected = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
+    const filesArray = Array.from(fileList);
+
+    // Part 4, Point 2: block unsupported types before anything is sent
+    const unsupported = filesArray.filter(f => {
+      const ext = '.' + f.name.split('.').pop()?.toLowerCase();
+      return !SUPPORTED_EXTS.includes(ext);
+    });
+    if (unsupported.length > 0) {
+      alert("This file type isn't supported. Supported types: PDF, PNG, JPG, TIFF, BMP, TXT, CSV, DOCX, XLSX, EML.");
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     setIsUploading(true);
     try {
-      const filesArray = Array.from(fileList);
       const res = await api.uploadBatch(filesArray);
       setCurrentBatchId(res.id);
 
@@ -161,7 +182,7 @@ export default function App() {
       setBatch(initialBatch);
       setView('proc');
     } catch (err: any) {
-      alert(`Upload error: ${err.message}`);
+      alert(err.message || 'Upload failed');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -190,7 +211,54 @@ export default function App() {
     const f = batch.files[index];
     setDraftFields(f.fields.map((x) => ({ ...x })));
     setSavedToast('');
+    setHighlightedBbox(null);
+    setActiveDetailIdx(null);
+    setUnlockPassword('');
+    setUnlockError('');
     setView('view');
+  };
+
+  const toggleHideSensitive = () => {
+    setHideSensitive((prev) => !prev);
+    setRevealedSensIndexes(new Set());
+  };
+
+  const toggleRevealIndex = (idx: number) => {
+    setRevealedSensIndexes((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  };
+
+  const handleDetailClick = (idx: number, bbox?: number[] | null) => {
+    setActiveDetailIdx(idx);
+    if (bbox && Array.isArray(bbox) && bbox.length === 4) {
+      setHighlightedBbox(bbox);
+    } else {
+      setHighlightedBbox(null);
+    }
+  };
+
+  const handleUnlockFile = async (fileId: string) => {
+    if (!unlockPassword) return;
+    setIsUnlocking(true);
+    setUnlockError('');
+    try {
+      await api.unlockFile(fileId, unlockPassword);
+      if (currentBatchId) {
+        const refreshed = await api.getBatch(currentBatchId);
+        setBatch(refreshed);
+        const f = refreshed.files[activeFileIndex];
+        if (f) setDraftFields(f.fields.map((x) => ({ ...x })));
+      }
+      setUnlockPassword('');
+    } catch (err: any) {
+      setUnlockError(err.message || 'Incorrect password.');
+    } finally {
+      setIsUnlocking(false);
+    }
   };
 
   // View Screen Field operations
@@ -780,6 +848,19 @@ export default function App() {
                     >
                       🔄 Do again
                     </button>
+                    <button
+                      id="btn-hide-sens"
+                      style={{
+                        marginLeft: '8px',
+                        backgroundColor: hideSensitive ? 'var(--accent)' : 'var(--panel)',
+                        color: hideSensitive ? 'var(--accent-fg)' : 'var(--fg)',
+                        fontWeight: 600,
+                      }}
+                      onClick={toggleHideSensitive}
+                      title="Hide sensitive values for safe screen sharing"
+                    >
+                      {hideSensitive ? '👁️ Showing masked values' : 'Hide sensitive values'}
+                    </button>
                     <span className="sp"></span>
                     <button
                       id="pv"
@@ -808,108 +889,174 @@ export default function App() {
                       : ''}
                   </p>
 
-                  {f.fields.some((x) => x.value?.toLowerCase().includes('rate limit')) && (
-                    <div
-                      style={{
-                        margin: '14px 0 18px 0',
-                        padding: '12px 16px',
-                        backgroundColor: 'rgba(234, 179, 8, 0.12)',
-                        border: '1px solid #eab308',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <div style={{ color: '#fef08a' }}>
-                        ⚠️ <strong>Rate limit reached during scan.</strong> Click to edit details manually below, or click <strong>Do again</strong> to re-run AI extraction automatically.
+                  {f.error && f.error.includes('password') && (
+                    <div className="card" style={{ marginBottom: '16px', background: 'var(--warn-bg)', borderColor: 'var(--warn-fg)' }}>
+                      <h2 style={{ color: 'var(--warn-fg)', margin: '0 0 6px 0' }}>This file is password protected.</h2>
+                      <p className="sub" style={{ margin: '0 0 10px 0' }}>Enter the document password to unlock and read all pages.</p>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          type="password"
+                          placeholder="Password"
+                          value={unlockPassword}
+                          onChange={(e) => setUnlockPassword(e.target.value)}
+                          style={{ maxWidth: '280px' }}
+                        />
+                        <button
+                          className="pri"
+                          type="button"
+                          disabled={isUnlocking}
+                          onClick={() => handleUnlockFile(f.id)}
+                        >
+                          {isUnlocking ? 'Unlocking...' : 'Unlock'}
+                        </button>
                       </div>
-                      <button
-                        className="btn"
-                        style={{
-                          backgroundColor: '#eab308',
-                          color: '#000000',
-                          fontWeight: 600,
-                          padding: '6px 14px',
-                          marginLeft: '12px',
-                          whiteSpace: 'nowrap',
-                        }}
-                        onClick={() => handleDoAgain(f.id)}
-                      >
-                        Do again
-                      </button>
+                      {unlockError && <div className="err" style={{ marginTop: '8px' }}>{unlockError}</div>}
                     </div>
                   )}
 
                   <div className="split">
-                    {/* Left Panel: Real Document Page Image */}
+                    {/* Left Panel: Real Document Page Image with BBox Highlight */}
                     <div className="paperbox">
-                      <div className="paper-viewer">
+                      <div className="paper-viewer" style={{ position: 'relative' }}>
                         <img
                           src={api.getPageImageUrl(f.id, 1)}
                           alt={`Original document ${f.name}`}
                         />
+                        {highlightedBbox && (
+                          <div
+                            className="highlight-box"
+                            style={{
+                              top: `${highlightedBbox[0] / 10}%`,
+                              left: `${highlightedBbox[1] / 10}%`,
+                              height: `${Math.max(2, (highlightedBbox[2] - highlightedBbox[0]) / 10)}%`,
+                              width: `${Math.max(3, (highlightedBbox[3] - highlightedBbox[1]) / 10)}%`,
+                            }}
+                            title="Detail location on page"
+                          />
+                        )}
                       </div>
                       <div className="cap">
                         Original page. Page condition detected: {f.cond}.
+                        {highlightedBbox && <span> · Highlighting selected detail</span>}
                       </div>
                     </div>
 
                     {/* Right Panel: Editable Details Found */}
                     <div className="card">
-                      <h2>Details found</h2>
-                      {draftFields.length === 0 && (
-                        <p className="sub">No details extracted.</p>
-                      )}
-                      {draftFields.map((x, i) => {
-                        const confPct = Math.round((x.conf ?? 1.0) * 100);
-                        const isLow = (x.conf ?? 1.0) < 0.85;
-                        return (
-                          <div className="fr" key={i}>
-                            <input
-                              value={x.label}
-                              onChange={(e) =>
-                                updateDraft(i, 'label', e.target.value)
-                              }
-                              placeholder="Detail name"
-                              aria-label="Detail name"
-                            />
-                            <input
-                              value={x.value}
-                              onChange={(e) =>
-                                updateDraft(i, 'value', e.target.value)
-                              }
-                              placeholder="Value"
-                              aria-label="Value"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeDraftRow(i)}
-                              aria-label={`Remove ${x.label || 'detail'}`}
+                      {/* Part 2: Sensitive details group at the top */}
+                      {(() => {
+                        const sensitiveDrafts = draftFields
+                          .map((item, idx) => ({ item, idx }))
+                          .filter(({ item }) => item.is_sensitive);
+                        const generalDrafts = draftFields
+                          .map((item, idx) => ({ item, idx }))
+                          .filter(({ item }) => !item.is_sensitive);
+
+                        const renderFieldRow = (x: FieldItem, i: number) => {
+                          const confPct = Math.round((x.conf ?? 1.0) * 100);
+                          const isLow = (x.conf ?? 1.0) < 0.85;
+                          const isMasked =
+                            Boolean(x.is_sensitive) &&
+                            hideSensitive &&
+                            !revealedSensIndexes.has(i);
+
+                          return (
+                            <div
+                              className={`fr ${activeDetailIdx === i ? 'active-detail' : ''}`}
+                              key={i}
+                              onClick={() => handleDetailClick(i, x.bbox)}
                             >
-                              Remove
-                            </button>
-                            <div className="meta">
-                              {x.src !== 'added' && (
-                                <span>Read with {confPct}% confidence</span>
+                              <input
+                                value={x.label}
+                                onChange={(e) =>
+                                  updateDraft(i, 'label', e.target.value)
+                                }
+                                placeholder="Detail name"
+                                aria-label="Detail name"
+                              />
+                              {isMasked ? (
+                                <span
+                                  className="masked-value"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleRevealIndex(i);
+                                    handleDetailClick(i, x.bbox);
+                                  }}
+                                  title="Click to reveal sensitive value"
+                                >
+                                  ••••••••••••
+                                </span>
+                              ) : (
+                                <input
+                                  value={x.value}
+                                  onChange={(e) =>
+                                    updateDraft(i, 'value', e.target.value)
+                                  }
+                                  placeholder="Value"
+                                  aria-label="Value"
+                                />
                               )}
-                              {isLow && (
-                                <span className="pill warn">check this</span>
+                              <button
+                                type="button"
+                                onClick={() => removeDraftRow(i)}
+                                aria-label={`Remove ${x.label || 'detail'}`}
+                              >
+                                Remove
+                              </button>
+                              <div className="meta">
+                                {x.is_sensitive && (
+                                  <span className="pill sensitive">Sensitive</span>
+                                )}
+                                {x.src !== 'added' && (
+                                  <span>Read with {confPct}% confidence</span>
+                                )}
+                                {isLow && (
+                                  <span className="pill warn">check this</span>
+                                )}
+                                {x.src === 'edited' && (
+                                  <span className="pill warn">edited</span>
+                                )}
+                                {x.src === 'added' && (
+                                  <span className="pill warn">added</span>
+                                )}
+                                {x.page && (
+                                  <span>Page {x.page}</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        };
+
+                        return (
+                          <div>
+                            {sensitiveDrafts.length > 0 && (
+                              <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--line)', paddingBottom: '16px' }}>
+                                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#991b1b' }}>
+                                  Sensitive details
+                                  <span className="pill sensitive">Sensitive</span>
+                                </h2>
+                                {sensitiveDrafts.map(({ item, idx }) =>
+                                  renderFieldRow(item, idx)
+                                )}
+                              </div>
+                            )}
+
+                            <div>
+                              <h2>All details found</h2>
+                              {draftFields.length === 0 && (
+                                <p className="sub">No details extracted.</p>
                               )}
-                              {x.src === 'edited' && (
-                                <span className="pill warn">edited</span>
-                              )}
-                              {x.src === 'added' && (
-                                <span className="pill warn">added</span>
+                              {generalDrafts.map(({ item, idx }) =>
+                                renderFieldRow(item, idx)
                               )}
                             </div>
                           </div>
                         );
-                      })}
+                      })()}
 
-                      <div className="toolbar" style={{ marginTop: '12px' }}>
+                      <div className="toolbar" style={{ marginTop: '16px' }}>
                         <button id="add" type="button" onClick={addDetailRow}>
-                          Add a detail
+                          Add another field
                         </button>
                         <button
                           id="sv"

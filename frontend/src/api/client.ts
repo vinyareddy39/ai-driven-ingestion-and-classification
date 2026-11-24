@@ -20,6 +20,9 @@ export interface FieldItem {
   orig?: string;
   conf?: number;
   src?: string;
+  page?: number;
+  bbox?: number[] | null;
+  is_sensitive?: boolean;
 }
 
 export interface FileItem {
@@ -172,6 +175,20 @@ export const api = {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Failed to retry file');
+    return data;
+  },
+
+  async unlockFile(fileId: string, password: string) {
+    const res = await fetch(`${API_BASE}/files/${fileId}/unlock`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify({ password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to unlock file');
     return data;
   },
 

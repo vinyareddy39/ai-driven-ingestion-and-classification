@@ -59,6 +59,19 @@ from app.core.providers import (
 )
 from app.core.sensitivity import evaluate_document_sensitivity
 from app.core.preprocessing import load_document_pages, preprocess_image
+from app.core.comprehensive_extractor import (
+    UniversalDocumentReader,
+    PasswordProtectedException,
+    EmptyFileException,
+    DamagedFileException,
+    ExtractedDetail,
+    ExtractionResult,
+)
+
+SUPPORTED_EXTENSIONS = {
+    ".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp",
+    ".txt", ".csv", ".docx", ".xlsx", ".eml"
+}
 
 _persistent_worker_loop: Optional[asyncio.AbstractEventLoop] = None
 _persistent_worker_thread: Optional[threading.Thread] = None
@@ -95,6 +108,13 @@ class FieldPayload(BaseModel):
     orig: Optional[str] = None
     conf: Optional[float] = 1.0
     src: Optional[str] = "read"
+    page: Optional[int] = 1
+    bbox: Optional[Any] = None
+    is_sensitive: Optional[bool] = False
+
+
+class UnlockFileRequest(BaseModel):
+    password: str
 
 
 class UpdateFieldsRequest(BaseModel):
@@ -220,192 +240,151 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
 
         with _sqlite_write_lock:
             f.started_at = datetime.now(timezone.utc)
-            f.stage = "processing"
-            f.status = "processing"
+            f.stage = "Still reading"
+            f.status = "Still reading"
             safe_commit(db)
 
-        # 1. Text-layer check (Fast Lane: classify from page 1 and detect multi-page text)
-        t_tl = time.perf_counter()
+        # 1. Multi-Format Universal Document Reading
+        t_read = time.perf_counter()
+        try:
+            reader_result = UniversalDocumentReader.read_file(f.stored_path)
+        except PasswordProtectedException:
+            with _sqlite_write_lock:
+                f.stage = "Done"
+                f.status = "Locked"
+                f.error = "This file is password protected."
+                f.finished_at = datetime.now(timezone.utc)
+                safe_commit(db)
+            logger.info(f"File {f.original_name} is password protected.")
+            return
+        except EmptyFileException:
+            with _sqlite_write_lock:
+                f.stage = "Done"
+                f.status = "Empty"
+                f.error = "This file is empty."
+                f.finished_at = datetime.now(timezone.utc)
+                safe_commit(db)
+            logger.info(f"File {f.original_name} is empty.")
+            return
+        except DamagedFileException:
+            with _sqlite_write_lock:
+                f.stage = "Done"
+                f.status = "Damaged"
+                f.error = "This file looks damaged. Try uploading it again from the original."
+                f.finished_at = datetime.now(timezone.utc)
+                safe_commit(db)
+            logger.info(f"File {f.original_name} is damaged or corrupt.")
+            return
+        except Exception as e:
+            logger.error(f"Error reading file {file_id}: {e}", exc_info=True)
+            with _sqlite_write_lock:
+                f.stage = "Done"
+                f.status = "check"
+                f.error = "We couldn't read this one yet. We'll keep trying."
+                f.finished_at = datetime.now(timezone.utc)
+                safe_commit(db)
+            return
+
+        f.page_count = reader_result.page_count
+        f.doc_type = reader_result.doc_type
+        f.page_condition = "clean"
         ext = os.path.splitext(f.stored_path)[1].lower()
-        pages_text = []
-        page_count = 1
-        if ext == ".pdf":
+
+        # If image or PDF, also detect condition & render first page image
+        if ext in [".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp"]:
             try:
-                doc = fitz.open(f.stored_path)
-                page_count = len(doc)
-                for p in doc:
-                    txt = p.get_text().strip()
-                    if txt:
-                        pages_text.append(txt)
-                doc.close()
+                img, pc = render_first_page_image(f.stored_path, dpi=120)
+                if pc > f.page_count:
+                    f.page_count = pc
+                cond, _ = detect_page_condition(img)
+                f.page_condition = cond
             except Exception:
                 pass
-        f.page_count = page_count
-        digital_text = "\n".join(pages_text).strip()
-        is_digital = len(digital_text) > 40
-        text_check_ms = round((time.perf_counter() - t_tl) * 1000, 2)
 
-        # 2. Render first page (150 DPI, long side about 1000px, JPEG quality 75)
-        t_rnd = time.perf_counter()
-        try:
-            dpi = 120 if is_digital else 150
-            img, pc = render_first_page_image(f.stored_path, dpi=dpi)
-            if pc > f.page_count:
-                f.page_count = pc
-        except Exception as e:
-            f.stage = "Failed"
-            f.status = "failed"
-            f.error = f"Failed to render document: {str(e)}"
-            f.finished_at = datetime.now(timezone.utc)
-            db.commit()
-            return
-        render_ms = round((time.perf_counter() - t_rnd) * 1000, 2)
+        details = list(reader_result.all_details)
 
-        # 3. Detect condition & skip deskew when skew is under 1 degree
-        t_dsk = time.perf_counter()
-        if is_digital:
-            f.page_condition = "clean (digital)"
-            cleaned_img = img
-        else:
-            condition, skew_angle = detect_page_condition(img)
-            f.page_condition = condition
-            cleaned_img = deskew_and_clean(img, skew_angle)
-        deskew_ms = round((time.perf_counter() - t_dsk) * 1000, 2)
+        # Check for blank pages and add neutral note
+        for p in reader_result.pages:
+            if p.is_blank:
+                details.append(ExtractedDetail(
+                    label=f"Page {p.page_number}",
+                    value="Nothing to read on this page",
+                    confidence=1.0,
+                    page=p.page_number,
+                    bbox=None,
+                    is_sensitive=False,
+                ))
 
-        # 4. Fetch at most 5-10 learned corrections per doc type
-        corrections_list = []
-        if user_id:
-            user_corrections = db.query(CorrectionModel).filter(CorrectionModel.user_id == user_id).all()
-            for c in user_corrections[:8]:
-                corrections_list.append({
-                    "doc_type": c.doc_type,
-                    "label": c.label,
-                    "original_value": c.original_value,
-                    "corrected_value": c.corrected_value,
-                })
+        # If zero details found by local reader, try provider fallback
+        if not details:
+            try:
+                from app.core.comprehensive_extractor import is_sensitive_detail
+                orchestrator = get_fallback_orchestrator()
+                worker_loop = get_persistent_worker_loop()
+                future = asyncio.run_coroutine_threadsafe(
+                    orchestrator.extract_document(
+                        images_b64=None,
+                        local_ocr_text="\n".join(p.full_text for p in reader_result.pages),
+                        is_sensitive=reader_result.is_sensitive,
+                        user_id=user_id,
+                        sha256=f.sha256,
+                    ),
+                    worker_loop,
+                )
+                prov_res = future.result(timeout=40.0)
+                if prov_res and prov_res.fields:
+                    full_text_lower = "\n".join(p.full_text for p in reader_result.pages).lower()
+                    for f_item in prov_res.fields:
+                        lbl = str(f_item.get("label", "")).strip()
+                        val = str(f_item.get("value", "")).strip()
+                        if val and val.lower() in full_text_lower:
+                            details.append(ExtractedDetail(
+                                label=lbl,
+                                value=val,
+                                confidence=float(f_item.get("confidence", 0.90)),
+                                page=1,
+                                is_sensitive=is_sensitive_detail(lbl, val),
+                            ))
+            except Exception as e:
+                logger.warning(f"Fallback extraction exception: {e}")
 
-        # 5. Multi-page preparation and Dynamic Sensitivity Detection
-        t_mdl = time.perf_counter()
-        images_b64 = []
-        if not is_digital:
-            if ext == ".pdf":
-                try:
-                    doc = fitz.open(f.stored_path)
-                    for page in doc:
-                        pix = page.get_pixmap(dpi=150)
-                        p_img = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, pix.n)
-                        if pix.n == 4:
-                            p_img = cv2.cvtColor(p_img, cv2.COLOR_RGBA2BGR)
-                        elif pix.n == 3:
-                            p_img = cv2.cvtColor(p_img, cv2.COLOR_RGB2BGR)
-                        h_p, w_p = p_img.shape[:2]
-                        max_p = max(h_p, w_p)
-                        if max_p > 1000:
-                            scale = 1000.0 / max_p
-                            p_img = cv2.resize(p_img, (int(w_p * scale), int(h_p * scale)), interpolation=cv2.INTER_AREA)
-                        _, buf = cv2.imencode(".jpg", p_img, [int(cv2.IMWRITE_JPEG_QUALITY), 75])
-                        images_b64.append(base64.b64encode(buf).decode("utf-8"))
-                    doc.close()
-                except Exception:
-                    pass
-            if not images_b64:
-                _, buf = cv2.imencode(".jpg", cleaned_img, [int(cv2.IMWRITE_JPEG_QUALITY), 75])
-                images_b64.append(base64.b64encode(buf).decode("utf-8"))
-
-        local_ocr_text = digital_text if is_digital else ""
-        is_sensitive, _, pii_entities = evaluate_document_sensitivity(local_ocr_text, doc_type=None, confidence=0.0)
-
-        orchestrator = get_fallback_orchestrator()
-        worker_loop = get_persistent_worker_loop()
-        try:
-            future = asyncio.run_coroutine_threadsafe(
-                orchestrator.extract_document(
-                    images_b64=images_b64 if not is_digital else None,
-                    local_ocr_text=local_ocr_text,
-                    is_sensitive=is_sensitive,
-                    user_id=user_id,
-                    sha256=f.sha256,
-                    corrections=corrections_list,
-                ),
-                worker_loop,
-            )
-            provider_result = future.result(timeout=60.0)
-        except Exception as e:
-            logger.error(f"Error running provider orchestrator: {e}", exc_info=True)
-            from app.core.providers import ProviderResult
-            provider_result = ProviderResult(
-                doc_type="Document",
-                title="Document",
-                fields=[],
-                provider_name="error_handler",
-                model_name="none",
-                is_fallback=True,
-                requires_review=True,
-                status="check",
-                error_message=str(e),
-            )
-
-        model_ms = round((time.perf_counter() - t_mdl) * 1000, 2)
-
-        f.provider_name = provider_result.provider_name
-        f.model_name = provider_result.model_name
-        f.is_fallback = provider_result.is_fallback
-        f.prompt_version = PROMPT_VERSION
-        f.doc_type = provider_result.doc_type
-
-        raw_fields = provider_result.fields or []
-        calibrated_fields = cross_check_confidence(raw_fields)
-
-        # 6. Prepare fields & check review gate
-        has_low_conf = provider_result.requires_review or len(calibrated_fields) == 0
         new_fields = []
-        for pos, item in enumerate(calibrated_fields):
-            lbl = str(item.get("label", "")).strip()
-            val = str(item.get("value", "")).strip()
-            conf = float(item.get("confidence", 0.95))
-            if conf < 0.85:
+        has_low_conf = False
+        for pos, d in enumerate(details):
+            if d.confidence < 0.85:
                 has_low_conf = True
-
             new_fields.append(FieldModel(
                 file_id=f.id,
-                label=lbl,
-                value=val,
-                original_value=val,
-                confidence=conf,
-                source="read",
+                label=d.label,
+                value=d.value,
+                original_value=d.value,
+                confidence=d.confidence,
+                source=d.source,
                 position=pos,
+                page=d.page,
+                bbox=json.dumps(d.bbox) if d.bbox else None,
+                is_sensitive=d.is_sensitive,
             ))
 
-        # 7. SQLite atomic batch write
-        t_db = time.perf_counter()
+        total_ms = round((time.perf_counter() - t0) * 1000, 2)
         with _sqlite_write_lock:
             db.query(FieldModel).filter(FieldModel.file_id == f.id).delete()
             db.add_all(new_fields)
             f.stage = "Done"
-            f.status = "check" if has_low_conf else "done"
+            f.status = "Done, check" if has_low_conf else "Done"
             f.error = None
             f.finished_at = datetime.now(timezone.utc)
-            db_write_ms = round((time.perf_counter() - t_db) * 1000, 2)
-            total_ms = round((time.perf_counter() - t0) * 1000, 2)
-
-            stage_timings = {
+            f.stage_timings = json.dumps({
                 "queue_wait_ms": queue_wait_ms,
-                "hash_ms": hash_ms,
-                "text_layer_check_ms": text_check_ms,
-                "render_ms": render_ms,
-                "deskew_ms": deskew_ms,
-                "ocr_ms": 0.0,
-                "model_call_ms": model_ms,
-                "db_write_ms": db_write_ms,
                 "total_ms": total_ms,
-                "provider": provider_result.provider_name,
-                "model": provider_result.model_name,
-                "is_fallback": provider_result.is_fallback,
-            }
-            }
-            f.stage_timings = json.dumps(stage_timings)
+                "provider": "local_universal_reader",
+                "details_count": len(new_fields),
+                "sensitive_count": sum(1 for x in new_fields if x.is_sensitive),
+            })
             safe_commit(db)
-        logger.info(f"File {f.original_name} finished in {total_ms}ms (queue wait {queue_wait_ms}ms): {stage_timings}")
+
+        sens_count = sum(1 for x in new_fields if x.is_sensitive)
+        logger.info(f"File {f.original_name} completed in {total_ms}ms: {len(new_fields)} details ({sens_count} sensitive).")
 
     except Exception as e:
         logger.error(f"Error processing file {file_id}: {e}", exc_info=True)
@@ -470,6 +449,16 @@ def create_batch(
 ):
     if not files:
         raise HTTPException(status_code=400, detail="No files uploaded.")
+
+    # Part 4, Point 2: Unsupported type blocked at upload before anything is sent
+    for upload in files:
+        filename = upload.filename or ""
+        ext = os.path.splitext(filename)[1].lower()
+        if ext not in SUPPORTED_EXTENSIONS:
+            raise HTTPException(
+                status_code=400,
+                detail="This file type isn't supported. Supported types: PDF, PNG, JPG, TIFF, BMP, TXT, CSV, DOCX, XLSX, EML."
+            )
 
     batch_name = f"Batch · {len(files)} files"
     batch = BatchModel(user_id=user.id, name=batch_name)
@@ -574,10 +563,8 @@ def get_batch(
     done_files = sum(1 for f in batch.files if f.stage == "Done")
     failed_files = sum(1 for f in batch.files if f.stage == "Failed")
 
-    # Progress calculation matching demo: Waiting=0, Reading=0.35, Extracting=0.7, Done/Failed=1.0
-    stage_weights = {"Waiting": 0.0, "Reading": 0.35, "Extracting": 0.7, "Done": 1.0, "Failed": 1.0}
-    part = sum(stage_weights.get(f.stage, 0.0) for f in batch.files)
-    pct = round((part / total_files * 100)) if total_files > 0 else 0
+    # Part 5, Point 3: The percentage must equal finished files divided by total files.
+    pct = round((done_files / total_files * 100)) if total_files > 0 else 0
 
     files_data = []
     all_latencies = []
@@ -593,6 +580,9 @@ def get_batch(
                 "orig": fld.original_value,
                 "conf": fld.confidence,
                 "src": fld.source,
+                "page": fld.page or 1,
+                "bbox": json.loads(fld.bbox) if fld.bbox else None,
+                "is_sensitive": bool(fld.is_sensitive),
             }
             for fld in f.fields
         ]
@@ -608,9 +598,27 @@ def get_batch(
             except Exception:
                 pass
 
+        user_facing_clean_errors = [
+            "This file is password protected.",
+            "This file is empty.",
+            "This file looks damaged. Try uploading it again from the original.",
+            "We couldn't read this one yet. We'll keep trying."
+        ]
         clean_err = f.error
-        if clean_err and ("Fast Lane" in clean_err or "connect to text LLMs" in clean_err):
-            clean_err = None
+        if clean_err and clean_err not in user_facing_clean_errors:
+            if "password" in clean_err.lower():
+                clean_err = "This file is password protected."
+            elif "empty" in clean_err.lower():
+                clean_err = "This file is empty."
+            elif "damaged" in clean_err.lower() or "corrupt" in clean_err.lower():
+                clean_err = "This file looks damaged. Try uploading it again from the original."
+            else:
+                clean_err = "We couldn't read this one yet. We'll keep trying."
+
+        # Part 5, Point 3: While waiting, show only neutral states: 'Waiting' or 'Still reading'
+        clean_stage = f.stage
+        if clean_stage not in ["Done", "Failed"]:
+            clean_stage = "Waiting" if clean_stage == "Waiting" else "Still reading"
 
         files_data.append({
             "id": f.id,
@@ -619,7 +627,7 @@ def get_batch(
             "cond": f.page_condition or "clean",
             "dup": f.duplicate_of,
             "status": f.status,
-            "stage": f.stage,
+            "stage": clean_stage,
             "error": clean_err,
             "provider": f.provider_name or timings_dict.get("provider", "local_ocr"),
             "model": f.model_name or timings_dict.get("model", "default"),
@@ -692,9 +700,16 @@ def get_file(
             "orig": fld.original_value,
             "conf": fld.confidence,
             "src": fld.source,
+            "page": fld.page or 1,
+            "bbox": json.loads(fld.bbox) if fld.bbox else None,
+            "is_sensitive": bool(fld.is_sensitive),
         }
         for fld in f.fields
     ]
+
+    clean_stage = f.stage
+    if clean_stage not in ["Done", "Failed"]:
+        clean_stage = "Waiting" if clean_stage == "Waiting" else "Still reading"
 
     return {
         "id": f.id,
@@ -704,7 +719,7 @@ def get_file(
         "cond": f.page_condition or "clean",
         "dup": f.duplicate_of,
         "status": f.status,
-        "stage": f.stage,
+        "stage": clean_stage,
         "error": f.error,
         "fields": fields_data,
     }
@@ -755,6 +770,9 @@ def update_file_fields(
             confidence=conf,
             source=src,
             position=pos,
+            page=item.page or 1,
+            bbox=json.dumps(item.bbox) if item.bbox else None,
+            is_sensitive=bool(item.is_sensitive),
         )
         db.add(new_field)
 
@@ -769,6 +787,57 @@ def update_file_fields(
                 layout_hint=f.page_condition,
             )
             db.add(corr)
+
+    f.status = "Done, check" if has_low_conf else "Done"
+    db.commit()
+
+    return {"message": "Saved successfully", "status": f.status}
+
+
+@router.post("/files/{file_id}/unlock")
+def unlock_file(
+    file_id: str,
+    payload: UnlockFileRequest,
+    user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Part 4, Point 2: Unlock a password-protected document."""
+    f = db.query(FileModel).filter(FileModel.id == file_id).first()
+    if not f:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    try:
+        reader_res = UniversalDocumentReader.read_file(f.stored_path, password=payload.password)
+        db.query(FieldModel).filter(FieldModel.file_id == f.id).delete()
+        new_fields = []
+        has_low_conf = False
+        for pos, d in enumerate(reader_res.all_details):
+            if d.confidence < 0.85:
+                has_low_conf = True
+            new_fields.append(FieldModel(
+                file_id=f.id,
+                label=d.label,
+                value=d.value,
+                original_value=d.value,
+                confidence=d.confidence,
+                source=d.source,
+                position=pos,
+                page=d.page,
+                bbox=json.dumps(d.bbox) if d.bbox else None,
+                is_sensitive=d.is_sensitive,
+            ))
+        db.add_all(new_fields)
+        f.doc_type = reader_res.doc_type
+        f.page_count = reader_res.page_count
+        f.status = "Done, check" if has_low_conf else "Done"
+        f.stage = "Done"
+        f.error = None
+        db.commit()
+        return {"message": "File unlocked successfully", "status": f.status}
+    except Exception as e:
+        if "password" in str(e).lower():
+            raise HTTPException(status_code=400, detail="Incorrect password. This file is password protected.")
+        raise HTTPException(status_code=400, detail=str(e))
 
     f.status = "Done, check" if has_low_conf else "Done"
     db.commit()
@@ -859,8 +928,9 @@ def download_batch_zip(
             if os.path.exists(f.stored_path):
                 zf.write(f.stored_path, arcname=f"original_documents/{f.original_name}")
 
-        # 2. Build results.csv
-        # Find all unique labels across entire batch
+        # 2. Build index.csv (Part 1, point 6 & Part 2, point 5)
+        # Quote values that contain commas, one column per label found across batch,
+        # leave cell empty when lacking detail, and column listing which labels were sensitive.
         all_labels = []
         for f in batch.files:
             for fld in f.fields:
@@ -868,19 +938,28 @@ def download_batch_zip(
                     all_labels.append(fld.label)
 
         csv_buffer = io.StringIO()
-        csv_writer = csv.writer(csv_buffer)
-        header = ["File", "Document Type"] + all_labels + ["Status"]
+        csv_writer = csv.writer(csv_buffer, quoting=csv.QUOTE_MINIMAL)
+        header = ["File", "Document Type"] + all_labels + ["Sensitive Labels", "Status"]
         csv_writer.writerow(header)
 
         for f in batch.files:
-            field_map = {fld.label: fld.value for fld in f.fields}
+            field_map = {}
+            for fld in f.fields:
+                if fld.label not in field_map:
+                    field_map[fld.label] = fld.value
+                elif fld.value not in field_map[fld.label]:
+                    field_map[fld.label] += "; " + fld.value
+            sensitive_labels = [fld.label for fld in f.fields if fld.is_sensitive]
             row = [f.original_name, f.doc_type or "Document"]
             for lbl in all_labels:
                 row.append(field_map.get(lbl, ""))
+            row.append("; ".join(sensitive_labels))
             row.append(f.status)
             csv_writer.writerow(row)
 
-        zf.writestr("results.csv", csv_buffer.getvalue().encode("utf-8-sig"))
+        csv_bytes = csv_buffer.getvalue().encode("utf-8-sig")
+        zf.writestr("index.csv", csv_bytes)
+        zf.writestr("results.csv", csv_bytes)
 
         # 3. Build results.xlsx (one sheet per document type)
         wb = openpyxl.Workbook()
@@ -904,14 +983,21 @@ def download_batch_zip(
                     if fld.label not in group_labels:
                         group_labels.append(fld.label)
 
-            sheet_header = ["File"] + group_labels + ["Status"]
+            sheet_header = ["File"] + group_labels + ["Sensitive Labels", "Status"]
             ws.append(sheet_header)
 
             for f in group_files:
-                field_map = {fld.label: fld.value for fld in f.fields}
+                field_map = {}
+                for fld in f.fields:
+                    if fld.label not in field_map:
+                        field_map[fld.label] = fld.value
+                    elif fld.value not in field_map[fld.label]:
+                        field_map[fld.label] += "; " + fld.value
+                sensitive_labels = [fld.label for fld in f.fields if fld.is_sensitive]
                 row = [f.original_name]
                 for lbl in group_labels:
                     row.append(field_map.get(lbl, ""))
+                row.append("; ".join(sensitive_labels))
                 row.append(f.status)
                 ws.append(row)
 

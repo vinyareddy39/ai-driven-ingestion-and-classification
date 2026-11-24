@@ -171,6 +171,9 @@ class FieldModel(Base):
     confidence = Column(Float, default=1.0)
     source = Column(String(32), default="read")
     position = Column(Integer, default=0)
+    page = Column(Integer, default=1)
+    bbox = Column(Text, nullable=True)
+    is_sensitive = Column(Boolean, default=False)
 
     file = relationship("FileModel", back_populates="fields")
 
@@ -353,7 +356,7 @@ def init_db(db_url: str = None):
     _engine = create_engine(db_url, connect_args=connect_args)
     Base.metadata.create_all(bind=_engine)
 
-    # Idempotent migrations for files table
+    # Idempotent migrations for files and fields tables
     try:
         insp = inspect(_engine)
         if "files" in insp.get_table_names():
@@ -370,6 +373,38 @@ def init_db(db_url: str = None):
                 for col_name, col_type in columns_to_add:
                     if col_name not in existing_cols:
                         conn.execute(text(f"ALTER TABLE files ADD COLUMN {col_name} {col_type}"))
+                conn.commit()
+
+        if "batches" in insp.get_table_names():
+            existing_batch_cols = [c["name"] for c in insp.get_columns("batches")]
+            with _engine.connect() as conn:
+                if "batch_id" not in existing_batch_cols:
+                    conn.execute(text("ALTER TABLE batches ADD COLUMN batch_id VARCHAR(64)"))
+                conn.commit()
+
+        if "users" in insp.get_table_names():
+            existing_user_cols = [c["name"] for c in insp.get_columns("users")]
+            with _engine.connect() as conn:
+                user_cols_to_add = [
+                    ("role", "VARCHAR(32) DEFAULT 'uploader'"),
+                    ("disabled", "BOOLEAN DEFAULT 0"),
+                ]
+                for col_name, col_type in user_cols_to_add:
+                    if col_name not in existing_user_cols:
+                        conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+                conn.commit()
+
+        if "fields" in insp.get_table_names():
+            existing_field_cols = [c["name"] for c in insp.get_columns("fields")]
+            with _engine.connect() as conn:
+                field_cols_to_add = [
+                    ("page", "INTEGER DEFAULT 1"),
+                    ("bbox", "TEXT"),
+                    ("is_sensitive", "BOOLEAN DEFAULT 0"),
+                ]
+                for col_name, col_type in field_cols_to_add:
+                    if col_name not in existing_field_cols:
+                        conn.execute(text(f"ALTER TABLE fields ADD COLUMN {col_name} {col_type}"))
                 conn.commit()
     except Exception:
         pass
