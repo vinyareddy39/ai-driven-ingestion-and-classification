@@ -36,6 +36,7 @@ export interface FileItem {
   status: string;
   stage: string;
   error?: string;
+  check_reasons?: string | null;
   fields: FieldItem[];
 }
 

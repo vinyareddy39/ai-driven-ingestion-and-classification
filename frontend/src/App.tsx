@@ -30,6 +30,7 @@ export default function App() {
   const [unlockPassword, setUnlockPassword] = useState('');
   const [unlockError, setUnlockError] = useState('');
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1.0);
 
   // Initial auth check
   useEffect(() => {
@@ -701,6 +702,7 @@ export default function App() {
                               <th key={c}>{c}</th>
                             ))}
                             <th>Status</th>
+                            <th>Check reasons</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -755,7 +757,7 @@ export default function App() {
                                     </td>
                                   ) : (
                                     <td key={c} className="empty">
-                                      —
+                                      "-"
                                     </td>
                                   );
                                 })}
@@ -763,6 +765,14 @@ export default function App() {
                                   <span className={`pill ${pillClass}`}>
                                     {f.status}
                                   </span>
+                                </td>
+                                <td>
+                                  {f.check_reasons ||
+                                    (f.status === 'Done, check'
+                                      ? f.error || 'Check required'
+                                      : f.status === 'Failed'
+                                      ? f.error || 'Failed'
+                                      : '-')}
                                 </td>
                                 <td style={{ whiteSpace: 'nowrap' }}>
                                   <button
@@ -886,25 +896,60 @@ export default function App() {
                   )}
 
                   <div className="split">
-                    {/* Left Panel: Real Document Page Image with BBox Highlight */}
+                    {/* Left Panel: Real Document Page Image with BBox Highlight and Zoom Controls */}
                     <div className="paperbox">
-                      <div className="paper-viewer" style={{ position: 'relative' }}>
-                        <img
-                          src={api.getPageImageUrl(f.id, 1)}
-                          alt={`Original document ${f.name}`}
-                        />
-                        {highlightedBbox && (
-                          <div
-                            className="highlight-box"
-                            style={{
-                              top: `${highlightedBbox[0] / 10}%`,
-                              left: `${highlightedBbox[1] / 10}%`,
-                              height: `${Math.max(2, (highlightedBbox[2] - highlightedBbox[0]) / 10)}%`,
-                              width: `${Math.max(3, (highlightedBbox[3] - highlightedBbox[1]) / 10)}%`,
-                            }}
-                            title="Detail location on page"
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)' }}>Zoom:</span>
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ padding: '2px 8px', fontSize: '13px' }}
+                          onClick={() => setZoomLevel((z) => Math.max(0.5, Number((z - 0.25).toFixed(2))))}
+                          title="Zoom out"
+                        >
+                          −
+                        </button>
+                        <span style={{ fontSize: '12px', minWidth: '40px', textAlign: 'center' }}>
+                          {Math.round(zoomLevel * 100)}%
+                        </span>
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ padding: '2px 8px', fontSize: '13px' }}
+                          onClick={() => setZoomLevel((z) => Math.min(3.0, Number((z + 0.25).toFixed(2))))}
+                          title="Zoom in"
+                        >
+                          +
+                        </button>
+                        <button
+                          type="button"
+                          className="btn"
+                          style={{ padding: '2px 8px', fontSize: '12px' }}
+                          onClick={() => setZoomLevel(1.0)}
+                        >
+                          Reset
+                        </button>
+                      </div>
+                      <div className="paper-viewer" style={{ position: 'relative', overflow: 'auto', maxHeight: '75vh' }}>
+                        <div style={{ position: 'relative', transform: `scale(${zoomLevel})`, transformOrigin: 'top left', display: 'inline-block', width: '100%' }}>
+                          <img
+                            src={api.getPageImageUrl(f.id, 1)}
+                            alt={`Original document ${f.name}`}
+                            style={{ display: 'block', width: '100%', height: 'auto' }}
                           />
-                        )}
+                          {highlightedBbox && (
+                            <div
+                              className="highlight-box"
+                              style={{
+                                top: `${highlightedBbox[0] / 10}%`,
+                                left: `${highlightedBbox[1] / 10}%`,
+                                height: `${Math.max(2, (highlightedBbox[2] - highlightedBbox[0]) / 10)}%`,
+                                width: `${Math.max(3, (highlightedBbox[3] - highlightedBbox[1]) / 10)}%`,
+                              }}
+                              title="Detail location on page"
+                            />
+                          )}
+                        </div>
                       </div>
                       <div className="cap">
                         Original page. Page condition detected: {f.cond}.
@@ -926,10 +971,10 @@ export default function App() {
                               key={i}
                               onClick={() => handleDetailClick(i, x.bbox)}
                             >
-                              {/* Left Column: Exact printed label or (no label) */}
+                              {/* Left Column: Exact printed label or empty */}
                               <div className="fr-label">
                                 <span style={{ fontWeight: 600, color: 'var(--muted)' }}>
-                                  {x.label || '(no label)'}
+                                  {x.label || ''}
                                 </span>
                               </div>
 

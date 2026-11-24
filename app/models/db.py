@@ -144,6 +144,7 @@ class FileModel(Base):
     status = Column(String(64), default="Waiting")
     stage = Column(String(64), default="Waiting")
     error = Column(Text, nullable=True)
+    check_reasons = Column(Text, nullable=True)
     doc_type = Column(String(255), nullable=True)
     page_condition = Column(String(255), nullable=True)
     duplicate_of = Column(String(512), nullable=True)
@@ -370,6 +371,7 @@ def init_db(db_url: str = None):
                     ("model_name", "VARCHAR(128)"),
                     ("is_fallback", "BOOLEAN DEFAULT 0"),
                     ("prompt_version", "VARCHAR(32)"),
+                    ("check_reasons", "TEXT"),
                 ]
                 for col_name, col_type in columns_to_add:
                     if col_name not in existing_cols:

@@ -87,6 +87,58 @@ class ExtractionResult:
     is_sensitive: bool = False
     error: Optional[str] = None
     page_count: int = 1
+    extension_mismatch: bool = False
+    extension_mismatch_reason: Optional[str] = None
+    text_layer_mismatch: bool = False
+    table_math_discrepancy: bool = False
+    table_math_reason: Optional[str] = None
+
+
+def detect_file_format_from_bytes(file_path: str) -> str:
+    """Detect actual file format from header magic bytes."""
+    try:
+        with open(file_path, "rb") as f:
+            header = f.read(512)
+    except Exception:
+        return "unknown"
+
+    if not header:
+        return "empty"
+
+    if header.startswith(b"%PDF-"):
+        return ".pdf"
+    elif header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return ".png"
+    elif header.startswith(b"\xff\xd8\xff"):
+        return ".jpg"
+    elif header.startswith(b"II*\x00") or header.startswith(b"MM\x00*"):
+        return ".tiff"
+    elif header.startswith(b"BM"):
+        return ".bmp"
+    elif header.startswith(b"PK\x03\x04"):
+        try:
+            import zipfile
+            with zipfile.ZipFile(file_path, "r") as zf:
+                names = zf.namelist()
+                if any(n.startswith("word/") for n in names):
+                    return ".docx"
+                elif any(n.startswith("xl/") for n in names):
+                    return ".xlsx"
+        except Exception:
+            pass
+        return ".docx"
+    elif any(header.startswith(prefix) for prefix in [b"Received:", b"From:", b"Return-Path:", b"Date:", b"Subject:"]):
+        return ".eml"
+    elif header.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"):
+        return ".msg"
+    else:
+        try:
+            sample = header.decode("utf-8", errors="strict")
+            if "," in sample and "\n" in sample:
+                return ".csv"
+            return ".txt"
+        except Exception:
+            return "unknown"
 
 
 # ---------------------------------------------------------------------------
@@ -260,23 +312,48 @@ class UniversalDocumentReader:
             raise EmptyFileException("This file is empty.")
 
         ext = os.path.splitext(file_path)[1].lower()
+        real_format = detect_file_format_from_bytes(file_path)
 
-        if ext == ".txt":
-            return UniversalDocumentReader._read_plain_text(file_path)
-        elif ext == ".csv":
-            return UniversalDocumentReader._read_csv_file(file_path)
-        elif ext == ".docx":
-            return UniversalDocumentReader._read_docx_file(file_path)
-        elif ext == ".xlsx":
-            return UniversalDocumentReader._read_xlsx_file(file_path)
-        elif ext in [".pdf"]:
-            return UniversalDocumentReader._read_pdf_file(file_path, password=password)
-        elif ext in [".png", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp"]:
-            return UniversalDocumentReader._read_image_file(file_path)
-        elif ext in [".eml", ".msg"]:
-            return UniversalDocumentReader._read_email_file(file_path)
+        extension_mismatch = False
+        extension_mismatch_reason = None
+        if real_format != "unknown" and real_format != "empty":
+            norm_ext = ".jpg" if ext == ".jpeg" else ext
+            norm_real = ".jpg" if real_format == ".jpeg" else real_format
+            if norm_ext in [".tif", ".tiff"]:
+                norm_ext = ".tiff"
+            if norm_real in [".tif", ".tiff"]:
+                norm_real = ".tiff"
+
+            if norm_ext != norm_real:
+                extension_mismatch = True
+                extension_mismatch_reason = f"File extension '{ext}' does not match detected format '{real_format}'"
+                logger.warning(extension_mismatch_reason)
+
+        target_format = real_format if real_format != "unknown" else ext
+
+        res: ExtractionResult
+        if target_format == ".txt":
+            res = UniversalDocumentReader._read_plain_text(file_path)
+        elif target_format == ".csv":
+            res = UniversalDocumentReader._read_csv_file(file_path)
+        elif target_format == ".docx":
+            res = UniversalDocumentReader._read_docx_file(file_path)
+        elif target_format == ".xlsx":
+            res = UniversalDocumentReader._read_xlsx_file(file_path)
+        elif target_format in [".pdf"]:
+            res = UniversalDocumentReader._read_pdf_file(file_path, password=password)
+        elif target_format in [".png", ".jpg", ".jpeg", ".tiff", ".tif", ".bmp"]:
+            res = UniversalDocumentReader._read_image_file(file_path)
+        elif target_format in [".eml", ".msg"]:
+            res = UniversalDocumentReader._read_email_file(file_path)
         else:
             raise ValueError(f"This file type isn't supported. Supported types: PDF, PNG, JPG, TIFF, BMP, TXT, CSV, DOCX, XLSX, EML.")
+
+        if extension_mismatch:
+            res.extension_mismatch = True
+            res.extension_mismatch_reason = extension_mismatch_reason
+
+        return res
 
     @staticmethod
     def _read_plain_text(file_path: str) -> ExtractionResult:
@@ -516,34 +593,68 @@ class UniversalDocumentReader:
 
         pages_content: List[PageContent] = []
         all_details: List[ExtractedDetail] = []
+        has_text_layer_mismatch = False
 
         for p_idx in range(page_count):
             page_num = p_idx + 1
             page = doc[p_idx]
-            txt = page.get_text("text").strip()
+            emb_text = page.get_text("text").strip()
 
-            # Part 3, Point 2: Use digital text when it exists. Use OCR only for pages lacking text.
-            if not txt:
-                # Page has no text: try OCR on page image
+            # Always render visible page to image and perform OCR
+            ocr_text = ""
+            try:
                 pix = page.get_pixmap(dpi=150)
-                if pix.width == 0 or pix.height == 0:
-                    pages_content.append(PageContent(page_number=page_num, full_text="", is_blank=True))
-                    continue
-
-                try:
+                if pix.width > 0 and pix.height > 0:
                     import cv2
-                    img_np = np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
-                    if pix.n >= 3:
-                        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+                    from app.core.preprocessing import preprocess_image
                     from app.adapters.ocr import get_ocr_engine
-                    ocr_res = get_ocr_engine().extract_text(cv2.imencode(".png", img_np)[1].tobytes(), "image/png")
-                    txt = (ocr_res.full_text or "").strip()
-                except Exception as e:
-                    logger.warning(f"OCR failed on page {page_num}: {e}")
-                    txt = ""
+                    img_np = np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
+                    if pix.n == 4:
+                        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2BGR)
+                    elif pix.n == 3:
+                        img_np = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+
+                    prep, _ = preprocess_image(img_np)
+                    ocr_res = get_ocr_engine().extract_text(cv2.imencode(".png", prep)[1].tobytes(), "image/png")
+                    ocr_text = (ocr_res.full_text or "").strip()
+            except Exception as e:
+                logger.warning(f"OCR/render failed on page {page_num}: {e}")
+
+            # Point 9: Compare embedded text with OCR of the rendered page
+            txt = emb_text
+            if emb_text and ocr_text:
+                words_emb = set(re.findall(r"\w+", emb_text.lower()))
+                words_ocr = set(re.findall(r"\w+", ocr_text.lower()))
+                if len(words_emb) >= 5 and len(words_ocr) >= 5:
+                    jaccard = len(words_emb & words_ocr) / max(1, len(words_emb | words_ocr))
+                    if jaccard < 0.40:
+                        has_text_layer_mismatch = True
+                        logger.warning(f"PDF page {page_num} text layer mismatch (Jaccard: {jaccard:.2f}). Preferring visible rendered page.")
+                        txt = ocr_text
+                    else:
+                        txt = emb_text
+            elif ocr_text:
+                txt = ocr_text
+
+            # Point 9: Also read images embedded inside the PDF
+            try:
+                for img_info in page.get_images(full=True):
+                    xref = img_info[0]
+                    base_img = doc.extract_image(xref)
+                    img_bytes = base_img.get("image")
+                    if img_bytes:
+                        from app.adapters.ocr import get_ocr_engine
+                        emb_ocr = get_ocr_engine().extract_text(img_bytes, base_img.get("ext", "png"))
+                        if emb_ocr.full_text and emb_ocr.full_text.strip():
+                            existing_words = set(re.findall(r"\w+", txt.lower()))
+                            new_words = [w for w in re.findall(r"\w+", emb_ocr.full_text.lower()) if w not in existing_words]
+                            if len(new_words) >= 2:
+                                txt = f"{txt}\n{emb_ocr.full_text.strip()}"
+            except Exception:
+                pass
 
             if not txt:
-                # Part 4, Point 2: Calm neutral status for empty pages
+                # Neutral status for empty pages
                 pages_content.append(PageContent(page_number=page_num, full_text="", is_blank=True))
                 continue
 
@@ -568,6 +679,7 @@ class UniversalDocumentReader:
             all_details=all_details,
             is_sensitive=has_sensitive,
             page_count=page_count,
+            text_layer_mismatch=has_text_layer_mismatch,
         )
 
     @staticmethod
@@ -619,8 +731,8 @@ class UniversalDocumentReader:
             is_unlabelled: bool = False,
         ):
             lbl_clean = lbl.strip()
-            val_clean = val.strip().strip(",;")
-            if not lbl_clean or not val_clean or len(val_clean) < 1:
+            val_clean = val.strip()
+            if (not lbl_clean and not is_unlabelled) or not val_clean or len(val_clean) < 1:
                 return
 
             # Anti-Hallucination Gate: Stored ONLY if appears in text!
@@ -683,7 +795,7 @@ class UniversalDocumentReader:
                 is_unlabelled=is_unlabelled,
             ))
             # Track normalized value to suppress unlabelled duplicates if captured under printed label
-            if lbl_clean != "(no label)":
+            if lbl_clean:
                 captured_values_norm.add(re.sub(r"\s+", "", val_clean.lower()))
 
         lines = [line.rstrip() for line in text.splitlines()]
@@ -759,7 +871,7 @@ class UniversalDocumentReader:
                             add_detail(lbl, val if val else "", conf=0.98 if val else 0.40)
                     else:
                         if part.strip():
-                            add_detail("(no label)", part.strip(), conf=0.85, is_unlabelled=True)
+                            add_detail("", part.strip(), conf=0.85, is_unlabelled=True)
                 i += 1
                 continue
 
@@ -799,13 +911,13 @@ class UniversalDocumentReader:
 
             # Layout 6: Unlabelled text line (Keep everything, never drop or hide)
             if line and line.lower() not in doc_heading_keywords:
-                add_detail("(no label)", line, conf=0.85, is_unlabelled=True)
+                add_detail("", line, conf=0.85, is_unlabelled=True)
 
             i += 1
 
         # -------------------------------------------------------------------
         # Rule 2: Unlabelled Entities
-        # Extract without inventing labels (Strictly "(no label)" as label)
+        # Extract without inventing labels (Strictly empty string "" as label)
         # -------------------------------------------------------------------
         def is_already_captured(val_str: str) -> bool:
             clean = re.sub(r"\s+", "", val_str.lower())
@@ -820,51 +932,51 @@ class UniversalDocumentReader:
         for m in AADHAAR_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val) and validate_aadhaar(re.sub(r"\s+", "", val)):
-                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
+                add_detail("", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
         for m in PAN_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val) and validate_pan(val):
-                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
+                add_detail("", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
         for m in GSTIN_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val) and validate_gstin(val):
-                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
+                add_detail("", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
         for m in IFSC_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val) and validate_ifsc(val):
-                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Bank Code", is_unlabelled=True)
+                add_detail("", val, conf=0.95, is_sens=True, tag="Bank Code", is_unlabelled=True)
         for m in SSN_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val):
-                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
+                add_detail("", val, conf=0.95, is_sens=True, tag="Govt ID", is_unlabelled=True)
         for m in PASSPORT_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val):
-                add_detail("(no label)", val, conf=0.90, is_sens=True, tag="Govt ID", is_unlabelled=True)
+                add_detail("", val, conf=0.90, is_sens=True, tag="Govt ID", is_unlabelled=True)
 
         # 2. Contacts
         for m in EMAIL_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val):
-                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Email", is_unlabelled=True)
+                add_detail("", val, conf=0.95, is_sens=True, tag="Email", is_unlabelled=True)
         for m in PHONE_REGEX.finditer(text):
             val = m.group(0).strip()
             if len(re.sub(r"\D", "", val)) >= 10 and not is_already_captured(val):
-                add_detail("(no label)", val, conf=0.95, is_sens=True, tag="Phone", is_unlabelled=True)
+                add_detail("", val, conf=0.95, is_sens=True, tag="Phone", is_unlabelled=True)
         for m in URL_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val):
-                add_detail("(no label)", val, conf=0.95, is_sens=False, tag="Web Link", is_unlabelled=True)
+                add_detail("", val, conf=0.95, is_sens=False, tag="Web Link", is_unlabelled=True)
 
         # 3. Amounts & Dates
         for m in AMOUNT_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val):
-                add_detail("(no label)", val, conf=0.90, is_sens=False, tag="Amount", is_unlabelled=True)
+                add_detail("", val, conf=0.90, is_sens=False, tag="Amount", is_unlabelled=True)
         for m in DATE_REGEX.finditer(text):
             val = m.group(0).strip()
             if not is_already_captured(val):
-                add_detail("(no label)", val, conf=0.90, is_sens=False, tag="Date", is_unlabelled=True)
+                add_detail("", val, conf=0.90, is_sens=False, tag="Date", is_unlabelled=True)
 
         return details
 

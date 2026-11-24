@@ -182,55 +182,23 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
         f.cache_key = cache_key
         hash_ms = round((time.perf_counter() - t_h) * 1000, 2)
 
-        if not force_fresh and user_id:
-            cached_done = (
+        # Point 6: Every upload is read again from scratch. Nothing is skipped by cache or filename.
+        # If identical content (SHA-256), mark "Same content as <earlier file>" note, but still read again.
+        if user_id:
+            earlier_dup = (
                 db.query(FileModel)
                 .join(BatchModel, BatchModel.id == FileModel.batch_id)
                 .filter(
-                    FileModel.cache_key == cache_key,
+                    FileModel.sha256 == f.sha256,
                     BatchModel.user_id == user_id,
-                    FileModel.stage.in_(["Done", "done"]),
                     FileModel.id != f.id,
                 )
                 .order_by(FileModel.created_at.desc())
                 .first()
             )
-            if cached_done:
-                c_fields = db.query(FieldModel).filter(FieldModel.file_id == cached_done.id).all()
-                has_rate_limit = any("rate limit" in str(cf.value).lower() for cf in c_fields)
-                if c_fields and not has_rate_limit:
-                    f.started_at = datetime.now(timezone.utc)
-                    f.stage = "Done"
-                    f.status = "done"
-                    f.doc_type = cached_done.doc_type
-                    f.page_count = cached_done.page_count
-                    f.page_condition = cached_done.page_condition
-                    new_fields = []
-                    for cf in c_fields:
-                        new_fields.append(FieldModel(
-                            file_id=f.id,
-                            label=cf.label,
-                            value=cf.value,
-                            original_value=cf.original_value,
-                            confidence=cf.confidence,
-                            source="cache",
-                            position=cf.position,
-                        ))
-                    db.add_all(new_fields)
-                    f.finished_at = datetime.now(timezone.utc)
-                    total_ms = round((time.perf_counter() - t0) * 1000, 2)
-                    f.stage_timings = json.dumps({
-                        "hash_ms": hash_ms,
-                        "text_check_ms": 0.0,
-                        "render_ms": 0.0,
-                        "deskew_ms": 0.0,
-                        "model_ms": 0.0,
-                        "db_write_ms": 0.5,
-                        "total_ms": total_ms,
-                    })
-                    db.commit()
-                    logger.info(f"User cache hit for {f.original_name} (key: {cache_key[:12]}). Finished in {total_ms}ms.")
-                    return
+            if earlier_dup:
+                f.duplicate_of = earlier_dup.original_name
+                logger.info(f"Identical content detected for {f.original_name} (same content as {earlier_dup.original_name}). Reading again from scratch.")
 
         queue_wait_ms = 0.0
         if f.created_at:
@@ -349,10 +317,7 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
                 logger.warning(f"Fallback extraction exception: {e}")
 
         new_fields = []
-        has_low_conf = False
         for pos, d in enumerate(details):
-            if d.confidence < 0.85:
-                has_low_conf = True
             new_fields.append(FieldModel(
                 file_id=f.id,
                 label=d.label,
@@ -367,13 +332,59 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
                 detector_tag=getattr(d, "detector_tag", None),
             ))
 
+        # Point 7: Reliability and Check Reasons Calculation
+        check_reasons_list: List[str] = []
+
+        if getattr(reader_result, "extension_mismatch", False):
+            check_reasons_list.append(getattr(reader_result, "extension_mismatch_reason", "File extension does not match real format"))
+
+        if getattr(reader_result, "text_layer_mismatch", False):
+            check_reasons_list.append("Text layer mismatch with visible page")
+
+        if getattr(reader_result, "table_math_discrepancy", False):
+            check_reasons_list.append(getattr(reader_result, "table_math_reason", "Line items do not add up to total"))
+
+        # Low confidence check (< 0.85)
+        if any(d.confidence < 0.85 for d in details):
+            check_reasons_list.append("Low confidence on one or more values (< 85%)")
+
+        # Conflicting values check
+        seen_label_values: Dict[str, str] = {}
+        for d in details:
+            if d.label:
+                lbl_k = d.label.strip().lower()
+                if lbl_k in seen_label_values and seen_label_values[lbl_k] != d.value.strip():
+                    check_reasons_list.append(f"Conflicting values for '{d.label}': '{seen_label_values[lbl_k]}' vs '{d.value}'")
+                seen_label_values[lbl_k] = d.value.strip()
+
+        # Ambiguous date or number format
+        for d in details:
+            if re.search(r"\b(0[1-9]|1[0-2])/(0[1-9]|1[0-2])/\d{4}\b", d.value):
+                check_reasons_list.append(f"Ambiguous date format in '{d.label or 'detail'}': '{d.value}'")
+                break
+
+        # Final Status determination
+        if len(details) == 0:
+            final_status = "Failed"
+            final_error = "No readable details found on page"
+            final_reasons = "No readable details found on page"
+        elif len(check_reasons_list) > 0:
+            final_status = "Done, check"
+            final_error = None
+            final_reasons = "; ".join(check_reasons_list)
+        else:
+            final_status = "Done"
+            final_error = None
+            final_reasons = None
+
         total_ms = round((time.perf_counter() - t0) * 1000, 2)
         with _sqlite_write_lock:
             db.query(FieldModel).filter(FieldModel.file_id == f.id).delete()
             db.add_all(new_fields)
             f.stage = "Done"
-            f.status = "Done, check" if has_low_conf else "Done"
-            f.error = None
+            f.status = final_status
+            f.error = final_error
+            f.check_reasons = final_reasons
             f.finished_at = datetime.now(timezone.utc)
             f.stage_timings = json.dumps({
                 "queue_wait_ms": queue_wait_ms,
@@ -632,6 +643,7 @@ def get_batch(
             "status": f.status,
             "stage": clean_stage,
             "error": clean_err,
+            "check_reasons": getattr(f, "check_reasons", None) or (clean_err if f.status in ["Done, check", "Failed"] else None),
             "provider": f.provider_name or timings_dict.get("provider", "local_ocr"),
             "model": f.model_name or timings_dict.get("model", "default"),
             "is_fallback": f.is_fallback or timings_dict.get("is_fallback", False),
@@ -726,6 +738,7 @@ def get_file(
         "status": f.status,
         "stage": clean_stage,
         "error": f.error,
+        "check_reasons": getattr(f, "check_reasons", None) or (f.error if f.status in ["Done, check", "Failed"] else None),
         "fields": fields_data,
     }
 

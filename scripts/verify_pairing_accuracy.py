@@ -310,7 +310,7 @@ Permanent Residential Address: Flat 402, Lotus Heights, Bengaluru, Karnataka 560
             ("Permanent Residential Address", "Flat 402, Lotus Heights, Bengaluru, Karnataka 560001"),
         ],
     },
-    # 18. Unlabelled Standalone Entities (Should show label="(no label)", NEVER invented names)
+    # 18. Unlabelled Standalone Entities (Should show label="", NEVER invented names)
     {
         "id": "doc_18_unlabelled_entities",
         "category": "Unlabelled Entities",
@@ -318,9 +318,9 @@ Permanent Residential Address: Flat 402, Lotus Heights, Bengaluru, Karnataka 560
 Please forward all inquiries to support-team@globalpharma.example.com or reach emergency dispatch at +1-555-839-2019 immediately.
 Audit scheduled for 2026-12-15.""",
         "expected": [
-            ("(no label)", "support-team@globalpharma.example.com"),
-            ("(no label)", "+1-555-839-2019"),
-            ("(no label)", "2026-12-15"),
+            ("", "support-team@globalpharma.example.com"),
+            ("", "+1-555-839-2019"),
+            ("", "2026-12-15"),
         ],
     },
     # 19. Low Confidence Incomplete Pairs (Value is only a unit or placeholder)
