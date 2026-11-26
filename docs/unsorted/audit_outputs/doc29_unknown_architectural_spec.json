@@ -1,0 +1,113 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.2182,
+  "top_candidates": [
+    {
+      "type": "receipt",
+      "score": 0.2182
+    },
+    {
+      "type": "letter",
+      "score": 0.2182
+    },
+    {
+      "type": "invoice",
+      "score": 0.0805
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 2333.05,
+      "noise_level": 2789,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.2182
+    }
+  ],
+  "fields": [
+    {
+      "label": "PROJECT CODE",
+      "value": "BLDG-NORTH-770",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "SHEET NUMBER A-104 (FOUNDATION DETAIL)",
+      "value": "LEAD ARCHITECT MARCUS STERLING, ALA",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "LEAD ARCHITECT MARCUS STERLING, ALA",
+      "value": "STRUCTURAL ENGINEER FIRM: SIMPSON & ASSOCIATES PE",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "STRUCTURAL ENGINEER FIRM",
+      "value": "SIMPSON & ASSOCIATES PE",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "DESIGN LOAD",
+      "value": "120 PSF FLOOR LIVE LOAD",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "CONCRETE COMPERSIVE STENGTH",
+      "value": "5,000 PSIAT 28 DAYS",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "REINFORCING STEET",
+      "value": "ASTM A615 GRADE 60 REBAR",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "SEISMIC DESIGN CATEGORY CATEGORY D",
+      "value": "DATE OF RELEASE: 2026-10-10",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "DATE OF RELEASE",
+      "value": "2026-10-10",
+      "confidence": 0.88,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'receipt' confidence (0.22) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "ARCHITECTURAL STRUCTURAL BLUEPRINT SPECIFICATION",
+  "dates": [
+    "2026-10-10"
+  ]
+}

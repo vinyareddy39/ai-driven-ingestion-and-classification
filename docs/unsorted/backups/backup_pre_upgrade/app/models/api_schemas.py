@@ -1,0 +1,575 @@
+"""Pydantic v2 schemas for Frontend REST API contracts."""
+
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field
+
+
+class SystemInfoResponse(BaseModel):
+    """System metadata and operational mode indication."""
+    mode: str = Field(description="Operational mode: LOCAL MODE or REAL SERVICES")
+    version: str = Field(description="Pipeline application version")
+    environment: str = Field(description="Deployment environment name")
+    storage_backend: str = Field(description="Storage adapter: local or minio")
+    queue_backend: str = Field(description="Queue adapter: memory or redis")
+    search_backend: str = Field(description="Search adapter: memory or opensearch")
+    ocr_engine: str = Field(description="Configured OCR engine")
+    classifier_version: str = Field(description="Active document classifier model version")
+    virus_scanner: str = Field(default="eicar-test-only", description="Active virus scanner: clamav or eicar-test-only")
+    scanner: str = Field(default="eicar-test-only", description="Active scanner name: clamav or eicar-test-only")
+    engines: Dict[str, str] = Field(default_factory=dict, description="List of every active engine")
+    high_risk_floor: float = Field(default=0.92, description="Immutable threshold floor for high-risk classes")
+    low_risk_floor: float = Field(default=0.85, description="Immutable threshold floor for low-risk classes")
+    max_upload_mb: int = Field(default=200, description="Maximum upload size in MB")
+    max_upload_size_mb: int = Field(default=200, description="Maximum upload size in MB")
+    max_upload_size_bytes: int = Field(default=200 * 1024 * 1024, description="Maximum upload size in bytes")
+    allowed_file_types: str = Field(default="image/jpeg,image/png,application/pdf", description="Allowed upload MIME types")
+    allowed_extensions: List[str] = Field(
+        default_factory=lambda: [".pdf", ".png", ".jpg", ".jpeg", ".tiff", ".eml", ".docx"],
+        description="Allowed upload file extensions",
+    )
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+class UserSessionResponse(BaseModel):
+    """User session representing role-gated access."""
+    user_id: str
+    username: str
+    role: str = Field(description="Active role: uploader, reviewer, admin, compliance, or viewer")
+    permissions: List[str]
+    name: Optional[str] = None
+
+
+class ReviewQueueItem(BaseModel):
+    """Item displayed on the human review queue table."""
+    task_id: str
+    document_uid: str
+    file_name: str
+    predicted_type: str
+    confidence: float
+    risk_level: str = Field(description="HIGH or LOW risk tier")
+    review_reason: str
+    pii_sensitivity: str = Field(description="HIGH, MEDIUM, LOW, or NONE")
+    age_seconds: int
+    created_at: Optional[datetime] = None
+    status: str
+    thumbnail_url: Optional[str] = None
+
+
+class ReviewQueueResponse(BaseModel):
+    """Paginated review queue response."""
+    items: List[ReviewQueueItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class OCRWordBox(BaseModel):
+    """Bounding box coordinates for an OCR detected word or token."""
+    text: str
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    page_num: int = 1
+
+
+class ReviewDetailResponse(BaseModel):
+    """Full review detail payload with page image, OCR text, and field confidences."""
+    document_uid: str
+    task_id: str
+    file_name: str
+    predicted_type: str
+    confidence: float
+    model_name: str
+    model_version: str
+    ocr_engine: str
+    ocr_version: str
+    decision_reason: str
+    review_status: str
+    assigned_reviewer: Optional[str] = None
+    extracted_fields: Dict[str, Any] = Field(default_factory=dict)
+    human_verified_fields: Dict[str, Any] = Field(default_factory=dict)
+    field_confidences: Dict[str, float] = Field(default_factory=dict)
+    pii_entities: List[Dict[str, Any]] = Field(default_factory=list)
+    ocr_text: str = ""
+    ocr_words: List[OCRWordBox] = Field(default_factory=list)
+    page_count: int = 1
+    page_image_url: str = ""
+    created_at: Optional[datetime] = None
+
+
+class ReviewActionRequest(BaseModel):
+    """Review action payload submitted by reviewer."""
+    reviewer_id: str
+    action: str = Field(description="CONFIRM, CORRECT, or REJECT")
+    corrected_type: Optional[str] = None
+    corrected_fields: Optional[Dict[str, Any]] = None
+    review_notes: Optional[str] = None
+
+
+class ReviewActionResponse(BaseModel):
+    """Result of human review decision."""
+    success: bool
+    document_uid: str
+    review_status: str
+    doc_type: str
+    message: str
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class DocumentSummaryItem(BaseModel):
+    """Summary item for documents list and search results."""
+    uid: str
+    file_name: str
+    file_size: int
+    mime_type: str
+    doc_type: str
+    confidence: float
+    review_status: str
+    pii_detected: bool
+    pii_types: List[str] = Field(default_factory=list)
+    classifier_version: str
+    is_link: bool
+    linked_to_uid: Optional[str] = None
+    quarantine_reason: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+
+class DocumentListResponse(BaseModel):
+    """Paginated list of documents with metadata filters."""
+    items: List[DocumentSummaryItem]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+
+class DocumentStatusResponse(BaseModel):
+    """Lightweight document status polling payload."""
+    uid: str
+    file_name: str
+    review_status: str
+    doc_type: str
+    confidence: float
+    is_link: bool
+    linked_to_uid: Optional[str] = None
+    quarantine_reason: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+
+class DocumentComplianceDetailResponse(BaseModel):
+    """Detailed compliance view showing AIClassification record, retention rules, and ACL."""
+    uid: str
+    sha256: str
+    file_name: str
+    file_size: int
+    doc_type: str
+    confidence: float
+    retention_class: Optional[str] = None
+    acl: Optional[str] = None
+    decision_rule: Optional[str] = None
+    decision_reason: Optional[str] = None
+    target_workflow: Optional[str] = None
+    review_status: str
+    classifier_model: Optional[str] = None
+    classifier_version: Optional[str] = None
+    ocr_engine: Optional[str] = None
+    ocr_version: Optional[str] = None
+    pii_detected: bool
+    pii_entities: List[Dict[str, Any]] = Field(default_factory=list)
+    pii_types: List[str] = Field(default_factory=list)
+    extracted_fields: Dict[str, Any] = Field(default_factory=dict)
+    human_verified_fields: Dict[str, Any] = Field(default_factory=dict)
+    field_confidences: Dict[str, float] = Field(default_factory=dict)
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+class AuditEventItem(BaseModel):
+    """Individual audit event in the document history timeline."""
+    event_id: str
+    document_uid: str
+    event_type: str
+    stage_name: Optional[str] = None
+    status: str
+    payload: Dict[str, Any] = Field(default_factory=dict)
+    created_at: Optional[datetime] = None
+
+
+class AuditTrailResponse(BaseModel):
+    """Complete chronological audit trail for a document."""
+    document_uid: str
+    events: List[AuditEventItem]
+
+
+class PIIRevealRequest(BaseModel):
+    """Audit request to reveal a masked PII entity."""
+    entity_type: str
+    position: Optional[Dict[str, Any]] = None
+
+
+class PIIRevealResponse(BaseModel):
+    """Audit confirmation of PII reveal."""
+    success: bool
+    event_id: str
+    entity_type: str
+    message: str
+
+
+class ReprocessExecutionRequest(BaseModel):
+    """Execution request to reprocess documents matching criteria."""
+    query: Optional[str] = None
+    target_types: Optional[List[str]] = None
+    min_confidence: Optional[float] = None
+    classifier_version_filter: Optional[str] = None
+    dry_run: bool = False
+
+
+class ReprocessExecutionResponse(BaseModel):
+    """Response from executing a reprocess run."""
+    job_id: str
+    status: str
+    matched_count: int
+    reprocessed_count: int
+    conflicts_preserved_count: int
+
+
+class ReprocessSampleItem(BaseModel):
+    """Sample document matching reprocess criteria."""
+    uid: str
+    file_name: str
+    current_doc_type: str
+    current_confidence: float
+    classifier_version: str
+    has_human_verified_fields: bool
+    human_verified_field_names: List[str] = Field(default_factory=list)
+
+
+class ReprocessPreviewRequest(BaseModel):
+    """Criteria to preview documents targeted for reprocessing."""
+    query: Optional[str] = None
+    classifier_version_filter: Optional[str] = None
+    min_confidence: Optional[float] = None
+    target_types: Optional[List[str]] = None
+
+
+class ReprocessPreviewResponse(BaseModel):
+    """Dry-run preview metrics for a proposed reprocess job."""
+    matched_count: int
+    human_verified_conflict_count: int
+    sample_documents: List[ReprocessSampleItem]
+
+
+class ReprocessJobStatusResponse(BaseModel):
+    """Progress status of an active or completed reprocess job."""
+    job_id: str
+    status: str
+    matched_count: int
+    processed_count: int
+    skipped_count: int
+    error_count: int
+
+
+class StageLatencyMetric(BaseModel):
+    """Latency metrics for a specific pipeline stage."""
+    stage: str
+    count: int
+    p50_ms: float
+    p95_ms: float
+
+
+class DashboardMetricsResponse(BaseModel):
+    """High-level operational metrics dashboard."""
+    has_data: bool
+    total_ingested: int
+    queue_depth: int
+    review_queue_size: int
+    stp_rate: Optional[float] = None
+    error_rate: Optional[float] = None
+    stage_latencies_ms: Dict[str, StageLatencyMetric] = Field(default_factory=dict)
+    per_class_counts: Dict[str, int] = Field(default_factory=dict)
+    dead_letter_count: int = 0
+
+
+class ClassThresholdConfig(BaseModel):
+    """Configuration and floor constraints for a single document class."""
+    class_name: str
+    risk: str
+    current_threshold: float
+    default_threshold: float
+    floor_threshold: float
+    retention_class: str
+    acl: str
+    target_workflow: str
+
+
+class AdminConfigResponse(BaseModel):
+    """Current threshold settings, floor limits, and PII sensitivity mapping."""
+    classes: Dict[str, ClassThresholdConfig]
+    routing_rules: Dict[str, str]
+    pii_policy: Dict[str, Any]
+    high_risk_floor: float = 0.92
+    low_risk_floor: float = 0.85
+
+
+class AdminConfigUpdateRequest(BaseModel):
+    """Proposed updates to class thresholds with floor validation."""
+    updated_by: str
+    class_thresholds: Dict[str, float]
+    pii_policy: Optional[Dict[str, Any]] = None
+
+
+class AdminConfigUpdateResponse(BaseModel):
+    """Result of configuration change application."""
+    success: bool
+    message: str
+    effective_config: AdminConfigResponse
+
+
+class ConfigHistoryItem(BaseModel):
+    """Audit entry recording historical configuration changes."""
+    change_id: str
+    updated_by: str
+    timestamp: datetime
+    changes: Dict[str, Any]
+
+
+class ConfigHistoryResponse(BaseModel):
+    """Audit history of configuration adjustments."""
+    history: List[ConfigHistoryItem]
+
+
+# ---------------------------------------------------------------------------
+# Batch Processing Schemas
+# ---------------------------------------------------------------------------
+
+class BatchProgressCounts(BaseModel):
+    """Aggregated status counts for documents in a batch."""
+    total: int = 0
+    queued: int = 0
+    processing: int = 0
+    done: int = 0
+    needs_review: int = 0
+    failed: int = 0
+    quarantined: int = 0
+    duplicate: int = 0
+
+
+class BatchFileItem(BaseModel):
+    """Individual document summary in a batch detail response."""
+    uid: str
+    file_name: str
+    doc_type: str
+    review_status: str
+    plain_status: str = "SORTED_AUTOMATICALLY"
+    confidence: float
+    how_sure: float = 0.0
+    review_reason: Optional[str] = None
+    error_detail: Optional[str] = None
+    is_link: Optional[bool] = False
+    extraction_method: Optional[str] = "direct text"
+    vendor: Optional[str] = None
+    amount: Optional[str] = None
+    extracted_fields: Optional[Dict[str, Any]] = None
+    created_at: datetime
+
+
+class BatchDetailResponse(BaseModel):
+    """Aggregated batch status, progress breakdown, per-type counts, and per-file items."""
+    batch_id: str
+    number: int = 1
+    name: str = "Upload #1"
+    user_id: Optional[str] = None
+    created_at: Optional[datetime] = None
+    progress: BatchProgressCounts
+    progress_percent: float = 0.0
+    counts_by_type: Dict[str, int] = Field(default_factory=dict)
+    counts_by_status: Dict[str, int] = Field(default_factory=dict)
+    needs_check_count: int = 0
+    is_finished: bool = False
+    items: List[BatchFileItem] = Field(default_factory=list)
+    total_items: int = 0
+    page: int = 1
+    page_size: int = 100
+
+
+class BatchCreateRequest(BaseModel):
+    """Request to initialize a new upload batch."""
+    name: Optional[str] = None
+
+
+class BatchCreateResponse(BaseModel):
+    """Created batch reference."""
+    batch_id: str
+    number: int
+    name: str
+    created_at: datetime
+
+
+class BatchSummaryItem(BaseModel):
+    """Summary of an upload batch for batch list view."""
+    batch_id: str
+    number: int
+    name: str
+    created_at: datetime
+    file_count: int
+    progress_percent: float
+    counts_by_type: Dict[str, int] = Field(default_factory=dict)
+    counts_by_status: Dict[str, int] = Field(default_factory=dict)
+    needs_check_count: int = 0
+    is_finished: bool = False
+    last_downloaded_at: Optional[datetime] = None
+
+
+class BatchListResponse(BaseModel):
+    """Paginated list of upload batches for My Uploads."""
+    items: List[BatchSummaryItem]
+    total: int
+    page: int
+    page_size: int
+
+
+# ---------------------------------------------------------------------------
+# Download Archive Schemas
+# ---------------------------------------------------------------------------
+
+class DownloadCreateResponse(BaseModel):
+    """Created download archive job response."""
+    id: str
+    batch_id: str
+    status: str  # PREPARING, READY, DOWNLOADED, FAILED, EXPIRED
+    file_count: int
+    size_bytes: int
+    requested_at: datetime
+    completed_at: Optional[datetime] = None
+    last_downloaded_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    download_url: str
+
+
+class DownloadItem(BaseModel):
+    """Single download record in user history."""
+    id: str
+    batch_id: str
+    batch_number: Optional[int] = None
+    batch_name: Optional[str] = None
+    status: str  # PREPARING, READY, DOWNLOADED, FAILED, EXPIRED
+    file_count: int
+    size_bytes: int
+    requested_at: datetime
+    completed_at: Optional[datetime] = None
+    last_downloaded_at: Optional[datetime] = None
+    error_message: Optional[str] = None
+    download_url: str
+
+
+class DownloadListResponse(BaseModel):
+    """Paginated list of download records for current user."""
+    items: List[DownloadItem]
+    total: int
+    page: int
+    page_size: int
+
+
+class DownloadCleanupResponse(BaseModel):
+    """Response of expired downloads cleanup job."""
+    expired_count: int
+
+
+
+# ---------------------------------------------------------------------------
+# Notification Schemas
+# ---------------------------------------------------------------------------
+
+class NotificationItem(BaseModel):
+    """User notification item."""
+    id: str
+    batch_id: Optional[str] = None
+    title: str
+    message: str
+    read: bool = False
+    created_at: datetime
+
+
+class NotificationListResponse(BaseModel):
+    """List of notifications with unread count."""
+    items: List[NotificationItem]
+    unread_count: int
+
+
+class NotificationMarkReadResponse(BaseModel):
+    """Result of marking notifications as read."""
+    success: bool
+    marked_count: int
+
+
+# ---------------------------------------------------------------------------
+# Direct-to-Storage Multipart Upload Schemas (Stage 1 & Stage 2)
+# ---------------------------------------------------------------------------
+
+class UploadInitRequest(BaseModel):
+    """Request to initiate a presigned multipart upload session."""
+    file_name: str
+    file_size: int = Field(gt=0, description="File size in bytes")
+    mime_type: str = Field(default="application/pdf", description="MIME content type")
+    batch_id: Optional[str] = Field(default=None, description="Optional batch ID to attach file to")
+
+
+class UploadPartPresignedUrl(BaseModel):
+    """Presigned PUT URL for a specific multipart part."""
+    part_number: int
+    url: str
+
+
+class UploadInitResponse(BaseModel):
+    """Presigned multipart upload plan with part URLs."""
+    upload_id: str
+    key: str
+    part_size: int
+    part_count: int
+    parts: List[UploadPartPresignedUrl]
+    max_upload_mb: int
+
+
+class UploadPartETag(BaseModel):
+    """Part number and ETag returned after uploading part to storage."""
+    part_number: int
+    etag: str
+
+
+class UploadCompleteRequest(BaseModel):
+    """Finalization payload containing ETags of all uploaded parts."""
+    parts: List[UploadPartETag]
+
+
+class UploadCompleteResponse(BaseModel):
+    """Result of finalizing a direct-to-storage multipart upload."""
+    status: str
+    document_uid: str
+    file_name: str
+    file_size: int
+    sha256: str
+    batch_id: Optional[str] = None
+    is_duplicate: bool = False
+
+
+class UploadAbortResponse(BaseModel):
+    """Result of aborting an in-progress multipart upload."""
+    status: str
+    upload_id: str
+
+
+class BatchSummaryResponse(BaseModel):
+    """Detailed analytical summary of a batch (Stage 2)."""
+    batch_id: str
+    batch_number: int
+    total_files: int
+    status_counts: Dict[str, int]
+    type_counts: Dict[str, int]
+    review_reasons: Dict[str, int]
+    failure_details: List[Dict[str, Any]]
+    completed_at: Optional[datetime] = None
+
+

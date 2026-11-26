@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_02_skewed_invoice.png",
+  "expected_type": "invoice",
+  "expected_routing": "INVOICE_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "INVOICE": "INV-9901",
+    "AMOUNT DUE": "$4,500.00",
+    "DUE DATE": "2026-12-15"
+  },
+  "full_text": "ACME INDUSTRIAL SUPPLIES\nINVOICE: INV-9901\nAMOUNT DUE: $4,500.00\nDUE DATE: 2026-12-15"
+}

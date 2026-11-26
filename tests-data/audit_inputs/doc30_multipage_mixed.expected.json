@@ -1,0 +1,10 @@
+{
+  "document_kind": "multi_document",
+  "key_values": {
+    "page1_invoice_number": "NWP-99120",
+    "page1_total_amount": "$3,450.00",
+    "page2_waybill_tracking": "CL-WAYBILL-44019",
+    "page2_delivery_date": "2026-11-03"
+  },
+  "notes": "Multi-page file containing Invoice on Page 1 and Delivery Waybill on Page 2"
+}

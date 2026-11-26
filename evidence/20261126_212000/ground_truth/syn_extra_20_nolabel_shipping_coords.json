@@ -1,0 +1,7 @@
+{
+  "file": "syn_extra_20_nolabel_shipping_coords.pdf",
+  "expected_type": "shipping_note",
+  "expected_routing": "SHIPPING_NOTE_PROCESSING_SYSTEM",
+  "expected_fields": {},
+  "full_text": "BAY 4 SHELF 12\nCONTAINER #89012\nWEIGHT 450KG"
+}

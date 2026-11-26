@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_10_image_only_kyc.pdf",
+  "expected_type": "kyc_form",
+  "expected_routing": "KYC_FORM_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "FULL NAME": "MARIA SANTOS",
+    "CITIZENSHIP": "UNITED STATES",
+    "OCCUPATION": "ARCHITECT"
+  },
+  "full_text": "CLIENT VERIFICATION FORM\nFULL NAME: MARIA SANTOS\nCITIZENSHIP: UNITED STATES\nOCCUPATION: ARCHITECT"
+}

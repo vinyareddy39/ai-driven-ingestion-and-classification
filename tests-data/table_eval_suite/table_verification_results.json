@@ -1,0 +1,143 @@
+{
+  "total_documents": 15,
+  "table_cell_accuracy": "100.0% (213/213)",
+  "header_accuracy": "100.0% (71/71)",
+  "label_pairing_accuracy": "100.0% (21/21)",
+  "table_cell_leaks_into_fields": 0,
+  "header_cells_as_values": 0,
+  "fixed_90_label_confidences": 0,
+  "fixed_50_value_confidences": 0,
+  "orphan_unlabelled_count": 0,
+  "arithmetic_checks_total": 19,
+  "arithmetic_verified": 19,
+  "label_confidence_range": [
+    0.86,
+    0.98
+  ],
+  "value_confidence_range": [
+    0.95,
+    0.98
+  ],
+  "per_document": [
+    {
+      "doc_id": "doc_01_invoice_3col_ruled",
+      "table_detected": true,
+      "headers_matched": "3/3",
+      "cells_matched": "9/9",
+      "pairs_matched": "2/2",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_02_invoice_4col_unruled",
+      "table_detected": true,
+      "headers_matched": "4/4",
+      "cells_matched": "12/12",
+      "pairs_matched": "2/2",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_03_purchase_order_5col_ruled",
+      "table_detected": true,
+      "headers_matched": "5/5",
+      "cells_matched": "15/15",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_04_inventory_6col_ruled",
+      "table_detected": true,
+      "headers_matched": "6/6",
+      "cells_matched": "18/18",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_05_shipment_manifest_7col_unruled",
+      "table_detected": true,
+      "headers_matched": "7/7",
+      "cells_matched": "21/21",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_06_payroll_statement_8col_ruled",
+      "table_detected": true,
+      "headers_matched": "8/8",
+      "cells_matched": "24/24",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_07_medical_bill_4col_ruled",
+      "table_detected": true,
+      "headers_matched": "4/4",
+      "cells_matched": "12/12",
+      "pairs_matched": "2/2",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_08_hotel_folio_4col_unruled",
+      "table_detected": true,
+      "headers_matched": "4/4",
+      "cells_matched": "12/12",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_09_freight_waybill_5col_ruled",
+      "table_detected": true,
+      "headers_matched": "5/5",
+      "cells_matched": "15/15",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_10_repair_estimate_4col_ruled",
+      "table_detected": true,
+      "headers_matched": "4/4",
+      "cells_matched": "12/12",
+      "pairs_matched": "2/2",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_11_consulting_invoice_3col_unruled",
+      "table_detected": true,
+      "headers_matched": "3/3",
+      "cells_matched": "9/9",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_12_sales_order_5col_unruled",
+      "table_detected": true,
+      "headers_matched": "5/5",
+      "cells_matched": "15/15",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_13_lab_results_3col_ruled",
+      "table_detected": true,
+      "headers_matched": "3/3",
+      "cells_matched": "9/9",
+      "pairs_matched": "1/1",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_14_utility_breakdown_4col_ruled",
+      "table_detected": true,
+      "headers_matched": "4/4",
+      "cells_matched": "12/12",
+      "pairs_matched": "2/2",
+      "unlabelled_fields": 0
+    },
+    {
+      "doc_id": "doc_15_catering_invoice_6col_ruled",
+      "table_detected": true,
+      "headers_matched": "6/6",
+      "cells_matched": "18/18",
+      "pairs_matched": "2/2",
+      "unlabelled_fields": 0
+    }
+  ]
+}

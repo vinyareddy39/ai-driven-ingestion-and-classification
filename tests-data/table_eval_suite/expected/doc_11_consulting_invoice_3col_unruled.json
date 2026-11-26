@@ -1,0 +1,43 @@
+{
+  "id": "doc_11_consulting_invoice_3col_unruled",
+  "title": "SUMMIT STRATEGY ADVISORS",
+  "doc_type": "invoice",
+  "headers": [
+    "Project Phase",
+    "Staff Hours",
+    "Billing Amount"
+  ],
+  "rows": [
+    [
+      "Stakeholder interviews & discovery",
+      "20",
+      "3500.00"
+    ],
+    [
+      "Market competitive benchmarking",
+      "15",
+      "2625.00"
+    ],
+    [
+      "Executive presentation & readout",
+      "10",
+      "1750.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Fixed Administrative Fee",
+      "$120.00"
+    ]
+  ],
+  "totals": [
+    [
+      "Professional Fees Total",
+      "$7,875.00"
+    ],
+    [
+      "Total Amount Due",
+      "$7,995.00"
+    ]
+  ]
+}

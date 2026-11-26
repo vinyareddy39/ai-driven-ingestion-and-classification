@@ -1,0 +1,59 @@
+{
+  "id": "doc_15_catering_invoice_6col_ruled",
+  "title": "SAVORY TABLE CATERING CO",
+  "doc_type": "invoice",
+  "headers": [
+    "Course",
+    "Menu Item Selection",
+    "Guests",
+    "Unit Cost",
+    "Tax Rate",
+    "Total"
+  ],
+  "rows": [
+    [
+      "Appetizer",
+      "Smoked salmon crostini dill",
+      "50",
+      "8.50",
+      "8%",
+      "425.00"
+    ],
+    [
+      "Entree",
+      "Grilled rosemary beef tenderloin",
+      "50",
+      "28.00",
+      "8%",
+      "1400.00"
+    ],
+    [
+      "Dessert",
+      "Dark chocolate raspberry mousse",
+      "50",
+      "7.50",
+      "8%",
+      "375.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Service Staff Gratuity",
+      "$180.00"
+    ],
+    [
+      "Linens Rental Surcharge",
+      "$65.00"
+    ]
+  ],
+  "totals": [
+    [
+      "Food Subtotal",
+      "$2,200.00"
+    ],
+    [
+      "Total Invoice Due",
+      "$2,445.00"
+    ]
+  ]
+}

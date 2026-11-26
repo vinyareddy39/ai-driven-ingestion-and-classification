@@ -29,8 +29,14 @@ generate-data:
 train:
 	$(PYTHON) -m app.models.classifier_train
 
+dev-backend:
+	cd backend && $(PYTHON) -m uvicorn app.api.app:app --host 127.0.0.1 --port 8000
+
+dev-frontend:
+	cd frontend && npm run dev -- --host 0.0.0.0 --port 5173
+
 test:
-	$(PYTHON) -m pytest -v tests/
+	cd backend && $(PYTHON) -m pytest -v tests/
 
 eval:
 	$(PYTHON) -m tests.evaluation_runner

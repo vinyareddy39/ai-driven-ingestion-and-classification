@@ -1,0 +1,139 @@
+{
+  "type": "contract",
+  "type_confidence": 0.6845,
+  "top_candidates": [
+    {
+      "type": "contract",
+      "score": 0.6845
+    },
+    {
+      "type": "letter",
+      "score": 0.1204
+    },
+    {
+      "type": "receipt",
+      "score": 0.0607
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    },
+    {
+      "page": 2,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 2,
+      "type": "unknown",
+      "confidence": 0.7638
+    }
+  ],
+  "fields": [
+    {
+      "label": "Document Reference",
+      "value": "EMP-2026-891",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Employer",
+      "value": "Vanguard Biotech Laboratories",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Employee Name",
+      "value": "Marcus Aurelius Vance",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Job Title",
+      "value": "Principal Bioinformatician",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Commencement Date",
+      "value": "2026-12-01",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Base Salary",
+      "value": "$185,000.00 per annum",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "EXECUTIVE EMPLOYMENT AGREEMENT (Page 2)",
+      "value": "Annual Target Bonus: 25% of Base Salary ($46,250.00)",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Annual Target Bonus",
+      "value": "25% of Base Salary ($46,250.00)",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Equity Grant",
+      "value": "15,000 Restricted Stock Units (RSUs) vesting over 4 years",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Governing Law",
+      "value": "Commonwealth of Massachusetts",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Employer",
+      "value": "Vanguard Biotech Laboratories (by CEO Eleanor Vance)",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Employee",
+      "value": "Marcus Aurelius Vance",
+      "confidence": 0.98,
+      "page": 2
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "LEGAL_CONTRACT_REPOSITORY",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 12
+  },
+  "needs_review": false,
+  "review_reasons": [],
+  "pipeline_version": "2.2.0",
+  "title_block": "EXECUTIVE EMPLOYMENT AGREEMENT",
+  "dates": [
+    "2026-12-01"
+  ]
+}

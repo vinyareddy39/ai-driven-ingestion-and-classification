@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_26_equipment_lease.pdf",
+  "expected_type": "contract",
+  "expected_routing": "CONTRACT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "LESSOR": "HEAVY EQUIP RENTALS",
+    "MONTHLY RATE": "$3,200"
+  },
+  "full_text": "CATERPILLAR EXCAVATOR LEASE\nLESSOR: HEAVY EQUIP RENTALS\nLESSEE: BUILDERS CORP\nMONTHLY RATE: $3,200"
+}

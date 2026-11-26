@@ -1,0 +1,112 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.1111,
+  "top_candidates": [
+    {
+      "type": "invoice",
+      "score": 0.1111
+    },
+    {
+      "type": "receipt",
+      "score": 0.1111
+    },
+    {
+      "type": "contract",
+      "score": 0.1111
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 457.36,
+      "noise_level": 16048,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.1111
+    }
+  ],
+  "fields": [
+    {
+      "label": "PORTOR LOADING",
+      "value": "PORTOF LONG BEACH, USA",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "PORTOF DISCHANGE",
+      "value": "PORTOR ROTTERDAM, NETHERLANDS",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "CONSIGREE",
+      "value": "EUROAGRI FOODSTURTS BV",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "CONTAINER NUMBER",
+      "value": "TGHU-849102-1",
+      "confidence": 0.88,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": [
+          72.0,
+          575.0,
+          408.0,
+          656.0
+        ],
+        "label": "Paragraph Text",
+        "start": 22,
+        "end": 62
+      },
+      "confidence": 0.82,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    },
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": null,
+        "label": "",
+        "start": 271,
+        "end": 335
+      },
+      "confidence": 0.67,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_MANUAL_TRIAGE_QUEUE",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'invoice' confidence (0.11) below threshold (0.50).",
+    "Sensitive finding (ADDRESS) in field '' flagged for review."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "OCEAN BILL OF LADING",
+  "dates": []
+}

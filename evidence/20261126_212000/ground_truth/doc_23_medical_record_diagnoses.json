@@ -1,0 +1,7 @@
+{
+  "file": "doc_23_medical_record_diagnoses.pdf",
+  "expected_kind": "document",
+  "expected_group": "fields",
+  "key_details": {},
+  "sensitive_items": []
+}

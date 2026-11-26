@@ -1,0 +1,51 @@
+{
+  "id": "doc_12_sales_order_5col_unruled",
+  "title": "BEACON OFFICE SUPPLIES",
+  "doc_type": "sales_order",
+  "headers": [
+    "SKU",
+    "Item Description",
+    "Qty",
+    "Price",
+    "Ext Price"
+  ],
+  "rows": [
+    [
+      "SUP-101",
+      "Ergonomic mesh office chair",
+      "4",
+      "189.00",
+      "756.00"
+    ],
+    [
+      "SUP-204",
+      "Electric standing desk converter",
+      "2",
+      "249.00",
+      "498.00"
+    ],
+    [
+      "SUP-308",
+      "Anti-fatigue comfort standing mat",
+      "4",
+      "45.00",
+      "180.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Standard Courier Delivery",
+      "$15.00"
+    ]
+  ],
+  "totals": [
+    [
+      "Order Subtotal",
+      "$1,434.00"
+    ],
+    [
+      "Total Order Value",
+      "$1,449.00"
+    ]
+  ]
+}

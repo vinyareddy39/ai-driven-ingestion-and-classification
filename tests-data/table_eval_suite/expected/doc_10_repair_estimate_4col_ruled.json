@@ -1,0 +1,51 @@
+{
+  "id": "doc_10_repair_estimate_4col_ruled",
+  "title": "PRECISION AUTO REPAIR",
+  "doc_type": "invoice",
+  "headers": [
+    "Part Description",
+    "Qty",
+    "Unit Price",
+    "Subtotal"
+  ],
+  "rows": [
+    [
+      "Front ceramic brake pad kit",
+      "1",
+      "95.00",
+      "95.00"
+    ],
+    [
+      "Front vented rotor assembly",
+      "2",
+      "110.00",
+      "220.00"
+    ],
+    [
+      "Synthetic brake fluid flush",
+      "2",
+      "18.50",
+      "37.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Labor Charge 4.0 Hours",
+      "$380.00"
+    ],
+    [
+      "Disposal Hazardous Fee",
+      "$22.00"
+    ]
+  ],
+  "totals": [
+    [
+      "Parts Total",
+      "$352.00"
+    ],
+    [
+      "Total Estimate",
+      "$754.00"
+    ]
+  ]
+}

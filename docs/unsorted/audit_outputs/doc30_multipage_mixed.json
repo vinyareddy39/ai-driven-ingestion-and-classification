@@ -1,0 +1,128 @@
+{
+  "type": "invoice",
+  "type_confidence": 0.9553,
+  "top_candidates": [
+    {
+      "type": "invoice",
+      "score": 0.9553
+    },
+    {
+      "type": "receipt",
+      "score": 0.0189
+    },
+    {
+      "type": "letter",
+      "score": 0.0117
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    },
+    {
+      "page": 2,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 2,
+      "type": "invoice",
+      "confidence": 0.9689
+    }
+  ],
+  "fields": [
+    {
+      "label": "Invoice Number",
+      "value": "NWP-99120",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Invoice Date",
+      "value": "2026-11-01",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Customer Name",
+      "value": "Cascade Machinery LLC",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Total Amount",
+      "value": "$3,450.00",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "DELIVERY RECEIPT & WAYBILL",
+      "value": "Waybill Tracking: CL-WAYBILL-44019",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Waybill Tracking",
+      "value": "CL-WAYBILL-44019",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Delivery Date",
+      "value": "2026-11-03",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Carrier Name",
+      "value": "Cascade Freight Lines",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Receiver Signature",
+      "value": "J. Miller",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Package Count",
+      "value": "4 Wooden Crates",
+      "confidence": 0.98,
+      "page": 2
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "AP_INVOICE_PROCESSING",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 24
+  },
+  "needs_review": false,
+  "review_reasons": [],
+  "pipeline_version": "2.2.0",
+  "title_block": "NORTHWEST PARTS WHOLESALE",
+  "dates": [
+    "2026-11-01",
+    "2026-11-03"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "document_kind": "receipt",
+  "key_values": {
+    "receipt_number": "R-90214",
+    "date": "2026-11-02",
+    "vendor_name": "BLUE HARBOR BISTRO",
+    "subtotal": "$31.50",
+    "total_amount": "$40.65",
+    "payment_method": "Visa Ending 4012"
+  },
+  "notes": ""
+}

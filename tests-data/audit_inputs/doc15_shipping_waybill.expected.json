@@ -1,0 +1,11 @@
+{
+  "document_kind": "logistics",
+  "key_values": {
+    "tracking_number": "1Z9999999999999999",
+    "ship_date": "2026-11-04",
+    "sender": "Apex Hardware Distribution",
+    "recipient": "Southern Industrial Supplies",
+    "package_weight": "14.8 LBS"
+  },
+  "notes": ""
+}

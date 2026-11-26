@@ -1,0 +1,398 @@
+[
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.671Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/@vite/client",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.690Z"
+  },
+  {
+    "method": "GET",
+    "url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.691Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/src/main.tsx",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.691Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/@react-refresh",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.692Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/node_modules/.vite/deps/react.js?v=fe3dee8a",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.713Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=6470a9e0",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.713Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/src/index.css",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.714Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/src/App.tsx",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.714Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=fe3dee8a",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.714Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/node_modules/vite/dist/client/env.mjs",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.715Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/node_modules/.vite/deps/react-DgVJeC5g.js?v=5d255dea",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.722Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/src/api/client.ts",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.766Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/src/api/client.ts",
+    "status": 200,
+    "body": "/** API client for frontend. */\nconst API_BASE = \"/api\";\nfunction getAuthHeader() {\n\tconst token = localStorage.getItem(\"token\");\n\treturn token ? { Authorization: `Bearer ${token}` } : {};\n}\nexport const api = {\n\tasync register(name, email, pw) {\n\t\tconst res = await fetch(`${API_BASE}/register`, {\n\t\t\tmethod: \"POST\",\n\t\t\theaders: { \"Content-Type\": \"application/json\" },\n\t\t\tbody: JSON.stringify({\n\t\t\t\tname,\n\t\t\t\temail,\n\t\t\t\tpassword: pw\n\t\t\t})\n\t\t});\n\t\tconst data = await res.json();\n\t\tif (!res.ok) throw ",
+    "time": "2026-11-26T16:04:35.775Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/node_modules/.vite/deps/react-dom-CFuoV50Q.js?v=5d255dea",
+    "postData": null,
+    "time": "2026-11-26T16:04:35.793Z"
+  },
+  {
+    "method": "GET",
+    "url": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2",
+    "postData": null,
+    "time": "2026-11-26T16:04:36.271Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/health/workers",
+    "postData": null,
+    "time": "2026-11-26T16:04:36.278Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/health/workers",
+    "postData": null,
+    "time": "2026-11-26T16:04:36.279Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/health/workers",
+    "status": 200,
+    "body": "{\"status\":\"healthy\",\"workers\":{\"status\":\"running\",\"active_tasks\":4,\"max_workers\":4,\"pipeline_ready\":true,\"ocr_status\":\"ready\",\"pdf_reader\":\"PyMuPDF\"},\"database\":{\"status\":\"connected\",\"type\":\"sqlite\"}}",
+    "time": "2026-11-26T16:04:36.292Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/health/workers",
+    "status": 200,
+    "body": "{\"status\":\"healthy\",\"workers\":{\"status\":\"running\",\"active_tasks\":4,\"max_workers\":4,\"pipeline_ready\":true,\"ocr_status\":\"ready\",\"pdf_reader\":\"PyMuPDF\"},\"database\":{\"status\":\"connected\",\"type\":\"sqlite\"}}",
+    "time": "2026-11-26T16:04:36.301Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:5173/api/register",
+    "postData": "{\"name\":\"Reproduce User\",\"email\":\"repro_1795709077824@test.local\",\"password\":\"Password123!\"}",
+    "time": "2026-11-26T16:04:37.894Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/register",
+    "status": 201,
+    "body": "{\"id\":\"fa27892f-d709-47e4-b852-6d518e9351d1\",\"name\":\"Reproduce User\",\"email\":\"repro_1795709077824@test.local\",\"message\":\"Registered. Now sign in.\"}",
+    "time": "2026-11-26T16:04:38.257Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:5173/api/login",
+    "postData": "{\"email\":\"repro_1795709077824@test.local\",\"password\":\"Password123!\"}",
+    "time": "2026-11-26T16:04:38.976Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches",
+    "postData": null,
+    "time": "2026-11-26T16:04:39.322Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/login",
+    "status": 200,
+    "body": "{\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmYTI3ODkyZi1kNzA5LTQ3ZTQtYjg1Mi02ZDUxOGU5MzUxZDEiLCJlbWFpbCI6InJlcHJvXzE3OTU3MDkwNzc4MjRAdGVzdC5sb2NhbCIsIm5hbWUiOiJSZXByb2R1Y2UgVXNlciIsImlhdCI6MTc5NTcwOTA3OSwiZXhwIjoxNzk2MzEzODc5fQ.6Ap9uqh8DebjGoOnBQ7p_s6EQvSoqHLlHJEE9QYioks\",\"user\":{\"id\":\"fa27892f-d709-47e4-b852-6d518e9351d1\",\"name\":\"Reproduce User\",\"email\":\"repro_1795709077824@test.local\"}}",
+    "time": "2026-11-26T16:04:39.332Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches",
+    "status": 200,
+    "body": "[]",
+    "time": "2026-11-26T16:04:39.342Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:5173/api/batches",
+    "postData": "------WebKitFormBoundaryzS3HLuz6BFGpYpvt\r\nContent-Disposition: form-data; name=\"batch_name\"\r\n\r\nBatch · 2 files\r\n------WebKitFormBoundaryzS3HLuz6BFGpYpvt--\r\n",
+    "time": "2026-11-26T16:04:41.562Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513/files",
+    "postData": null,
+    "time": "2026-11-26T16:04:41.578Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches",
+    "status": 201,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"file_count\":0,\"created_at\":\"2026-11-26T16:04:41.567971\"}",
+    "time": "2026-11-26T16:04:41.578Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513/start",
+    "postData": null,
+    "time": "2026-11-26T16:04:41.627Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513/files",
+    "status": 201,
+    "body": "{\"batch_id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"added_count\":2,\"total_count\":2}",
+    "time": "2026-11-26T16:04:41.633Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:41.642Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513/start",
+    "status": 200,
+    "body": "{\"message\":\"Processing started\",\"batch_id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\"}",
+    "time": "2026-11-26T16:04:41.642Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":0,\"failed_count\":0,\"progress_pct\":0,\"corrections_count\":0,\"summary\":{\"total_time_ms\":0,\"p50_ms\":0.0,\"p95_ms\":0.0,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":0},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"Could not read\",\"cond\":\"clean\",\"dup\":n",
+    "time": "2026-11-26T16:04:41.689Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:42.699Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:42.722Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:43.699Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:43.720Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:44.699Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:44.713Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:45.695Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:45.708Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:46.693Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:46.708Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:47.704Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:47.717Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:48.701Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:48.716Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:49.698Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:49.772Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:50.694Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:50.709Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:51.692Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:52.244Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:52.702Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":1,\"failed_count\":0,\"progress_pct\":50,\"corrections_count\":0,\"summary\":{\"total_time_ms\":281.96,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":1},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:52.716Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:53.691Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":2,\"failed_count\":0,\"progress_pct\":100,\"corrections_count\":0,\"summary\":{\"total_time_ms\":12054.47,\"p50_ms\":177.52,\"p95_ms\":177.52,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":2},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean ",
+    "time": "2026-11-26T16:04:53.705Z"
+  },
+  {
+    "method": "POST",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513/retry-rate-limited",
+    "postData": null,
+    "time": "2026-11-26T16:04:56.303Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513/retry-rate-limited",
+    "status": 200,
+    "body": "{\"message\":\"Retrying 2 files\",\"retried_count\":2,\"file_ids\":[\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"6f64e9b2-959d-4e85-a18f-1bb86c006984\"]}",
+    "time": "2026-11-26T16:04:56.322Z"
+  },
+  {
+    "method": "GET",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "postData": null,
+    "time": "2026-11-26T16:04:57.330Z"
+  },
+  {
+    "type": "response",
+    "url": "http://localhost:5173/api/batches/9c1b5a82-6aaf-4e33-ab0d-ccc793029513",
+    "status": 200,
+    "body": "{\"id\":\"9c1b5a82-6aaf-4e33-ab0d-ccc793029513\",\"name\":\"Batch · 2 files\",\"created_at\":\"2026-11-26T16:04:41.567971\",\"file_count\":2,\"done_count\":2,\"failed_count\":0,\"progress_pct\":100,\"corrections_count\":0,\"summary\":{\"total_time_ms\":15540.8,\"p50_ms\":82.95,\"p95_ms\":82.95,\"count_429\":0,\"retries\":0,\"failures\":0,\"files_processed\":2},\"files\":[{\"id\":\"1c8d06ab-7635-4a5b-8b08-10ebeec3dfc8\",\"name\":\"doc_01_two_column_article.pdf\",\"relative_path\":\"doc_01_two_column_article.pdf\",\"type\":\"unknown\",\"cond\":\"clean (di",
+    "time": "2026-11-26T16:04:57.348Z"
+  }
+]

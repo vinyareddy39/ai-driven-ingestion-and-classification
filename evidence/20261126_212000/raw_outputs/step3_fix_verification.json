@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-11-26T16:08:36.728Z",
+  "files_uploaded": [
+    "doc_01_two_column_article.pdf",
+    "doc_06_table_with_totals.pdf",
+    "doc_18_noisy_skewed_scan.png",
+    "doc_34_clean_scan_image.png"
+  ],
+  "legacy_error_phrase_found": false,
+  "do_again_tested": true,
+  "results_screenshot": "step3_01_results_after_fix.png",
+  "do_again_screenshot": "step3_02_do_again_reprocessed.png",
+  "status": "PASS"
+}

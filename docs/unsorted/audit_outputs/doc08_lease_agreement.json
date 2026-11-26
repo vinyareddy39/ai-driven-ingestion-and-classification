@@ -1,0 +1,127 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.33,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.33
+    },
+    {
+      "type": "receipt",
+      "score": 0.1663
+    },
+    {
+      "type": "contract",
+      "score": 0.1355
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 76.49,
+      "noise_level": 7338,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.33
+    }
+  ],
+  "fields": [
+    {
+      "label": "LEASE AGREEMENT ID",
+      "value": "LSE-2026-904",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "DATE OF EXECUTION",
+      "value": "2026-07-15",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "LANDLORD",
+      "value": "BEACON HILL REALTY TRUST",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "LEASE TERM",
+      "value": "36 MONTHS",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "COMMENCEMENT DATE",
+      "value": "2026-09-01",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "PERMITTED USE",
+      "value": "COMMERCIAL GENERAL OFFICE",
+      "confidence": 0.88,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": [
+          73.0,
+          300.0,
+          465.0,
+          382.0
+        ],
+        "label": "Paragraph Text",
+        "start": 49,
+        "end": 67
+      },
+      "confidence": 0.82,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    },
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": null,
+        "label": "",
+        "start": 96,
+        "end": 107
+      },
+      "confidence": 0.67,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_MANUAL_TRIAGE_QUEUE",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'letter' confidence (0.33) below threshold (0.50).",
+    "Sensitive finding (ADDRESS) in field '' flagged for review."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "COMMERCIAL PROPERTY LEASE AGREEMENT",
+  "dates": [
+    "2026-07-15",
+    "2026-09-01"
+  ]
+}

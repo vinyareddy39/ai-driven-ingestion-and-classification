@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_22_culinary_recipe.pdf",
+  "expected_type": "unknown",
+  "expected_routing": "MANUAL_TRIAGE_QUEUE",
+  "expected_fields": {
+    "FLOUR": "500G",
+    "WATER": "350G"
+  },
+  "full_text": "ARTISAN SOURDOUGH BREAD\nFLOUR: 500G\nWATER: 350G\nSTARTER: 100G\nSALT: 10G\nFERMENTATION: 4 HOURS"
+}

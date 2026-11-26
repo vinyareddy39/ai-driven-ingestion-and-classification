@@ -1,0 +1,11 @@
+{
+  "document_kind": "logistics",
+  "key_values": {
+    "packing_slip_number": "PS-50192",
+    "order_reference": "ORD-99201",
+    "customer": "Blue Horizon Laboratories",
+    "pack_date": "2026-10-28",
+    "total_cartons": "3 Boxes"
+  },
+  "notes": ""
+}

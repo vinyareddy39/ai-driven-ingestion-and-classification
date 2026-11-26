@@ -1,0 +1,28 @@
+{
+  "file_name": "doc_03_form_checkboxes.pdf",
+  "document_type": "Form",
+  "expected_structures": [
+    "form_row",
+    "checkbox_group",
+    "label_value_pair",
+    "heading"
+  ],
+  "expected_fields": {
+    "Applicant Name": "Gregory Sterling",
+    "Account Number": "ACC-994821"
+  },
+  "expected_tables": [],
+  "expected_checkboxes": {
+    "Standard Ground Delivery": "selected",
+    "Priority Overnight Air": "empty",
+    "Saturday Special Delivery": "empty",
+    "Corporate Invoice Net-30": "selected",
+    "Automated Credit Card Billing": "empty"
+  },
+  "expected_signatures": [],
+  "expected_lists": [],
+  "expected_codes": [],
+  "header_footer_texts": [],
+  "watermark_texts": [],
+  "footnote_texts": []
+}

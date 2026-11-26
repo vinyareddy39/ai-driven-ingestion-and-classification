@@ -1,0 +1,111 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.1997,
+  "top_candidates": [
+    {
+      "type": "claim_form",
+      "score": 0.1997
+    },
+    {
+      "type": "purchase_order",
+      "score": 0.1457
+    },
+    {
+      "type": "invoice",
+      "score": 0.1431
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.1997
+    }
+  ],
+  "fields": [
+    {
+      "label": "Report ID",
+      "value": "EXP-2026-049",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Employee Name",
+      "value": "Claire Dunphy",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Department",
+      "value": "Enterprise Sales",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Trip Destination",
+      "value": "Chicago Tech Summit 2026",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Airfare Expense",
+      "value": "$640.00",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Hotel Accommodations",
+      "value": "$920.00",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Client Dinner Meals",
+      "value": "$310.50",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Total Claim Amount",
+      "value": "$1,870.50",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Supervisor Approval",
+      "value": "Approved by Michael Scott, VP Sales",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'claim_form' confidence (0.20) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "EMPLOYEE BUSINESS TRAVEL EXPENSE REPORT",
+  "dates": []
+}

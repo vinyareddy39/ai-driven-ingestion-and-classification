@@ -1,0 +1,136 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.2535,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.2535
+    },
+    {
+      "type": "receipt",
+      "score": 0.2489
+    },
+    {
+      "type": "invoice",
+      "score": 0.1716
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    },
+    {
+      "page": 2,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 2,
+      "type": "unknown",
+      "confidence": 0.3313
+    }
+  ],
+  "fields": [
+    {
+      "label": "Fiscal Year Ended September 30, 2026",
+      "value": "Entity Audited: Apex Global Infrastructure Trust",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Entity Audited",
+      "value": "Apex Global Infrastructure Trust",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Auditor Firm",
+      "value": "Sterling & Cooper LLP",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Audit Opinion",
+      "value": "Unqualified Clean Opinion",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Total Consolidated Revenue",
+      "value": "$482,000,000.00",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Operating Income",
+      "value": "$84,500,000.00",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "FINANCIAL STATEMENT METRICS (Page 2)",
+      "value": "Net Earnings Before Tax: $72,100,000.00",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Net Earnings Before Tax",
+      "value": "$72,100,000.00",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Consolidated Total Assets",
+      "value": "$1,240,000,000.00",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Total Long-Term Liabilities",
+      "value": "$390,000,000.00",
+      "confidence": 0.98,
+      "page": 2
+    },
+    {
+      "label": "Report Date",
+      "value": "2026-10-31",
+      "confidence": 0.98,
+      "page": 2
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'letter' confidence (0.25) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "INDEPENDENT AUDITOR'S REPORT",
+  "dates": [
+    "September 30, 2026",
+    "2026-10-31"
+  ]
+}

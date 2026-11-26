@@ -1,0 +1,96 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.4077,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.4077
+    },
+    {
+      "type": "contract",
+      "score": 0.1941
+    },
+    {
+      "type": "receipt",
+      "score": 0.1036
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 3218.96,
+      "noise_level": 2710,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.4077
+    }
+  ],
+  "fields": [
+    {
+      "label": "OFFICIAL NOTICE",
+      "value": "ANNUAL PRICE ADJUSTMENT",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "NOTICE REFERENCE",
+      "value": "PN-2026-44",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "DATE OF NOTICE",
+      "value": "2026-10-15",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "EFFECTIVE DATE",
+      "value": "2027-01-01",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "ADDRESSED TO",
+      "value": "VALUED COMMERCIAL DISTRIBUTION CLIENTS",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "CONTACT PERSON",
+      "value": "GREGORY STONE, VP OF COMERCIAL SALES",
+      "confidence": 0.88,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'letter' confidence (0.41) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "VULCAN STEEL PRODUCTS LLC",
+  "dates": [
+    "2026-10-15",
+    "2027-01-01"
+  ]
+}

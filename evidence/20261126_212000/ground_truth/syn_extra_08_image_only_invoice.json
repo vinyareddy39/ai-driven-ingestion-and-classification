@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_08_image_only_invoice.pdf",
+  "expected_type": "invoice",
+  "expected_routing": "INVOICE_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "INVOICE": "LF-8821",
+    "TOTAL": "$1,280.00"
+  },
+  "full_text": "LOGISTICS FORWARDING CORP\nBILL TO: ABC ENTERPRISE\nINVOICE: LF-8821\nTOTAL: $1,280.00"
+}

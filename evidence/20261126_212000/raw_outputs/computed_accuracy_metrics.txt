@@ -1,0 +1,18 @@
+COMPUTED ACCURACY AND SEGREGATION METRICS
+=========================================
+Total Evaluated Documents: 70
+Segregation Accuracy: 42.86% (95% CI: 31.9% - 54.5%)
+Routing Accuracy: 42.86% (95% CI: 31.9% - 54.5%)
+Extraction Precision: 9.04%
+Extraction Recall: 56.90% (95% CI: 44.1% - 68.8%)
+Extraction F1 Score: 15.60%
+OCR Character Error Rate (Raw): 25.38%
+OCR Character Error Rate (Normalized): 25.38%
+OCR Word Error Rate (Normalized): 38.95%
+Wrong but Not Flagged Count: 14
+
+CONFIDENCE CALIBRATION:
+  Band 0.90-1.00: 33/358 = 9.2%
+  Band 0.80-0.89: 0/7 = 0.0%
+  Band 0.70-0.79: 0/0 = 0.0%
+  Band <0.70: 0/0 = 0.0%

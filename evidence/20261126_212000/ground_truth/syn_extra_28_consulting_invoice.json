@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_28_consulting_invoice.pdf",
+  "expected_type": "invoice",
+  "expected_routing": "INVOICE_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "INVOICE #": "SP-2026-99",
+    "TOTAL DUE": "$22,500.00"
+  },
+  "full_text": "STRATEGY PARTNERS LLC\nINVOICE #: SP-2026-99\nCLIENT: FINTECH GLOBAL\nTOTAL DUE: $22,500.00"
+}

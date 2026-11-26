@@ -1,52 +1,74 @@
-# Byte-compiled / optimized / DLL files
+# ==============================================================================
+# Global Git Ignore Rules
+# ==============================================================================
+
+# Python bytecode, compilation, and cache
 __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+.coverage
+htmlcov/
 
-# Local databases, storage, datasets, and OCR caches
-data/dataset/
-data/storage/
-data/scanner_watch/
-data/test/
-data/*.db
-*.db
-data/*.sqlite*
-data/ocr_cache*.json
-data/*.jsonl
-data/test_samples/
-data/models/
-/models/
-.cache/
-cache/
-
-# Local installers and binary tool extractions
-tools/
-downloads/
-get_tess.py
-install_tesseract.py
-
-# Environment variables and secrets
-.env
+# Virtual Environments
 .venv/
 .venv311/
 env/
 venv/
-scratch/
+ENV/
 
-# System and logs
-*.log
-.DS_Store
-Thumbs.db
-node_modules/
-frontend/dist/
-frontend/data/
-frontend/test-results/
-cloudflared.exe
-data/*.txt
+# Environment Variables & Secrets (NEVER commit real .env files)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
 
-
-backup_pre_upgrade/
+# Databases & Runtime SQLite Storage
+*.db
+*.sqlite
+*.sqlite3
 *.db-shm
 *.db-wal
-upgrade_prompt.txt
+backend/data/
+data/*.db
+data/*.sqlite*
+
+# Node.js & Frontend Build Outputs
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/test-results/
+dist/
+build/
+
+# Application Logs & Ephemeral Runtime Files
+*.log
+backend.log
+frontend.log
+cloudflared.log
+tunnel.log
+debug.log
+
+# Ephemeral Upload & Download Directories
+backend/data/storage/
+backend/data/downloads/
+data/storage/
+downloads/
+tools/
+scratch/
+docs/unsorted/scratch/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Compiled Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+cloudflared.exe

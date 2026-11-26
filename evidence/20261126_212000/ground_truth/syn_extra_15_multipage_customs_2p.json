@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_15_multipage_customs_2p.pdf",
+  "expected_type": "customs_declaration",
+  "expected_routing": "CUSTOMS_DECLARATION_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "PORT OF ENTRY": "LOS ANGELES",
+    "DUTY ASSESSED": "$450.00"
+  },
+  "full_text": "IMPORT CUSTOMS ENTRY\nPORT OF ENTRY: LOS ANGELES\nDECLARANT: PACIFIC IMPORT LLC\nDUTY ASSESSED: $450.00"
+}

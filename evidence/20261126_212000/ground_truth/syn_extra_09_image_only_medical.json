@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_09_image_only_medical.pdf",
+  "expected_type": "medical_report",
+  "expected_routing": "MEDICAL_REPORT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "PATIENT": "SAMUEL GREEN",
+    "DIAGNOSIS": "HYPERTENSION",
+    "DATE": "2026-11-18"
+  },
+  "full_text": "METROPOLITAN HOSPITAL\nPATIENT: SAMUEL GREEN\nDIAGNOSIS: HYPERTENSION\nDATE: 2026-11-18"
+}

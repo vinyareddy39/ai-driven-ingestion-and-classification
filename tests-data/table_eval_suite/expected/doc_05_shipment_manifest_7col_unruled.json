@@ -1,0 +1,59 @@
+{
+  "id": "doc_05_shipment_manifest_7col_unruled",
+  "title": "TRANS-CONTINENTAL CARRIERS",
+  "doc_type": "manifest",
+  "headers": [
+    "Tracking",
+    "Package Desc",
+    "Origin",
+    "Dest",
+    "Qty",
+    "Weight",
+    "Tariff"
+  ],
+  "rows": [
+    [
+      "TRK-101",
+      "Precision Sensors Box",
+      "Seattle",
+      "Tokyo",
+      "5",
+      "12.5 kg",
+      "120.00"
+    ],
+    [
+      "TRK-102",
+      "Optical Cable Spool",
+      "Portland",
+      "Osaka",
+      "2",
+      "34.0 kg",
+      "210.00"
+    ],
+    [
+      "TRK-103",
+      "Electronic Modules",
+      "Tacoma",
+      "Nagoya",
+      "8",
+      "18.2 kg",
+      "195.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Customs Clearance Agent",
+      "Pacific Brokers Ltd"
+    ]
+  ],
+  "totals": [
+    [
+      "Total Pieces",
+      "15"
+    ],
+    [
+      "Total Tariff",
+      "$525.00"
+    ]
+  ]
+}

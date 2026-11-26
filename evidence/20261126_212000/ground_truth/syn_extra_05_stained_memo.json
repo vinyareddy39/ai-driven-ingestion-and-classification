@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_05_stained_memo.png",
+  "expected_type": "letter",
+  "expected_routing": "LETTER_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "DATE": "2026-11-25",
+    "AUDITOR": "JOHN DOE",
+    "STATUS": "IN PROGRESS"
+  },
+  "full_text": "INTERNAL AUDIT NOTICE\nDATE: 2026-11-25\nAUDITOR: JOHN DOE\nSTATUS: IN PROGRESS"
+}

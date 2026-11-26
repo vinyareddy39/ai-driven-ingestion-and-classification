@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_07_image_only_statement.pdf",
+  "expected_type": "bank_statement",
+  "expected_routing": "BANK_STATEMENT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "STATEMENT PERIOD": "2026-10-01 TO 2026-10-31",
+    "CLOSING BALANCE": "$32,450.12"
+  },
+  "full_text": "FIRST HORIZON BANK\nSTATEMENT PERIOD: 2026-10-01 TO 2026-10-31\nCLOSING BALANCE: $32,450.12"
+}

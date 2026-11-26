@@ -1,0 +1,51 @@
+{
+  "id": "doc_14_utility_breakdown_4col_ruled",
+  "title": "METROPOLITAN WATER & POWER",
+  "doc_type": "utility_bill",
+  "headers": [
+    "Utility Service",
+    "Meter Read",
+    "Units Used",
+    "Total Charge"
+  ],
+  "rows": [
+    [
+      "Residential Electric Tier 1",
+      "44820 kWh",
+      "450 kWh",
+      "67.50"
+    ],
+    [
+      "Residential Electric Tier 2",
+      "45020 kWh",
+      "200 kWh",
+      "38.00"
+    ],
+    [
+      "Clean Water Supply Service",
+      "12080 Gal",
+      "3500 Gal",
+      "42.50"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Previous Balance Forward",
+      "$0.00"
+    ],
+    [
+      "Municipal Infrastructure Fee",
+      "$9.50"
+    ]
+  ],
+  "totals": [
+    [
+      "Usage Charges Total",
+      "$148.00"
+    ],
+    [
+      "Total Amount Due",
+      "$157.50"
+    ]
+  ]
+}

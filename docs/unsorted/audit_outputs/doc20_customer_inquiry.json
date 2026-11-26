@@ -1,0 +1,119 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.3201,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.3201
+    },
+    {
+      "type": "invoice",
+      "score": 0.1613
+    },
+    {
+      "type": "receipt",
+      "score": 0.1613
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.3201
+    }
+  ],
+  "fields": [
+    {
+      "label": "Ticket Number",
+      "value": "TCK-77192",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Customer Name",
+      "value": "Beatrice Vance",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Customer Email",
+      "value": "bvance@omega-tech.example",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Product Model",
+      "value": "LaserScanner 4000-X",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Inquiry Date",
+      "value": "2026-11-01",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Priority Level",
+      "value": "High",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Issue Description",
+      "value": "Scanner lens calibration fails with Error Code ERR-409 after firmware upgrade",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [
+    {
+      "type": "EMAIL",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          139.25,
+          295.9999694824219,
+          153.07000732421875
+        ],
+        "label": "Customer Email",
+        "start": 0,
+        "end": 25
+      },
+      "confidence": 0.98,
+      "masked_value": "b***@omega-tech.example"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_MANUAL_TRIAGE_QUEUE",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'letter' confidence (0.32) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "CUSTOMER SERVICE TICKET CORRESPONDENCE",
+  "dates": [
+    "2026-11-01"
+  ]
+}

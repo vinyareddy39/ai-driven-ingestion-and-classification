@@ -1,0 +1,11 @@
+{
+  "document_kind": "bank_statement",
+  "key_values": {
+    "account_number": "9834-0192-4411",
+    "account_holder": "Cascade Engineering Partners",
+    "opening_balance": "$45,210.80",
+    "closing_balance": "$50,860.50",
+    "statement_period": "October 1, 2026 - October 31, 2026"
+  },
+  "notes": ""
+}

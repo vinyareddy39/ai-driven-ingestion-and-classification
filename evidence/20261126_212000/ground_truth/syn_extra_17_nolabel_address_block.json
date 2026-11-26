@@ -1,0 +1,7 @@
+{
+  "file": "syn_extra_17_nolabel_address_block.pdf",
+  "expected_type": "letter",
+  "expected_routing": "LETTER_PROCESSING_SYSTEM",
+  "expected_fields": {},
+  "full_text": "JOHNATHAN DOE\n452 EVERGREEN TERRACE\nSPRINGFIELD IL 62704\nCONFIDENTIAL"
+}

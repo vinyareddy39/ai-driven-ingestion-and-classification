@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_21_astronomy_telescope_log.pdf",
+  "expected_type": "unknown",
+  "expected_routing": "MANUAL_TRIAGE_QUEUE",
+  "expected_fields": {
+    "TARGET": "NGC 4565",
+    "EXPOSURE": "1800 SECONDS"
+  },
+  "full_text": "MAUNA KEA OBSERVATORY LOG\nTARGET: NGC 4565\nEXPOSURE: 1800 SECONDS\nFILTER: H-ALPHA\nSEEING: 0.65 ARCSEC"
+}

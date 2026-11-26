@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_04_shadowed_bill.png",
+  "expected_type": "utility_bill",
+  "expected_routing": "UTILITY_BILL_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "ACCOUNT": "4490182",
+    "BALANCE": "$88.50"
+  },
+  "full_text": "CITY WATER DEPT\nACCOUNT: 4490182\nBALANCE: $88.50\nSERVICE TO: NOV 2026"
+}

@@ -1,0 +1,129 @@
+{
+  "type": "contract",
+  "type_confidence": 0.9864,
+  "top_candidates": [
+    {
+      "type": "contract",
+      "score": 0.9864
+    },
+    {
+      "type": "letter",
+      "score": 0.0052
+    },
+    {
+      "type": "receipt",
+      "score": 0.0026
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "contract",
+      "confidence": 0.9864
+    }
+  ],
+  "fields": [
+    {
+      "label": "Contract ID",
+      "value": "NDA-2026-559",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Effective Date",
+      "value": "2026-08-01",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Disclosing Party",
+      "value": "Quantum Dynamics Inc.",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Receiving Party",
+      "value": "NorthStar Robotics Corp.",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Jurisdiction",
+      "value": "State of Delaware",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "1. Purpose",
+      "value": "The parties intend to engage in technical discussions concerning autonomous sensor",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "2. Term of Confidentiality",
+      "value": "3 years from the Effective Date.",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Authorized Signatory (Party A)",
+      "value": "Dr. Alan Turing, CTO",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Authorized Signatory (Party B)",
+      "value": "Sarah Connor, VP Engineering",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [
+    {
+      "type": "PERSON_NAME",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          241.25,
+          323.5899963378906,
+          255.07000732421875
+        ],
+        "label": "Authorized Signatory (Party A)",
+        "start": 0,
+        "end": 15
+      },
+      "confidence": 0.95,
+      "masked_value": "D*** [PERSON]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_LEGAL_COMPLIANCE_VAULT",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 12
+  },
+  "needs_review": false,
+  "review_reasons": [],
+  "pipeline_version": "2.2.0",
+  "title_block": "MUTUAL NON-DISCLOSURE AGREEMENT",
+  "dates": [
+    "2026-08-01"
+  ]
+}

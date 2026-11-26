@@ -1,0 +1,11 @@
+{
+  "document_kind": "medical_report",
+  "key_values": {
+    "patient_name": "Eleanor Rigby",
+    "specimen_id": "SPEC-88419",
+    "collection_date": "2026-11-03",
+    "glucose": "92 mg/dL",
+    "creatinine": "0.9 mg/dL"
+  },
+  "notes": ""
+}

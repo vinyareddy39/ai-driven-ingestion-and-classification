@@ -1,0 +1,25 @@
+{
+  "file_name": "doc_20_mixed_checkbox_unclear.pdf",
+  "document_type": "Document",
+  "expected_structures": [
+    "heading",
+    "label_value_pair",
+    "checkbox_group"
+  ],
+  "expected_fields": {
+    "Inspector": "Officer Daniel Kim",
+    "Inspection Date": "2026-11-18"
+  },
+  "expected_tables": [],
+  "expected_checkboxes": {
+    "Fire Extinguishers Certified": "selected",
+    "Chemical Storage Locked": "empty",
+    "Emergency Exit Light Recheck Required": "unclear"
+  },
+  "expected_signatures": [],
+  "expected_lists": [],
+  "expected_codes": [],
+  "header_footer_texts": [],
+  "watermark_texts": [],
+  "footnote_texts": []
+}

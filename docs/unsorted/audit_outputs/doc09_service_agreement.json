@@ -1,0 +1,95 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.4292,
+  "top_candidates": [
+    {
+      "type": "contract",
+      "score": 0.4292
+    },
+    {
+      "type": "letter",
+      "score": 0.2052
+    },
+    {
+      "type": "receipt",
+      "score": 0.1034
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "skewed (-1.9\u00b0), low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": -1.89,
+      "denoised": false,
+      "blur_score": 529.97,
+      "noise_level": 2243,
+      "confidence_penalty": 0.058881880067409305
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.4292
+    }
+  ],
+  "fields": [
+    {
+      "label": "AGREEMENT NUMBER",
+      "value": "MSA-8812",
+      "confidence": 0.8611,
+      "page": 1
+    },
+    {
+      "label": "CLIENT REDWOOD FINANCIAL GROUP",
+      "value": "SERVICE PROVIDER: CYBERSHIELD MANAGED DEFENSE",
+      "confidence": 0.8611,
+      "page": 1
+    },
+    {
+      "label": "SERVICE PROVIDER",
+      "value": "CYBERSHIELD MANAGED DEFENSE",
+      "confidence": 0.8611,
+      "page": 1
+    },
+    {
+      "label": "EFFECTIVE DATE",
+      "value": "2026-05-10",
+      "confidence": 0.8611,
+      "page": 1
+    },
+    {
+      "label": "MONTHLY SERVICE RETAINER",
+      "value": "$3,750.00",
+      "confidence": 0.8611,
+      "page": 1
+    },
+    {
+      "label": "SERVICE SCOPE",
+      "value": "24/7 ENDPOINT DEFECTION AND RESPONSE",
+      "confidence": 0.8611,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'contract' confidence (0.43) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "MASTER SERVICES AGREEMENT",
+  "dates": [
+    "2026-05-10"
+  ]
+}

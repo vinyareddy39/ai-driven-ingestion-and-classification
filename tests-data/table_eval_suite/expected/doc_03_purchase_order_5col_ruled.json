@@ -1,0 +1,51 @@
+{
+  "id": "doc_03_purchase_order_5col_ruled",
+  "title": "GLOBAL DYNAMICS HARDWARE",
+  "doc_type": "purchase_order",
+  "headers": [
+    "Line",
+    "SKU",
+    "Item Description",
+    "Unit Price",
+    "Line Total"
+  ],
+  "rows": [
+    [
+      "1",
+      "SKU-9921",
+      "Titanium fastener bolt set",
+      "45.00",
+      "450.00"
+    ],
+    [
+      "2",
+      "SKU-3381",
+      "Reinforced steel mounting bracket",
+      "22.50",
+      "450.00"
+    ],
+    [
+      "3",
+      "SKU-1120",
+      "Industrial silicone sealant pack",
+      "15.00",
+      "150.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Standard Ground Shipping",
+      "$28.00"
+    ]
+  ],
+  "totals": [
+    [
+      "Subtotal",
+      "$1,050.00"
+    ],
+    [
+      "Total Order Amount",
+      "$1,078.00"
+    ]
+  ]
+}

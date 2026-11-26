@@ -1,0 +1,7 @@
+{
+  "file": "doc_10_barcode_shipping_label.pdf",
+  "expected_kind": "document",
+  "expected_group": "fields",
+  "key_details": {},
+  "sensitive_items": []
+}

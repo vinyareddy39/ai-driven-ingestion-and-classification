@@ -1,0 +1,39 @@
+{
+  "id": "doc_13_lab_results_3col_ruled",
+  "title": "BIO-ANALYTICAL LABORATORIES",
+  "doc_type": "test_report",
+  "headers": [
+    "Analyte / Assay",
+    "Reported Value",
+    "Reference Range"
+  ],
+  "rows": [
+    [
+      "Glucose Fasting Plasma",
+      "92 mg/dL",
+      "70 - 99 mg/dL"
+    ],
+    [
+      "Cholesterol Total",
+      "178 mg/dL",
+      "125 - 200 mg/dL"
+    ],
+    [
+      "Triglycerides Fasting",
+      "110 mg/dL",
+      "40 - 150 mg/dL"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Testing Facility Location",
+      "Main Lab Suite 300"
+    ]
+  ],
+  "totals": [
+    [
+      "Status",
+      "All tests completed within normal parameters"
+    ]
+  ]
+}

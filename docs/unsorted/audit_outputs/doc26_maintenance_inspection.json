@@ -1,0 +1,120 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.3564,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.3564
+    },
+    {
+      "type": "receipt",
+      "score": 0.1796
+    },
+    {
+      "type": "invoice",
+      "score": 0.0663
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 2636.36,
+      "noise_level": 2676,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.3564
+    }
+  ],
+  "fields": [
+    {
+      "label": "INSPECTION ID",
+      "value": "CHK-2026-881",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "FACILITY LOCATION",
+      "value": "BUILDING 4 NORTH CAMPUS",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "EQUIPMENT NAME",
+      "value": "ROOFTOP CHILLER UNIT #3",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "MANUFACTURER CARRIER COMMERCIAL HVAC",
+      "value": "INSPECTION DATE: 2026-10-25",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "INSPECTION DATE",
+      "value": "2026-10-25",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "INSPECTED BY",
+      "value": "LEAD TECHNICIAN CARL JENKINS",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "REFRIGERANT PRESSURE",
+      "value": "118 PSI (WITHIN NORMAL LIMITS)",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "COMPRESSOR VIBRATION",
+      "value": "0.12 MM/S (PASSED)",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "OVERALL STATUS OPERATIONAL/ PASS",
+      "value": "NEXT SCHEDULED SERVICE: 2027-04-25",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "NEXT SCHEDULED SERVICE",
+      "value": "2027-04-25",
+      "confidence": 0.88,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'letter' confidence (0.36) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "INDUSTRIAL EQUIPMENT INSPECTION RECORD",
+  "dates": [
+    "2026-10-25",
+    "2027-04-25"
+  ]
+}

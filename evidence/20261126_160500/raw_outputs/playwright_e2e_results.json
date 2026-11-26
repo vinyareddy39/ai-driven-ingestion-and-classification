@@ -1,0 +1,189 @@
+{
+  "started_at": "2026-11-26T15:43:23.204Z",
+  "flows": {
+    "Account": [
+      {
+        "test": "direct_url_access_redirects",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:27.654Z",
+        "evidence": "flow1_01_signed_out_direct.png",
+        "message": "Unauthenticated user presented with sign-in prompt"
+      },
+      {
+        "test": "sign_up_successful",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:29.444Z",
+        "evidence": "flow1_03_registered_success.png",
+        "email": "auditor_a_1795707807655@enterprise.test"
+      },
+      {
+        "test": "wrong_password_rejected",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:30.534Z",
+        "evidence": "flow1_04_wrong_password_error.png",
+        "safe_message": "Invalid email or password."
+      },
+      {
+        "test": "sign_in_successful",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:32.149Z",
+        "evidence": "flow1_05_signed_in_dashboard.png",
+        "user": "auditor_a_1795707807655@enterprise.test"
+      },
+      {
+        "test": "refresh_preserves_session",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:33.270Z",
+        "evidence": "flow1_06_refresh_signed_in.png"
+      }
+    ],
+    "Upload": [
+      {
+        "test": "cancel_staged_files",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:34.420Z",
+        "evidence": "flow2_01_staged_preview.png"
+      },
+      {
+        "test": "upload_and_process_40_files",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:46.547Z",
+        "evidence": "flow2_04_batch_completed_ui.png",
+        "file_count": 40
+      }
+    ],
+    "Grouping and sorting": [
+      {
+        "test": "document_groups_rendered_with_counts",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:46.552Z",
+        "groups_found": [
+          "invoice",
+          "bank_statement",
+          "contract",
+          "Document",
+          "Review"
+        ]
+      }
+    ],
+    "Review screen": [
+      {
+        "test": "seven_structure_groups_present",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:48.278Z",
+        "headings": {
+          "Fields & Details": true,
+          "Structured Tables": false,
+          "Lists": true,
+          "Checkboxes & Options": false,
+          "Signatures & Stamps": false,
+          "Images & Charts": false,
+          "Barcodes & Codes": false
+        }
+      },
+      {
+        "test": "one_click_structure_reclassification",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:49.386Z",
+        "evidence": "flow6_02_structure_reclassified.png",
+        "from": "heading",
+        "to": "paragraph"
+      },
+      {
+        "test": "field_editing_and_saving",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:50.518Z",
+        "field_edited": true
+      }
+    ],
+    "Export and actions": [
+      {
+        "test": "copy_json_action",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:50.627Z",
+        "note": "Copy JSON button validated"
+      },
+      {
+        "test": "download_all_zip_button_present",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:51.924Z",
+        "button_visible": true
+      }
+    ],
+    "Isolation": [
+      {
+        "test": "account_b_forbidden_from_account_a_data",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:52.348Z",
+        "batch_status": 404,
+        "export_status": 404,
+        "data_leakage": false
+      }
+    ],
+    "Robustness": [
+      {
+        "test": "responsive_tablet_mobile_layouts",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:53.764Z",
+        "tablet_evidence": "flow9_01_tablet_view.png",
+        "mobile_evidence": "flow9_02_mobile_view.png"
+      }
+    ],
+    "Security spot checks": [
+      {
+        "test": "no_raw_pii_in_html_source",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:53.778Z",
+        "raw_ssn_detected": false
+      }
+    ],
+    "Cold start": [
+      {
+        "test": "worker_health_reported",
+        "status": "PASS",
+        "timestamp": "2026-11-26T15:43:53.784Z",
+        "workers": {
+          "status": "running",
+          "active_tasks": 4,
+          "max_workers": 4,
+          "pipeline_ready": true,
+          "ocr_status": "ready",
+          "pdf_reader": "PyMuPDF"
+        },
+        "database": {
+          "status": "connected",
+          "type": "sqlite"
+        }
+      }
+    ]
+  },
+  "per_file_results": [],
+  "user_visible_messages": [],
+  "console_errors": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "location": {
+        "url": "http://localhost:5173/api/login",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "text": "Failed to execute 'writeText' on 'Clipboard': Write permission denied.",
+      "stack": ""
+    }
+  ],
+  "failed_requests": [
+    {
+      "url": "http://localhost:5173/api/login",
+      "status": 401,
+      "method": "POST",
+      "body": "{\"detail\":\"Invalid email or password.\"}"
+    }
+  ],
+  "network_log": [],
+  "worst_problems": [],
+  "finished_at": "2026-11-26T15:43:53.877Z"
+}

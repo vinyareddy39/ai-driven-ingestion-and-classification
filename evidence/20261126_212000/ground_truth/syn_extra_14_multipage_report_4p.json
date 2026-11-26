@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_14_multipage_report_4p.pdf",
+  "expected_type": "medical_report",
+  "expected_routing": "MEDICAL_REPORT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "PATIENT ID": "ONC-4412",
+    "PHYSICIAN": "DR. EMILY VANCE"
+  },
+  "full_text": "COMPREHENSIVE ONCOLOGY REPORT\nPATIENT ID: ONC-4412\nPHYSICIAN: DR. EMILY VANCE\nFINDING: REMISSION"
+}

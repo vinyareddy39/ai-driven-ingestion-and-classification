@@ -1,0 +1,12 @@
+{
+  "document_kind": "contract",
+  "key_values": {
+    "lease_id": "LSE-2026-904",
+    "landlord": "Beacon Hill Realty Trust",
+    "tenant": "Apex Digital Solutions LLC",
+    "monthly_rent": "$6,500.00",
+    "security_deposit": "$13,000.00",
+    "commencement_date": "2026-09-01"
+  },
+  "notes": ""
+}

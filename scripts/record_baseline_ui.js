@@ -40,9 +40,15 @@ async function main() {
     await page.locator('button[type="submit"]:has-text("Sign in")').click();
     await page.waitForTimeout(1500);
 
-    // Select 1 clean PDF and 1 clean image
-    const pdfPath = path.resolve(__dirname, '..', 'data', 'synthetic_tests', 'syn_01_clean_digital.pdf');
-    const imgPath = path.resolve(__dirname, '..', 'data', 'synthetic_tests', 'syn_02_clean_image.png');
+    // Select 1 clean PDF and 1 clean image from tests-data (fallback to data)
+    let pdfPath = path.resolve(__dirname, '..', 'tests-data', 'synthetic_tests', 'syn_01_clean_digital.pdf');
+    if (!fs.existsSync(pdfPath)) {
+      pdfPath = path.resolve(__dirname, '..', 'data', 'synthetic_tests', 'syn_01_clean_digital.pdf');
+    }
+    let imgPath = path.resolve(__dirname, '..', 'tests-data', 'synthetic_tests', 'syn_02_clean_image.png');
+    if (!fs.existsSync(imgPath)) {
+      imgPath = path.resolve(__dirname, '..', 'data', 'synthetic_tests', 'syn_02_clean_image.png');
+    }
 
     console.log(`[RECORD UI] Staging files: ${pdfPath}, ${imgPath}`);
     await page.locator('input[type="file"]').first().setInputFiles([pdfPath, imgPath]);

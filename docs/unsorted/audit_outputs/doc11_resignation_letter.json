@@ -1,0 +1,94 @@
+{
+  "type": "invoice",
+  "type_confidence": 0.6089,
+  "top_candidates": [
+    {
+      "type": "invoice",
+      "score": 0.6089
+    },
+    {
+      "type": "letter",
+      "score": 0.0871
+    },
+    {
+      "type": "contract",
+      "score": 0.0824
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 2781.21,
+      "noise_level": 2603,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "invoice",
+      "confidence": 0.6089
+    }
+  ],
+  "fields": [
+    {
+      "label": "DATE",
+      "value": "2026-10-30",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "TO",
+      "value": "DIRECTOROFOPERATIONS, CASCADE LOGISTICS",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "FROM",
+      "value": "DANIELK MARTINEZ",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "EMPLOYEE ID",
+      "value": "EMP-4019",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "POSITION",
+      "value": "SENIOR ROUTE DISPATCHER",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "MY FINAL WORKING DAY WITH THE COMPANY WILL BE",
+      "value": "2026-11-14.",
+      "confidence": 0.88,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "AP_INVOICE_PROCESSING",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 24
+  },
+  "needs_review": false,
+  "review_reasons": [],
+  "pipeline_version": "2.2.0",
+  "title_block": "FORMAL RESIGNATION NOTICE",
+  "dates": [
+    "2026-10-30",
+    "2026-11-14"
+  ]
+}

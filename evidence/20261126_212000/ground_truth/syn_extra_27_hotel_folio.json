@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_27_hotel_folio.pdf",
+  "expected_type": "receipt",
+  "expected_routing": "RECEIPT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "GUEST": "DAVID MILLER",
+    "TOTAL CHARGES": "$840.00"
+  },
+  "full_text": "GRAND HYATT HOTEL\nGUEST: DAVID MILLER\nROOM 408\nCHECK IN: 2026-11-20\nTOTAL CHARGES: $840.00"
+}

@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_25_weather_station_telemetry.pdf",
+  "expected_type": "unknown",
+  "expected_routing": "MANUAL_TRIAGE_QUEUE",
+  "expected_fields": {
+    "TEMP": "14.2 C",
+    "PRESSURE": "1013.2 HPA"
+  },
+  "full_text": "METEOROLOGICAL STATION 994\nTEMP: 14.2 C\nHUMIDITY: 78%\nPRESSURE: 1013.2 HPA\nWIND: 12 KNOTS NW"
+}

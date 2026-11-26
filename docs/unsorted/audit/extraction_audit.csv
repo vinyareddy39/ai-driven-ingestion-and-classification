@@ -1,0 +1,226 @@
+file,expected_type,detected_type,label,value,confidence,page,missing_label,matched_expected
+doc01_invoice,invoice,invoice,Invoice Number,INV-84920,0.9800,1,no,yes
+doc01_invoice,invoice,invoice,Invoice Date,2026-10-14,0.9800,1,no,yes
+doc01_invoice,invoice,invoice,Due Date,2026-11-14,0.9800,1,no,yes
+doc01_invoice,invoice,invoice,Customer Name,Horizon Analytics LLC,0.9800,1,no,yes
+doc01_invoice,invoice,invoice,Billing Address,"450 Silicon Parkway, Austin, TX 78701",0.9800,1,no,not in expected
+doc02_receipt,receipt,invoice,RECEIPT#,R-90214,0.8800,1,no,yes
+doc02_receipt,receipt,invoice,DATE,2026-11-02 12:45 PM,0.5500,1,no,yes
+doc02_receipt,receipt,invoice,SERVER,MARCUS T.,0.8800,1,no,not in expected
+doc02_receipt,receipt,invoice,PAYMENT METHOD,VISA ENDING 4012,0.8800,1,no,yes
+doc02_receipt,receipt,invoice,2X ARTISANAL ESPRESSO $9.00,1X SMOKED SALMON BAGEL $14.50,0.8800,1,no,not in expected
+doc02_receipt,receipt,invoice,1X SMOKED SALMON BAGEL $14.50,1X MIXED BERRY PARFAIT $8.00,0.8800,1,no,not in expected
+doc02_receipt,receipt,invoice,SUBTOTAL,$31.50,0.8800,1,no,yes
+doc02_receipt,receipt,invoice,SALES TAX,$3.15,0.8800,1,no,not in expected
+doc02_receipt,receipt,invoice,TIP,$6.00,0.8800,1,no,not in expected
+doc03_purchase_order,purchase_order,purchase_order,PO Number,PO-2026-7731,0.9800,1,no,yes
+doc03_purchase_order,purchase_order,purchase_order,Order Date,2026-09-18,0.9800,1,no,yes
+doc03_purchase_order,purchase_order,purchase_order,Vendor Name,Global Tech Hardware Distributors,0.9800,1,no,yes
+doc03_purchase_order,purchase_order,purchase_order,Delivery Date,2026-10-05,0.9800,1,no,yes
+doc03_purchase_order,purchase_order,purchase_order,Shipping Terms,FOB Destination,0.9800,1,no,not in expected
+doc04_bank_statement,bank_statement,bank_statement,Commercial Checking Statement,Account Number: 9834-0192-4411,0.9800,1,no,yes
+doc04_bank_statement,bank_statement,bank_statement,Account Number,9834-0192-4411,0.9800,1,no,yes
+doc04_bank_statement,bank_statement,bank_statement,Statement Period,"October 1, 2026 - October 31, 2026",0.9800,1,no,yes
+doc04_bank_statement,bank_statement,bank_statement,Account Holder,Cascade Engineering Partners,0.9800,1,no,yes
+doc04_bank_statement,bank_statement,bank_statement,Opening Balance,"$45,210.80",0.9800,1,no,yes
+doc04_bank_statement,bank_statement,bank_statement,Total Deposits,"$18,400.00",0.9800,1,no,not in expected
+doc04_bank_statement,bank_statement,bank_statement,Total Withdrawals,"$12,750.30",0.9800,1,no,not in expected
+doc04_bank_statement,bank_statement,bank_statement,Closing Balance,"$50,860.50",0.9800,1,no,yes
+doc06_nda_contract,contract,contract,Contract ID,NDA-2026-559,0.9800,1,no,yes
+doc06_nda_contract,contract,contract,Effective Date,2026-08-01,0.9800,1,no,yes
+doc06_nda_contract,contract,contract,Disclosing Party,Quantum Dynamics Inc.,0.9800,1,no,yes
+doc06_nda_contract,contract,contract,Receiving Party,NorthStar Robotics Corp.,0.9800,1,no,yes
+doc06_nda_contract,contract,contract,Jurisdiction,State of Delaware,0.9800,1,no,yes
+doc06_nda_contract,contract,contract,1. Purpose,The parties intend to engage in technical discussions concerning autonomous sensor,0.9800,1,no,not in expected
+doc06_nda_contract,contract,contract,2. Term of Confidentiality,3 years from the Effective Date.,0.9800,1,no,not in expected
+doc06_nda_contract,contract,contract,Authorized Signatory (Party A),"Dr. Alan Turing, CTO",0.9800,1,no,not in expected
+doc06_nda_contract,contract,contract,Authorized Signatory (Party B),"Sarah Connor, VP Engineering",0.9800,1,no,not in expected
+doc07_employment_agreement,contract,contract,Document Reference,EMP-2026-891,0.9800,1,no,yes
+doc07_employment_agreement,contract,contract,Employer,Vanguard Biotech Laboratories,0.9800,1,no,yes
+doc07_employment_agreement,contract,contract,Employee Name,Marcus Aurelius Vance,0.9800,1,no,yes
+doc07_employment_agreement,contract,contract,Job Title,Principal Bioinformatician,0.9800,1,no,yes
+doc07_employment_agreement,contract,contract,Commencement Date,2026-12-01,0.9800,1,no,yes
+doc07_employment_agreement,contract,contract,Base Salary,"$185,000.00 per annum",0.9800,1,no,yes
+doc07_employment_agreement,contract,contract,EXECUTIVE EMPLOYMENT AGREEMENT (Page 2),"Annual Target Bonus: 25% of Base Salary ($46,250.00)",0.9800,2,no,not in expected
+doc07_employment_agreement,contract,contract,Annual Target Bonus,"25% of Base Salary ($46,250.00)",0.9800,2,no,not in expected
+doc07_employment_agreement,contract,contract,Equity Grant,"15,000 Restricted Stock Units (RSUs) vesting over 4 years",0.9800,2,no,not in expected
+doc07_employment_agreement,contract,contract,Governing Law,Commonwealth of Massachusetts,0.9800,2,no,not in expected
+doc07_employment_agreement,contract,contract,Employer,Vanguard Biotech Laboratories (by CEO Eleanor Vance),0.9800,2,no,yes
+doc07_employment_agreement,contract,contract,Employee,Marcus Aurelius Vance,0.9800,2,no,yes
+doc08_lease_agreement,contract,unknown,LEASE AGREEMENT ID,LSE-2026-904,0.8800,1,no,yes
+doc08_lease_agreement,contract,unknown,DATE OF EXECUTION,2026-07-15,0.8800,1,no,not in expected
+doc08_lease_agreement,contract,unknown,LANDLORD,BEACON HILL REALTY TRUST,0.8800,1,no,yes
+doc08_lease_agreement,contract,unknown,LEASE TERM,36 MONTHS,0.8800,1,no,not in expected
+doc08_lease_agreement,contract,unknown,COMMENCEMENT DATE,2026-09-01,0.8800,1,no,yes
+doc08_lease_agreement,contract,unknown,PERMITTED USE,COMMERCIAL GENERAL OFFICE,0.8800,1,no,not in expected
+doc09_service_agreement,contract,unknown,AGREEMENT NUMBER,MSA-8812,0.8611,1,no,yes
+doc09_service_agreement,contract,unknown,CLIENT REDWOOD FINANCIAL GROUP,SERVICE PROVIDER: CYBERSHIELD MANAGED DEFENSE,0.8611,1,no,yes
+doc09_service_agreement,contract,unknown,SERVICE PROVIDER,CYBERSHIELD MANAGED DEFENSE,0.8611,1,no,yes
+doc09_service_agreement,contract,unknown,EFFECTIVE DATE,2026-05-10,0.8611,1,no,yes
+doc09_service_agreement,contract,unknown,MONTHLY SERVICE RETAINER,"$3,750.00",0.8611,1,no,yes
+doc09_service_agreement,contract,unknown,SERVICE SCOPE,24/7 ENDPOINT DEFECTION AND RESPONSE,0.8611,1,no,not in expected
+doc10_job_offer,offer_letter,unknown,Formal Offer of Employment,Candidate Name: Alexander Wright,0.9800,1,no,yes
+doc10_job_offer,offer_letter,unknown,Candidate Name,Alexander Wright,0.9800,1,no,yes
+doc10_job_offer,offer_letter,unknown,Offer Date,2026-11-05,0.9800,1,no,not in expected
+doc10_job_offer,offer_letter,unknown,Position,Senior Machine Learning Scientist,0.9800,1,no,yes
+doc10_job_offer,offer_letter,unknown,Department,Applied Perception Research,0.9800,1,no,not in expected
+doc10_job_offer,offer_letter,unknown,Starting Base Salary,"$190,000.00",0.9800,1,no,yes
+doc10_job_offer,offer_letter,unknown,Signing Bonus,"$25,000.00",0.9800,1,no,yes
+doc10_job_offer,offer_letter,unknown,Target Start Date,2027-01-15,0.9800,1,no,yes
+doc10_job_offer,offer_letter,unknown,Offer Expiration Date,2026-11-20,0.9800,1,no,yes
+doc11_resignation_letter,correspondence,invoice,DATE,2026-10-30,0.8800,1,no,yes
+doc11_resignation_letter,correspondence,invoice,TO,"DIRECTOROFOPERATIONS, CASCADE LOGISTICS",0.8800,1,no,not in expected
+doc11_resignation_letter,correspondence,invoice,FROM,DANIELK MARTINEZ,0.8800,1,no,no
+doc11_resignation_letter,correspondence,invoice,EMPLOYEE ID,EMP-4019,0.8800,1,no,yes
+doc11_resignation_letter,correspondence,invoice,POSITION,SENIOR ROUTE DISPATCHER,0.8800,1,no,yes
+doc11_resignation_letter,correspondence,invoice,MY FINAL WORKING DAY WITH THE COMPANY WILL BE,2026-11-14.,0.8800,1,no,yes
+doc12_performance_review,performance_review,unknown,Employee Name,Samantha Sterling,0.9800,1,no,yes
+doc12_performance_review,performance_review,unknown,Employee ID,HR-8819,0.9800,1,no,yes
+doc12_performance_review,performance_review,unknown,Job Role,Lead Product Designer,0.9800,1,no,yes
+doc12_performance_review,performance_review,unknown,Reviewing Manager,Victoria Hayes,0.9800,1,no,not in expected
+doc12_performance_review,performance_review,unknown,Appraisal Period,FY 2026,0.9800,1,no,not in expected
+doc12_performance_review,performance_review,unknown,Overall Rating,Exceeds Expectations (4.8 / 5.0),0.9800,1,no,yes
+doc12_performance_review,performance_review,unknown,Recommended Merit Increase,6.5%,0.9800,1,no,yes
+doc12_performance_review,performance_review,unknown,Key Achievements,Led the redesign of the user onboarding flow resulting in a 24% uplift in retention.,0.9800,1,no,not in expected
+doc13_employee_onboarding,form,unknown,Full Name,Robert Liam Gallagher,0.9800,1,no,yes
+doc13_employee_onboarding,form,unknown,Social Security Number,333-44-5555,0.9800,1,no,yes
+doc13_employee_onboarding,form,unknown,Date of Birth,1991-06-22,0.9800,1,no,not in expected
+doc13_employee_onboarding,form,unknown,Contact Phone,(555) 392-8104,0.9800,1,no,yes
+doc13_employee_onboarding,form,unknown,Emergency Contact,Fiona Gallagher (Spouse),0.9800,1,no,yes
+doc13_employee_onboarding,form,unknown,Emergency Phone,(555) 392-8109,0.9800,1,no,no
+doc13_employee_onboarding,form,unknown,Direct Deposit Bank,First Federal Credit Union,0.9800,1,no,not in expected
+doc13_employee_onboarding,form,unknown,Routing Number,011000015,0.9800,1,no,yes
+doc13_employee_onboarding,form,unknown,Account Number,881029384,0.9800,1,no,yes
+doc14_bill_of_lading,logistics,unknown,PORTOR LOADING,"PORTOF LONG BEACH, USA",0.8800,1,no,not in expected
+doc14_bill_of_lading,logistics,unknown,PORTOF DISCHANGE,"PORTOR ROTTERDAM, NETHERLANDS",0.8800,1,no,not in expected
+doc14_bill_of_lading,logistics,unknown,CONSIGREE,EUROAGRI FOODSTURTS BV,0.8800,1,no,not in expected
+doc14_bill_of_lading,logistics,unknown,CONTAINER NUMBER,TGHU-849102-1,0.8800,1,no,yes
+doc15_shipping_waybill,logistics,letter,TRACKING NUMBER,1Z9999999999999999,0.8800,1,no,yes
+doc15_shipping_waybill,logistics,letter,SHIP DATE,2026-11-04,0.8800,1,no,yes
+doc15_shipping_waybill,logistics,letter,SERVICE,PRIORITY OVERNIGHT AIR,0.8800,1,no,not in expected
+doc15_shipping_waybill,logistics,letter,ORIGIN,"CHICAGO LOGISTICS HUB, IL",0.8800,1,no,not in expected
+doc15_shipping_waybill,logistics,letter,DESCINATION,"ATLANTA FULFILLMENTCENTER, GA",0.8800,1,no,not in expected
+doc15_shipping_waybill,logistics,letter,SENDER,APEX HARDWARE DISTRIBUTION,0.8800,1,no,yes
+doc15_shipping_waybill,logistics,letter,RECEIPIENT SOUTHERN INDUSTRIAL SUPPLIES,PACKAGE WEIGHT 14.8 LBS,0.8800,1,no,yes
+doc15_shipping_waybill,logistics,letter,PACKAGE WEIGHT 14.8 LBS,"DECLATED VALUE: $1,250.00",0.8800,1,no,no
+doc15_shipping_waybill,logistics,letter,DECLATED VALUE,"$1,250.00",0.8800,1,no,not in expected
+doc16_packing_slip,logistics,unknown,PACKING SLIP #,PS-50192,0.8800,1,no,yes
+doc16_packing_slip,logistics,unknown,ORDER REFERENCE,ORD-99201,0.8800,1,no,yes
+doc16_packing_slip,logistics,unknown,PACK DATE,2026-10-28,0.8800,1,no,yes
+doc16_packing_slip,logistics,unknown,CUSTOMER BLUE HORIZON LABORATORIES,PACKED BY INSPECTOR #42,0.8800,1,no,no
+doc16_packing_slip,logistics,unknown,PACKED BY INSPECTOR #42,ITEM 1: CENTRILUGE TUBES 50ML (PACK OF 500)-QTY:2,0.8800,1,no,not in expected
+doc16_packing_slip,logistics,unknown,ITEM 1,CENTRILUGE TUBES 50ML (PACK OF 500)-QTY:2,0.8800,1,no,not in expected
+doc16_packing_slip,logistics,unknown,ITEM 2,PIPETTE TIPS 200UL (PACK OF 1000)-QTY: 5,0.8800,1,no,not in expected
+doc16_packing_slip,logistics,unknown,ITEM 3,GLASS BEAKER SET (5 PIECES) - QTY: 1,0.8800,1,no,not in expected
+doc16_packing_slip,logistics,unknown,TOTAL CARTONS,3 BOXES,0.8800,1,no,yes
+doc17_customs_declaration,logistics,unknown,Customs Declaration ID,CUST-2026-1184,0.9800,1,no,yes
+doc17_customs_declaration,logistics,unknown,Exporting Country,United States,0.9800,1,no,not in expected
+doc17_customs_declaration,logistics,unknown,Importing Country,United Kingdom,0.9800,1,no,not in expected
+doc17_customs_declaration,logistics,unknown,Harmonized Code (HS Code),8471.50.0150,0.9800,1,no,yes
+doc17_customs_declaration,logistics,unknown,Exporter,Silicon Valley Chips Ltd,0.9800,1,no,yes
+doc17_customs_declaration,logistics,unknown,Importer,Thames Computing Technologies Plc,0.9800,1,no,yes
+doc17_customs_declaration,logistics,unknown,Declared Customs Value,"$12,400.00 USD",0.9800,1,no,yes
+doc17_customs_declaration,logistics,unknown,Duty Payable,$496.00 USD,0.9800,1,no,not in expected
+doc18_formal_business_letter,correspondence,letter,"November 8, 2026","To: Board of Directors, Horizon Tech Partners",0.9800,1,no,yes
+doc18_formal_business_letter,correspondence,letter,To,"Board of Directors, Horizon Tech Partners",0.9800,1,no,yes
+doc18_formal_business_letter,correspondence,letter,From,"Arthur Pendelton, Managing Director",0.9800,1,no,yes
+doc18_formal_business_letter,correspondence,letter,Subject,Proposed Strategic Co-Investment Partnership,0.9800,1,no,yes
+doc18_formal_business_letter,correspondence,letter,"Dear Members of the Board,","Following our preliminary discussions in New York last month, Stratosphere Capital is pleased to",0.9800,1,no,not in expected
+doc19_vendor_price_notice,correspondence,unknown,OFFICIAL NOTICE,ANNUAL PRICE ADJUSTMENT,0.8800,1,no,not in expected
+doc19_vendor_price_notice,correspondence,unknown,NOTICE REFERENCE,PN-2026-44,0.8800,1,no,yes
+doc19_vendor_price_notice,correspondence,unknown,DATE OF NOTICE,2026-10-15,0.8800,1,no,yes
+doc19_vendor_price_notice,correspondence,unknown,EFFECTIVE DATE,2027-01-01,0.8800,1,no,yes
+doc19_vendor_price_notice,correspondence,unknown,ADDRESSED TO,VALUED COMMERCIAL DISTRIBUTION CLIENTS,0.8800,1,no,not in expected
+doc19_vendor_price_notice,correspondence,unknown,CONTACT PERSON,"GREGORY STONE, VP OF COMERCIAL SALES",0.8800,1,no,not in expected
+doc20_customer_inquiry,correspondence,unknown,Ticket Number,TCK-77192,0.9800,1,no,yes
+doc20_customer_inquiry,correspondence,unknown,Customer Name,Beatrice Vance,0.9800,1,no,yes
+doc20_customer_inquiry,correspondence,unknown,Customer Email,bvance@omega-tech.example,0.9800,1,no,not in expected
+doc20_customer_inquiry,correspondence,unknown,Product Model,LaserScanner 4000-X,0.9800,1,no,yes
+doc20_customer_inquiry,correspondence,unknown,Inquiry Date,2026-11-01,0.9800,1,no,yes
+doc20_customer_inquiry,correspondence,unknown,Priority Level,High,0.9800,1,no,not in expected
+doc20_customer_inquiry,correspondence,unknown,Issue Description,Scanner lens calibration fails with Error Code ERR-409 after firmware upgrade,0.9800,1,no,yes
+doc21_patient_intake_form,medical_report,medical_report,NEW PATIENT MEDICAL INTAKE FORM,PATIENT ID PT-90214,0.8604,1,no,yes
+doc21_patient_intake_form,medical_report,medical_report,PATIENT ID PT-90214,PATIENT NAME: JONATHAN DAVID REYNOLDS,0.8604,1,no,yes
+doc21_patient_intake_form,medical_report,medical_report,PATIENT NAME,JONATHAN DAVID REYNOLDS,0.8604,1,no,yes
+doc21_patient_intake_form,medical_report,medical_report,DATE OF BIRTH,1984-03-12,0.8604,1,no,yes
+doc21_patient_intake_form,medical_report,medical_report,PHONE NUMBER (555) 721-9940,INSURANCE PROVIDER: BLUE CROSS BLUE SHIELD,0.8604,1,no,not in expected
+doc21_patient_intake_form,medical_report,medical_report,INSURANCE PROVIDER,BLUE CROSS BLUE SHIELD,0.8604,1,no,not in expected
+doc21_patient_intake_form,medical_report,medical_report,POLICY GROUP NUMBER GRP 881924,PRIMARYCARE PHYSICIAN: DR. LAURA CROT MD,0.8604,1,no,not in expected
+doc21_patient_intake_form,medical_report,medical_report,PRIMARYCARE PHYSICIAN,DR. LAURA CROT MD,0.8604,1,no,not in expected
+doc22_insurance_claim,form,claim_form,Automobile Loss & Damage Claim Form,Claim Number: CLM-2026-8841,0.9800,1,no,yes
+doc22_insurance_claim,form,claim_form,Claim Number,CLM-2026-8841,0.9800,1,no,yes
+doc22_insurance_claim,form,claim_form,Policyholder,Timothy Sterling,0.9800,1,no,yes
+doc22_insurance_claim,form,claim_form,Policy Number,POL-99210-A,0.9800,1,no,yes
+doc22_insurance_claim,form,claim_form,Incident Date,2026-10-22,0.9800,1,no,yes
+doc22_insurance_claim,form,claim_form,Location of Incident,"Route 9, Framingham, MA",0.9800,1,no,not in expected
+doc22_insurance_claim,form,claim_form,Vehicle Make & Model,2024 Honda Accord Touring,0.9800,1,no,not in expected
+doc22_insurance_claim,form,claim_form,Estimated Repair Cost,"$4,850.00",0.9800,1,no,yes
+doc22_insurance_claim,form,claim_form,Deductible,$500.00,0.9800,1,no,not in expected
+doc23_expense_reimbursement,form,unknown,Report ID,EXP-2026-049,0.9800,1,no,yes
+doc23_expense_reimbursement,form,unknown,Employee Name,Claire Dunphy,0.9800,1,no,yes
+doc23_expense_reimbursement,form,unknown,Department,Enterprise Sales,0.9800,1,no,not in expected
+doc23_expense_reimbursement,form,unknown,Trip Destination,Chicago Tech Summit 2026,0.9800,1,no,yes
+doc23_expense_reimbursement,form,unknown,Airfare Expense,$640.00,0.9800,1,no,not in expected
+doc23_expense_reimbursement,form,unknown,Hotel Accommodations,$920.00,0.9800,1,no,not in expected
+doc23_expense_reimbursement,form,unknown,Client Dinner Meals,$310.50,0.9800,1,no,not in expected
+doc23_expense_reimbursement,form,unknown,Total Claim Amount,"$1,870.50",0.9800,1,no,yes
+doc23_expense_reimbursement,form,unknown,Supervisor Approval,"Approved by Michael Scott, VP Sales",0.9800,1,no,not in expected
+doc24_clinical_lab_report,medical_report,medical_report,COMPREHENSIVE METABOLIC PANEL REPORT,Patient Name: Eleanor Rigby,0.9800,1,no,yes
+doc24_clinical_lab_report,medical_report,medical_report,Patient Name,Eleanor Rigby,0.9800,1,no,yes
+doc24_clinical_lab_report,medical_report,medical_report,Patient DOB,1978-11-19,0.9800,1,no,not in expected
+doc24_clinical_lab_report,medical_report,medical_report,Specimen ID,SPEC-88419,0.9800,1,no,yes
+doc24_clinical_lab_report,medical_report,medical_report,Collection Date,2026-11-03,0.9800,1,no,yes
+doc24_clinical_lab_report,medical_report,medical_report,Ordering Physician,"Dr. Robert Chase, MD",0.9800,1,no,not in expected
+doc25_financial_audit_report,report,unknown,"Fiscal Year Ended September 30, 2026",Entity Audited: Apex Global Infrastructure Trust,0.9800,1,no,yes
+doc25_financial_audit_report,report,unknown,Entity Audited,Apex Global Infrastructure Trust,0.9800,1,no,yes
+doc25_financial_audit_report,report,unknown,Auditor Firm,Sterling & Cooper LLP,0.9800,1,no,yes
+doc25_financial_audit_report,report,unknown,Audit Opinion,Unqualified Clean Opinion,0.9800,1,no,yes
+doc25_financial_audit_report,report,unknown,Total Consolidated Revenue,"$482,000,000.00",0.9800,1,no,yes
+doc25_financial_audit_report,report,unknown,Operating Income,"$84,500,000.00",0.9800,1,no,not in expected
+doc25_financial_audit_report,report,unknown,FINANCIAL STATEMENT METRICS (Page 2),"Net Earnings Before Tax: $72,100,000.00",0.9800,2,no,not in expected
+doc25_financial_audit_report,report,unknown,Net Earnings Before Tax,"$72,100,000.00",0.9800,2,no,not in expected
+doc25_financial_audit_report,report,unknown,Consolidated Total Assets,"$1,240,000,000.00",0.9800,2,no,not in expected
+doc25_financial_audit_report,report,unknown,Total Long-Term Liabilities,"$390,000,000.00",0.9800,2,no,not in expected
+doc25_financial_audit_report,report,unknown,Report Date,2026-10-31,0.9800,2,no,yes
+doc26_maintenance_inspection,report,unknown,INSPECTION ID,CHK-2026-881,0.8800,1,no,yes
+doc26_maintenance_inspection,report,unknown,FACILITY LOCATION,BUILDING 4 NORTH CAMPUS,0.8800,1,no,not in expected
+doc26_maintenance_inspection,report,unknown,EQUIPMENT NAME,ROOFTOP CHILLER UNIT #3,0.8800,1,no,yes
+doc26_maintenance_inspection,report,unknown,MANUFACTURER CARRIER COMMERCIAL HVAC,INSPECTION DATE: 2026-10-25,0.8800,1,no,yes
+doc26_maintenance_inspection,report,unknown,INSPECTION DATE,2026-10-25,0.8800,1,no,yes
+doc26_maintenance_inspection,report,unknown,INSPECTED BY,LEAD TECHNICIAN CARL JENKINS,0.8800,1,no,not in expected
+doc26_maintenance_inspection,report,unknown,REFRIGERANT PRESSURE,118 PSI (WITHIN NORMAL LIMITS),0.8800,1,no,not in expected
+doc26_maintenance_inspection,report,unknown,COMPRESSOR VIBRATION,0.12 MM/S (PASSED),0.8800,1,no,not in expected
+doc26_maintenance_inspection,report,unknown,OVERALL STATUS OPERATIONAL/ PASS,NEXT SCHEDULED SERVICE: 2027-04-25,0.8800,1,no,yes
+doc26_maintenance_inspection,report,unknown,NEXT SCHEDULED SERVICE,2027-04-25,0.8800,1,no,yes
+doc27_meeting_minutes_note,notes,unknown,Meeting Date,2026-11-06,0.9800,1,no,yes
+doc27_meeting_minutes_note,notes,unknown,Time,10:00 AM - 12:30 PM EST,0.9800,1,no,not in expected
+doc27_meeting_minutes_note,notes,unknown,Meeting Location,Executive Boardroom A & Virtual Zoom,0.9800,1,no,not in expected
+doc27_meeting_minutes_note,notes,unknown,Meeting Chair,"Douglas Davenport, Chairman",0.9800,1,no,yes
+doc27_meeting_minutes_note,notes,unknown,Attendees Present,"Douglas Davenport, Brenda Miller, Carlos Santana, Dr. Julia Chen",0.9800,1,no,not in expected
+doc27_meeting_minutes_note,notes,unknown,Resolution Passed,"Motion to approve Q1 capital expenditure budget of $3,200,000.00 passed",0.9800,1,no,yes
+doc27_meeting_minutes_note,notes,unknown,Next Meeting Date,2026-12-15,0.9800,1,no,yes
+doc28_unknown_astronomy_paper,unknown,unknown,Preprint Identifier,arXiv:2026.09841v2 [astro-ph.GA],0.9800,1,no,yes
+doc28_unknown_astronomy_paper,unknown,unknown,Lead Researcher,"Dr. Helena Drake, Institute for Astrophysics",0.9800,1,no,yes
+doc28_unknown_astronomy_paper,unknown,unknown,Co-Authors,"Liam O'Connor, Kenji Sato",0.9800,1,no,not in expected
+doc28_unknown_astronomy_paper,unknown,unknown,Telescope Facility,Atacama Large Millimeter Array (ALMA),0.9800,1,no,yes
+doc28_unknown_astronomy_paper,unknown,unknown,Observation Band,Band 7 Submillimeter (345 GHz),0.9800,1,no,not in expected
+doc28_unknown_astronomy_paper,unknown,unknown,Abstract,We report high-resolution interferometric observations of rotational transitions in carbon,0.9800,1,no,not in expected
+doc29_unknown_architectural_spec,unknown,unknown,PROJECT CODE,BLDG-NORTH-770,0.8800,1,no,yes
+doc29_unknown_architectural_spec,unknown,unknown,SHEET NUMBER A-104 (FOUNDATION DETAIL),"LEAD ARCHITECT MARCUS STERLING, ALA",0.8800,1,no,no
+doc29_unknown_architectural_spec,unknown,unknown,"LEAD ARCHITECT MARCUS STERLING, ALA",STRUCTURAL ENGINEER FIRM: SIMPSON & ASSOCIATES PE,0.8800,1,no,no
+doc29_unknown_architectural_spec,unknown,unknown,STRUCTURAL ENGINEER FIRM,SIMPSON & ASSOCIATES PE,0.8800,1,no,not in expected
+doc29_unknown_architectural_spec,unknown,unknown,DESIGN LOAD,120 PSF FLOOR LIVE LOAD,0.8800,1,no,not in expected
+doc29_unknown_architectural_spec,unknown,unknown,CONCRETE COMPERSIVE STENGTH,"5,000 PSIAT 28 DAYS",0.8800,1,no,yes
+doc29_unknown_architectural_spec,unknown,unknown,REINFORCING STEET,ASTM A615 GRADE 60 REBAR,0.8800,1,no,not in expected
+doc29_unknown_architectural_spec,unknown,unknown,SEISMIC DESIGN CATEGORY CATEGORY D,DATE OF RELEASE: 2026-10-10,0.8800,1,no,yes
+doc29_unknown_architectural_spec,unknown,unknown,DATE OF RELEASE,2026-10-10,0.8800,1,no,yes
+doc30_multipage_mixed,multi_document,invoice,Invoice Number,NWP-99120,0.9800,1,no,yes
+doc30_multipage_mixed,multi_document,invoice,Invoice Date,2026-11-01,0.9800,1,no,not in expected
+doc30_multipage_mixed,multi_document,invoice,Customer Name,Cascade Machinery LLC,0.9800,1,no,not in expected
+doc30_multipage_mixed,multi_document,invoice,Total Amount,"$3,450.00",0.9800,1,no,yes
+doc30_multipage_mixed,multi_document,invoice,DELIVERY RECEIPT & WAYBILL,Waybill Tracking: CL-WAYBILL-44019,0.9800,2,no,yes
+doc30_multipage_mixed,multi_document,invoice,Waybill Tracking,CL-WAYBILL-44019,0.9800,2,no,yes
+doc30_multipage_mixed,multi_document,invoice,Delivery Date,2026-11-03,0.9800,2,no,yes
+doc30_multipage_mixed,multi_document,invoice,Carrier Name,Cascade Freight Lines,0.9800,2,no,not in expected
+doc30_multipage_mixed,multi_document,invoice,Receiver Signature,J. Miller,0.9800,2,no,not in expected
+doc30_multipage_mixed,multi_document,invoice,Package Count,4 Wooden Crates,0.9800,2,no,not in expected

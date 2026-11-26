@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_23_chess_pgn_game.pdf",
+  "expected_type": "unknown",
+  "expected_routing": "MANUAL_TRIAGE_QUEUE",
+  "expected_fields": {
+    "WHITE": "KASPAROV",
+    "BLACK": "ANAND",
+    "RESULT": "1/2-1/2"
+  },
+  "full_text": "CHESS TOURNAMENT ROUND 4\nWHITE: KASPAROV\nBLACK: ANAND\nRESULT: 1/2-1/2\nECO: B90\nMOVES: 1.e4 c5 2.Nf3 d6"
+}

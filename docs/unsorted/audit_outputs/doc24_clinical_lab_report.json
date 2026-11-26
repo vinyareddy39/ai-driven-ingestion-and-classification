@@ -1,0 +1,157 @@
+{
+  "type": "medical_report",
+  "type_confidence": 0.7455,
+  "top_candidates": [
+    {
+      "type": "medical_report",
+      "score": 0.7455
+    },
+    {
+      "type": "receipt",
+      "score": 0.0738
+    },
+    {
+      "type": "letter",
+      "score": 0.0637
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "medical_report",
+      "confidence": 0.8172
+    }
+  ],
+  "fields": [
+    {
+      "label": "COMPREHENSIVE METABOLIC PANEL REPORT",
+      "value": "Patient Name: Eleanor Rigby",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Patient Name",
+      "value": "Eleanor Rigby",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Patient DOB",
+      "value": "1978-11-19",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Specimen ID",
+      "value": "SPEC-88419",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Collection Date",
+      "value": "2026-11-03",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Ordering Physician",
+      "value": "Dr. Robert Chase, MD",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [
+    {
+      "Test Name": "Fasting Glucose",
+      "Result": "92 mg/dL",
+      "Reference Range": "70 - 99 mg/dL",
+      "Flag": "Normal"
+    },
+    {
+      "Test Name": "Blood Urea Nitrogen",
+      "Result": "(BUN) 16 mg/dL",
+      "Reference Range": "7 - 20 mg/dL",
+      "Flag": "Normal"
+    },
+    {
+      "Test Name": "Serum Creatinine",
+      "Result": "0.9 mg/dL",
+      "Reference Range": "0.6 - 1.2 mg/dL",
+      "Flag": "Normal"
+    },
+    {
+      "Test Name": "Serum Sodium",
+      "Result": "139 mmol/L",
+      "Reference Range": "135 - 145 mmol/L",
+      "Flag": "Normal"
+    },
+    {
+      "Test Name": "Serum Potassium",
+      "Result": "4.2 mmol/L",
+      "Reference Range": "3.5 - 5.1 mmol/L",
+      "Flag": "Normal"
+    }
+  ],
+  "sensitive_findings": [
+    {
+      "type": "PERSON_NAME",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          189.25,
+          274.7200012207031,
+          203.07000732421875
+        ],
+        "label": "Ordering Physician",
+        "start": 0,
+        "end": 16
+      },
+      "confidence": 0.95,
+      "masked_value": "D*** [PERSON]"
+    },
+    {
+      "type": "HEALTH_IDENTIFIER",
+      "location": {
+        "page": 1,
+        "bbox": null,
+        "label": "",
+        "start": 11,
+        "end": 20
+      },
+      "confidence": 0.75,
+      "masked_value": "[RESTRICTED MEDICAL ID]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_HIPAA_SECURE_VAULT",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Sensitive finding (HEALTH_IDENTIFIER) in field '' flagged for review."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "DIAGNOSTIC PATHOLOGY LABORATORIES",
+  "dates": [
+    "1978-11-19",
+    "2026-11-03"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_29_credit_card_statement.pdf",
+  "expected_type": "bank_statement",
+  "expected_routing": "BANK_STATEMENT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "STATEMENT DATE": "2026-11-15",
+    "NEW BALANCE": "$1,420.55"
+  },
+  "full_text": "PLATINUM REWARDS CARD\nSTATEMENT DATE: 2026-11-15\nNEW BALANCE: $1,420.55\nMINIMUM PAYMENT: $35.00"
+}

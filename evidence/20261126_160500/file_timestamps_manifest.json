@@ -1,0 +1,207 @@
+{
+  "generated_at": "2026-11-26T16:02:24.704271",
+  "target_suite_size": 40,
+  "bad_inputs_size": 12,
+  "files": {
+    "doc_01_two_column_article.pdf": {
+      "file_created": "2026-11-26T13:53:40.365191",
+      "expected_written": "2026-11-26T16:02:22.974281",
+      "size_bytes": 2244
+    },
+    "doc_02_three_column_newsletter.pdf": {
+      "file_created": "2026-11-26T13:53:40.366196",
+      "expected_written": "2026-11-26T16:02:22.979283",
+      "size_bytes": 1850
+    },
+    "doc_03_form_checkboxes.pdf": {
+      "file_created": "2026-11-26T13:53:40.368193",
+      "expected_written": "2026-11-26T16:02:22.983283",
+      "size_bytes": 1825
+    },
+    "doc_04_signature_stamp_contract.pdf": {
+      "file_created": "2026-11-26T13:53:40.369192",
+      "expected_written": "2026-11-26T16:02:22.988286",
+      "size_bytes": 2039
+    },
+    "doc_05_multipage_repeating_header.pdf": {
+      "file_created": "2026-11-26T13:53:40.371264",
+      "expected_written": "2026-11-26T16:02:22.993293",
+      "size_bytes": 2590
+    },
+    "doc_06_table_with_totals.pdf": {
+      "file_created": "2026-11-26T13:53:40.372264",
+      "expected_written": "2026-11-26T16:02:22.997292",
+      "size_bytes": 2059
+    },
+    "doc_07_nested_bullet_list.pdf": {
+      "file_created": "2026-11-26T13:53:40.374286",
+      "expected_written": "2026-11-26T16:02:23.002294",
+      "size_bytes": 1908
+    },
+    "doc_08_bar_chart_metrics.pdf": {
+      "file_created": "2026-11-26T13:53:40.375289",
+      "expected_written": "2026-11-26T16:02:23.007816",
+      "size_bytes": 1859
+    },
+    "doc_09_qr_code_verification.pdf": {
+      "file_created": "2026-11-26T13:53:40.393370",
+      "expected_written": "2026-11-26T16:02:23.012816",
+      "size_bytes": 3259
+    },
+    "doc_10_barcode_shipping_label.pdf": {
+      "file_created": "2026-11-26T13:53:40.395371",
+      "expected_written": "2026-11-26T16:02:23.017815",
+      "size_bytes": 1890
+    },
+    "doc_11_watermarked_draft.pdf": {
+      "file_created": "2026-11-26T13:53:40.396370",
+      "expected_written": "2026-11-26T16:02:23.022819",
+      "size_bytes": 1872
+    },
+    "doc_12_footnote_citations.pdf": {
+      "file_created": "2026-11-26T13:53:40.398376",
+      "expected_written": "2026-11-26T16:02:23.027817",
+      "size_bytes": 1839
+    },
+    "doc_13_side_by_side_blocks.pdf": {
+      "file_created": "2026-11-26T13:53:40.399375",
+      "expected_written": "2026-11-26T16:02:23.031816",
+      "size_bytes": 1763
+    },
+    "doc_14_multilingual_invoice.pdf": {
+      "file_created": "2026-11-26T13:53:40.400372",
+      "expected_written": "2026-11-26T16:02:23.036816",
+      "size_bytes": 1685
+    },
+    "doc_15_rotated_vertical_text.pdf": {
+      "file_created": "2026-11-26T13:53:40.402376",
+      "expected_written": "2026-11-26T16:02:23.061313",
+      "size_bytes": 1717
+    },
+    "doc_16_table_merged_multiline.pdf": {
+      "file_created": "2026-11-26T13:53:40.423252",
+      "expected_written": "2026-11-26T16:02:23.065313",
+      "size_bytes": 1958
+    },
+    "doc_17_handwritten_form.pdf": {
+      "file_created": "2026-11-26T13:53:40.424261",
+      "expected_written": "2026-11-26T16:02:23.071315",
+      "size_bytes": 1807
+    },
+    "doc_18_noisy_skewed_scan.png": {
+      "file_created": "2026-11-26T13:53:40.487612",
+      "expected_written": "2026-11-26T16:02:23.076313",
+      "size_bytes": 30103
+    },
+    "doc_19_company_logo_letterhead.pdf": {
+      "file_created": "2026-11-26T13:53:40.489613",
+      "expected_written": "2026-11-26T16:02:23.081314",
+      "size_bytes": 1943
+    },
+    "doc_20_mixed_checkbox_unclear.pdf": {
+      "file_created": "2026-11-26T13:53:40.490614",
+      "expected_written": "2026-11-26T16:02:23.086315",
+      "size_bytes": 1712
+    },
+    "doc_21_purchase_order_nested_table.pdf": {
+      "file_created": "2026-11-26T13:53:40.492614",
+      "expected_written": "2026-11-26T16:02:23.092314",
+      "size_bytes": 1887
+    },
+    "doc_22_legal_waiver_initials.pdf": {
+      "file_created": "2026-11-26T13:53:40.493613",
+      "expected_written": "2026-11-26T16:02:23.096313",
+      "size_bytes": 1645
+    },
+    "doc_23_medical_record_diagnoses.pdf": {
+      "file_created": "2026-11-26T13:53:40.495618",
+      "expected_written": "2026-11-26T16:02:23.101517",
+      "size_bytes": 1849
+    },
+    "doc_24_utility_bill_complex_layout.pdf": {
+      "file_created": "2026-11-26T13:53:40.497617",
+      "expected_written": "2026-11-26T16:02:23.106519",
+      "size_bytes": 1885
+    },
+    "doc_25_travel_itinerary_timeline.pdf": {
+      "file_created": "2026-11-26T13:53:40.517997",
+      "expected_written": "2026-11-26T16:02:23.111540",
+      "size_bytes": 3869
+    },
+    "doc_26_expense_report_multi_row.pdf": {
+      "file_created": "2026-11-26T13:53:40.520595",
+      "expected_written": "2026-11-26T16:02:23.115518",
+      "size_bytes": 1967
+    },
+    "doc_27_warehouse_bill_of_lading.pdf": {
+      "file_created": "2026-11-26T13:53:40.521688",
+      "expected_written": "2026-11-26T16:02:23.121518",
+      "size_bytes": 1953
+    },
+    "doc_28_real_estate_lease_agreement.pdf": {
+      "file_created": "2026-11-26T13:53:40.523989",
+      "expected_written": "2026-11-26T16:02:23.126518",
+      "size_bytes": 1797
+    },
+    "doc_29_bank_statement_columns.pdf": {
+      "file_created": "2026-11-26T13:53:40.524990",
+      "expected_written": "2026-11-26T16:02:23.130517",
+      "size_bytes": 1892
+    },
+    "doc_30_equipment_inspection_log.pdf": {
+      "file_created": "2026-11-26T13:53:40.526989",
+      "expected_written": "2026-11-26T16:02:23.136519",
+      "size_bytes": 1769
+    },
+    "doc_31_conference_brochure_3col.pdf": {
+      "file_created": "2026-11-26T13:53:40.527988",
+      "expected_written": "2026-11-26T16:02:23.141518",
+      "size_bytes": 1758
+    },
+    "doc_32_certificate_of_insurance.pdf": {
+      "file_created": "2026-11-26T13:53:40.530363",
+      "expected_written": "2026-11-26T16:02:23.146525",
+      "size_bytes": 1997
+    },
+    "doc_33_german_commercial_invoice.pdf": {
+      "file_created": "2026-11-26T13:53:40.531363",
+      "expected_written": "2026-11-26T16:02:23.151527",
+      "size_bytes": 1897
+    },
+    "doc_34_clean_scan_image.png": {
+      "file_created": "2026-11-26T13:53:40.538363",
+      "expected_written": "2026-11-26T16:02:23.156528",
+      "size_bytes": 8305
+    },
+    "doc_35_project_milestone_report.pdf": {
+      "file_created": "2026-11-26T13:53:40.540367",
+      "expected_written": "2026-11-26T16:02:23.162045",
+      "size_bytes": 1772
+    },
+    "doc_36_nda_confidentiality_notice.pdf": {
+      "file_created": "2026-11-26T13:53:40.541368",
+      "expected_written": "2026-11-26T16:02:23.167044",
+      "size_bytes": 1777
+    },
+    "doc_37_customs_declaration_form.pdf": {
+      "file_created": "2026-11-26T13:53:40.543367",
+      "expected_written": "2026-11-26T16:02:23.173044",
+      "size_bytes": 2068
+    },
+    "doc_38_service_level_agreement.pdf": {
+      "file_created": "2026-11-26T13:53:40.545365",
+      "expected_written": "2026-11-26T16:02:23.177045",
+      "size_bytes": 1867
+    },
+    "doc_39_inventory_transfer_manifest.pdf": {
+      "file_created": "2026-11-26T13:53:40.564475",
+      "expected_written": "2026-11-26T16:02:23.182928",
+      "size_bytes": 3844
+    },
+    "doc_40_payroll_remittance_advice.pdf": {
+      "file_created": "2026-11-26T13:53:40.567124",
+      "expected_written": "2026-11-26T16:02:23.188943",
+      "size_bytes": 1894
+    }
+  }
+}

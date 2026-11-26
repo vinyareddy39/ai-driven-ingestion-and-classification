@@ -1,0 +1,12 @@
+{
+  "document_kind": "tax_form",
+  "key_values": {
+    "ssn": "111-22-3333",
+    "ein": "84-9921045",
+    "employee_name": "Jennifer M. Walsh",
+    "employer_name": "Orion Logistics Corporation",
+    "wages": "$94,500.00",
+    "federal_tax_withheld": "$16,840.00"
+  },
+  "notes": ""
+}

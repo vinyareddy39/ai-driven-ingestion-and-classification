@@ -1,0 +1,11 @@
+{
+  "document_kind": "medical_report",
+  "key_values": {
+    "patient_id": "PT-90214",
+    "patient_name": "Jonathan David Reynolds",
+    "dob": "1984-03-12",
+    "insurance_group": "GRP-881924",
+    "allergies": "Penicillin, Sulfa drugs"
+  },
+  "notes": ""
+}

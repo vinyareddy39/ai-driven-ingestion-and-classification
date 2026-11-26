@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_12_multipage_invoice_2p.pdf",
+  "expected_type": "invoice",
+  "expected_routing": "INVOICE_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "INVOICE NO": "GTH-55102",
+    "TOTAL PAYABLE": "$15,900.00"
+  },
+  "full_text": "GLOBAL TECH HARDWARE\nINVOICE NO: GTH-55102\nTOTAL PAYABLE: $15,900.00\nDUE DATE: 2026-12-30"
+}

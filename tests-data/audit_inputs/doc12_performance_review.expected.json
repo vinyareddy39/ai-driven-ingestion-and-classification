@@ -1,0 +1,11 @@
+{
+  "document_kind": "performance_review",
+  "key_values": {
+    "employee_name": "Samantha Sterling",
+    "employee_id": "HR-8819",
+    "role": "Lead Product Designer",
+    "rating": "4.8 / 5.0",
+    "merit_increase": "6.5%"
+  },
+  "notes": ""
+}

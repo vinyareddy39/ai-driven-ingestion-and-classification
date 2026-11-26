@@ -1,0 +1,22 @@
+{
+  "file_name": "doc_33_german_commercial_invoice.pdf",
+  "document_type": "Commercial Invoice",
+  "expected_structures": [
+    "heading",
+    "label_value_pair",
+    "table"
+  ],
+  "expected_fields": {
+    "Rechnungsnummer": "RE-2026-9041",
+    "Rechnungsdatum": "18.11.2026",
+    "Gesamtbetrag": "EUR 1.840,00"
+  },
+  "expected_tables": [],
+  "expected_checkboxes": {},
+  "expected_signatures": [],
+  "expected_lists": [],
+  "expected_codes": [],
+  "header_footer_texts": [],
+  "watermark_texts": [],
+  "footnote_texts": []
+}

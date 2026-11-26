@@ -1,0 +1,9 @@
+{
+  "file": "syn_extra_19_nolabel_receipt_rows.pdf",
+  "expected_type": "receipt",
+  "expected_routing": "RECEIPT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "TOTAL": "14.00"
+  },
+  "full_text": "BURGER 8.50\nFRIES 3.50\nSODA 2.00\nTOTAL 14.00"
+}

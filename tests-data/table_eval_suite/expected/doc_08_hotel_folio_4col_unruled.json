@@ -1,0 +1,47 @@
+{
+  "id": "doc_08_hotel_folio_4col_unruled",
+  "title": "GRAND MERIDIAN HOTEL",
+  "doc_type": "receipt",
+  "headers": [
+    "Posting Date",
+    "Transaction Description",
+    "Reference",
+    "Charge"
+  ],
+  "rows": [
+    [
+      "2026-11-21",
+      "Deluxe King Room Stay Night 1",
+      "RMS-408",
+      "210.00"
+    ],
+    [
+      "2026-11-22",
+      "Deluxe King Room Stay Night 2",
+      "RMS-408",
+      "210.00"
+    ],
+    [
+      "2026-11-22",
+      "Room Service Dining Charge",
+      "POS-882",
+      "58.50"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "City Hospitality Surcharge",
+      "$14.20"
+    ]
+  ],
+  "totals": [
+    [
+      "Subtotal Amount",
+      "$478.50"
+    ],
+    [
+      "Total Billed",
+      "$492.70"
+    ]
+  ]
+}

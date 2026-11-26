@@ -1,0 +1,113 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.2474,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.2474
+    },
+    {
+      "type": "receipt",
+      "score": 0.2428
+    },
+    {
+      "type": "invoice",
+      "score": 0.2337
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": -1.0,
+      "denoised": false,
+      "blur_score": 682.16,
+      "noise_level": 2263,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.2474
+    }
+  ],
+  "fields": [
+    {
+      "label": "PACKING SLIP #",
+      "value": "PS-50192",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "ORDER REFERENCE",
+      "value": "ORD-99201",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "PACK DATE",
+      "value": "2026-10-28",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "CUSTOMER BLUE HORIZON LABORATORIES",
+      "value": "PACKED BY INSPECTOR #42",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "PACKED BY INSPECTOR #42",
+      "value": "ITEM 1: CENTRILUGE TUBES 50ML (PACK OF 500)-QTY:2",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "ITEM 1",
+      "value": "CENTRILUGE TUBES 50ML (PACK OF 500)-QTY:2",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "ITEM 2",
+      "value": "PIPETTE TIPS 200UL (PACK OF 1000)-QTY: 5",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "ITEM 3",
+      "value": "GLASS BEAKER SET (5 PIECES) - QTY: 1",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "TOTAL CARTONS",
+      "value": "3 BOXES",
+      "confidence": 0.88,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'letter' confidence (0.25) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "WAREHOUSE PACKING SLIP",
+  "dates": [
+    "2026-10-28"
+  ]
+}

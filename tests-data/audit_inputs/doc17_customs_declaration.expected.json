@@ -1,0 +1,11 @@
+{
+  "document_kind": "logistics",
+  "key_values": {
+    "customs_declaration_id": "CUST-2026-1184",
+    "hs_code": "8471.50.0150",
+    "exporter": "Silicon Valley Chips Ltd",
+    "importer": "Thames Computing Technologies Plc",
+    "customs_value": "$12,400.00 USD"
+  },
+  "notes": ""
+}

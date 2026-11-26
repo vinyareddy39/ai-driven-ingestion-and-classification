@@ -1,0 +1,111 @@
+{
+  "type": "letter",
+  "type_confidence": 0.6008,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.6008
+    },
+    {
+      "type": "receipt",
+      "score": 0.1114
+    },
+    {
+      "type": "invoice",
+      "score": 0.0411
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 2140.75,
+      "noise_level": 2173,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "letter",
+      "confidence": 0.6008
+    }
+  ],
+  "fields": [
+    {
+      "label": "TRACKING NUMBER",
+      "value": "1Z9999999999999999",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "SHIP DATE",
+      "value": "2026-11-04",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "SERVICE",
+      "value": "PRIORITY OVERNIGHT AIR",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "ORIGIN",
+      "value": "CHICAGO LOGISTICS HUB, IL",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "DESCINATION",
+      "value": "ATLANTA FULFILLMENTCENTER, GA",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "SENDER",
+      "value": "APEX HARDWARE DISTRIBUTION",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "RECEIPIENT SOUTHERN INDUSTRIAL SUPPLIES",
+      "value": "PACKAGE WEIGHT 14.8 LBS",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "PACKAGE WEIGHT 14.8 LBS",
+      "value": "DECLATED VALUE: $1,250.00",
+      "confidence": 0.88,
+      "page": 1
+    },
+    {
+      "label": "DECLATED VALUE",
+      "value": "$1,250.00",
+      "confidence": 0.88,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "CORRESPONDENCE_MANAGEMENT",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 72
+  },
+  "needs_review": false,
+  "review_reasons": [],
+  "pipeline_version": "2.2.0",
+  "title_block": "AIR EXPRESS SHIPPING WAYBILL",
+  "dates": [
+    "2026-11-04"
+  ]
+}

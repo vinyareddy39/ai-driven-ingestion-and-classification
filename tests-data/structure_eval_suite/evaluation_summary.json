@@ -1,0 +1,717 @@
+{
+  "total_documents_evaluated": 40,
+  "total_evaluation_time_sec": 14.47,
+  "pairing_metrics": {
+    "precision": 28.05,
+    "recall": 58.49,
+    "f1_score": 37.92,
+    "true_positives": 62,
+    "false_positives": 159,
+    "false_negatives": 44
+  },
+  "specialized_accuracies": {
+    "table_cell_accuracy": 86.36,
+    "checkbox_state_accuracy": 100.0,
+    "barcode_qr_accuracy": 100.0,
+    "signature_accuracy": 100.0,
+    "list_accuracy": 100.0
+  },
+  "leakage_and_cleanliness": {
+    "orphan_unlabeled_count": 0,
+    "header_footer_leakage_count": 0,
+    "footnote_watermark_leakage_count": 0,
+    "header_footer_leakage_share_pct": 0.0
+  },
+  "structure_type_accuracy": {
+    "label_value_pair": {
+      "expected_count": 31,
+      "detected_count": 38,
+      "correct_count": 31,
+      "accuracy": 100.0
+    },
+    "table": {
+      "expected_count": 13,
+      "detected_count": 13,
+      "correct_count": 13,
+      "accuracy": 100.0
+    },
+    "list": {
+      "expected_count": 6,
+      "detected_count": 2,
+      "correct_count": 2,
+      "accuracy": 33.3
+    },
+    "paragraph": {
+      "expected_count": 13,
+      "detected_count": 7,
+      "correct_count": 6,
+      "accuracy": 46.2
+    },
+    "heading": {
+      "expected_count": 40,
+      "detected_count": 40,
+      "correct_count": 40,
+      "accuracy": 100.0
+    },
+    "form_row": {
+      "expected_count": 2,
+      "detected_count": 38,
+      "correct_count": 2,
+      "accuracy": 100.0
+    },
+    "checkbox_group": {
+      "expected_count": 4,
+      "detected_count": 4,
+      "correct_count": 4,
+      "accuracy": 100.0
+    },
+    "signature_stamp": {
+      "expected_count": 12,
+      "detected_count": 11,
+      "correct_count": 11,
+      "accuracy": 91.7
+    },
+    "handwriting": {
+      "expected_count": 1,
+      "detected_count": 0,
+      "correct_count": 0,
+      "accuracy": 0.0
+    },
+    "image_logo": {
+      "expected_count": 1,
+      "detected_count": 0,
+      "correct_count": 0,
+      "accuracy": 0.0
+    },
+    "chart_diagram": {
+      "expected_count": 1,
+      "detected_count": 4,
+      "correct_count": 0,
+      "accuracy": 0.0
+    },
+    "barcode_qr": {
+      "expected_count": 4,
+      "detected_count": 2,
+      "correct_count": 2,
+      "accuracy": 50.0
+    },
+    "header_footer": {
+      "expected_count": 2,
+      "detected_count": 2,
+      "correct_count": 2,
+      "accuracy": 100.0
+    },
+    "footnote": {
+      "expected_count": 2,
+      "detected_count": 2,
+      "correct_count": 2,
+      "accuracy": 100.0
+    },
+    "watermark": {
+      "expected_count": 2,
+      "detected_count": 3,
+      "correct_count": 2,
+      "accuracy": 100.0
+    },
+    "side_by_side": {
+      "expected_count": 4,
+      "detected_count": 0,
+      "correct_count": 0,
+      "accuracy": 0.0
+    },
+    "other": {
+      "expected_count": 1,
+      "detected_count": 0,
+      "correct_count": 0,
+      "accuracy": 0.0
+    }
+  },
+  "confidence_distributions": {
+    "value_confidence": {
+      "mean": 0.9752,
+      "min": 0.7,
+      "max": 0.99,
+      "count": 240
+    },
+    "label_confidence": {
+      "mean": 0.9694,
+      "min": 0.86,
+      "max": 0.99,
+      "count": 239
+    },
+    "structure_confidence": {
+      "mean": 0.9571,
+      "min": 0.95,
+      "max": 0.99,
+      "count": 240
+    }
+  },
+  "per_document_results": [
+    {
+      "file": "doc_01_two_column_article.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "footnote",
+        "paragraph",
+        "heading",
+        "form_row",
+        "list"
+      ],
+      "fields_count": 4,
+      "tables_count": 0,
+      "latency_ms": 59.44
+    },
+    {
+      "file": "doc_02_three_column_newsletter.pdf",
+      "expected_type": "Newsletter",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "paragraph",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 4,
+      "tables_count": 0,
+      "latency_ms": 36.81
+    },
+    {
+      "file": "doc_03_form_checkboxes.pdf",
+      "expected_type": "Form",
+      "detected_type": "bank_statement",
+      "structures_detected": [
+        "checkbox_group",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 8,
+      "tables_count": 0,
+      "latency_ms": 36.56
+    },
+    {
+      "file": "doc_04_signature_stamp_contract.pdf",
+      "expected_type": "Contract",
+      "detected_type": "contract",
+      "structures_detected": [
+        "paragraph",
+        "heading",
+        "label_value_pair",
+        "signature_stamp"
+      ],
+      "fields_count": 7,
+      "tables_count": 0,
+      "latency_ms": 39.07
+    },
+    {
+      "file": "doc_05_multipage_repeating_header.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "header_footer",
+        "form_row",
+        "heading",
+        "label_value_pair"
+      ],
+      "fields_count": 7,
+      "tables_count": 0,
+      "latency_ms": 67.13
+    },
+    {
+      "file": "doc_06_table_with_totals.pdf",
+      "expected_type": "Invoice",
+      "detected_type": "invoice",
+      "structures_detected": [
+        "heading",
+        "table",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 8,
+      "tables_count": 1,
+      "latency_ms": 40.19
+    },
+    {
+      "file": "doc_07_nested_bullet_list.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "list",
+        "heading"
+      ],
+      "fields_count": 2,
+      "tables_count": 0,
+      "latency_ms": 37.99
+    },
+    {
+      "file": "doc_08_bar_chart_metrics.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 5,
+      "tables_count": 0,
+      "latency_ms": 33.77
+    },
+    {
+      "file": "doc_09_qr_code_verification.pdf",
+      "expected_type": "Document",
+      "detected_type": "letter",
+      "structures_detected": [
+        "chart_diagram",
+        "barcode_qr",
+        "label_value_pair",
+        "heading",
+        "form_row"
+      ],
+      "fields_count": 8,
+      "tables_count": 0,
+      "latency_ms": 58.67
+    },
+    {
+      "file": "doc_10_barcode_shipping_label.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "chart_diagram",
+        "barcode_qr",
+        "label_value_pair",
+        "heading",
+        "form_row"
+      ],
+      "fields_count": 8,
+      "tables_count": 0,
+      "latency_ms": 43.23
+    },
+    {
+      "file": "doc_11_watermarked_draft.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "watermark",
+        "label_value_pair",
+        "heading",
+        "form_row",
+        "paragraph"
+      ],
+      "fields_count": 4,
+      "tables_count": 0,
+      "latency_ms": 36.37
+    },
+    {
+      "file": "doc_12_footnote_citations.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "footnote",
+        "label_value_pair",
+        "heading",
+        "form_row",
+        "paragraph"
+      ],
+      "fields_count": 3,
+      "tables_count": 0,
+      "latency_ms": 35.89
+    },
+    {
+      "file": "doc_13_side_by_side_blocks.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 11,
+      "tables_count": 0,
+      "latency_ms": 38.25
+    },
+    {
+      "file": "doc_14_multilingual_invoice.pdf",
+      "expected_type": "Invoice",
+      "detected_type": "invoice",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 5,
+      "tables_count": 0,
+      "latency_ms": 55.22
+    },
+    {
+      "file": "doc_15_rotated_vertical_text.pdf",
+      "expected_type": "Document",
+      "detected_type": "letter",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "watermark",
+        "label_value_pair"
+      ],
+      "fields_count": 4,
+      "tables_count": 0,
+      "latency_ms": 69.82
+    },
+    {
+      "file": "doc_16_table_merged_multiline.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "table",
+        "label_value_pair",
+        "heading",
+        "form_row",
+        "paragraph"
+      ],
+      "fields_count": 4,
+      "tables_count": 1,
+      "latency_ms": 43.97
+    },
+    {
+      "file": "doc_17_handwritten_form.pdf",
+      "expected_type": "Document",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 4,
+      "tables_count": 0,
+      "latency_ms": 38.89
+    },
+    {
+      "file": "doc_18_noisy_skewed_scan.png",
+      "expected_type": "Document",
+      "detected_type": "receipt",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 8,
+      "tables_count": 0,
+      "latency_ms": 12490.89
+    },
+    {
+      "file": "doc_19_company_logo_letterhead.pdf",
+      "expected_type": "Document",
+      "detected_type": "letter",
+      "structures_detected": [
+        "paragraph",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 4,
+      "tables_count": 0,
+      "latency_ms": 44.89
+    },
+    {
+      "file": "doc_20_mixed_checkbox_unclear.pdf",
+      "expected_type": "Document",
+      "detected_type": "letter",
+      "structures_detected": [
+        "checkbox_group",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 6,
+      "tables_count": 0,
+      "latency_ms": 41.64
+    },
+    {
+      "file": "doc_21_purchase_order_nested_table.pdf",
+      "expected_type": "Purchase Order",
+      "detected_type": "invoice",
+      "structures_detected": [
+        "table",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 5,
+      "tables_count": 1,
+      "latency_ms": 47.98
+    },
+    {
+      "file": "doc_22_legal_waiver_initials.pdf",
+      "expected_type": "Legal Waiver",
+      "detected_type": "contract",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair",
+        "signature_stamp"
+      ],
+      "fields_count": 6,
+      "tables_count": 0,
+      "latency_ms": 36.61
+    },
+    {
+      "file": "doc_23_medical_record_diagnoses.pdf",
+      "expected_type": "Clinical Encounter",
+      "detected_type": "medical_report",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair",
+        "signature_stamp"
+      ],
+      "fields_count": 7,
+      "tables_count": 0,
+      "latency_ms": 38.81
+    },
+    {
+      "file": "doc_24_utility_bill_complex_layout.pdf",
+      "expected_type": "Utility Bill",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "table",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 5,
+      "tables_count": 1,
+      "latency_ms": 38.32
+    },
+    {
+      "file": "doc_25_travel_itinerary_timeline.pdf",
+      "expected_type": "Travel Itinerary",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "chart_diagram",
+        "table",
+        "label_value_pair",
+        "heading",
+        "form_row"
+      ],
+      "fields_count": 7,
+      "tables_count": 1,
+      "latency_ms": 59.64
+    },
+    {
+      "file": "doc_26_expense_report_multi_row.pdf",
+      "expected_type": "Expense Report",
+      "detected_type": "invoice",
+      "structures_detected": [
+        "table",
+        "label_value_pair",
+        "heading",
+        "form_row",
+        "signature_stamp"
+      ],
+      "fields_count": 8,
+      "tables_count": 1,
+      "latency_ms": 43.01
+    },
+    {
+      "file": "doc_27_warehouse_bill_of_lading.pdf",
+      "expected_type": "Bill of Lading",
+      "detected_type": "invoice",
+      "structures_detected": [
+        "table",
+        "label_value_pair",
+        "heading",
+        "form_row",
+        "signature_stamp"
+      ],
+      "fields_count": 8,
+      "tables_count": 1,
+      "latency_ms": 39.93
+    },
+    {
+      "file": "doc_28_real_estate_lease_agreement.pdf",
+      "expected_type": "Lease Agreement",
+      "detected_type": "contract",
+      "structures_detected": [
+        "label_value_pair",
+        "heading",
+        "form_row",
+        "header_footer",
+        "signature_stamp"
+      ],
+      "fields_count": 6,
+      "tables_count": 0,
+      "latency_ms": 35.38
+    },
+    {
+      "file": "doc_29_bank_statement_columns.pdf",
+      "expected_type": "Bank Statement",
+      "detected_type": "receipt",
+      "structures_detected": [
+        "table",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 5,
+      "tables_count": 1,
+      "latency_ms": 42.24
+    },
+    {
+      "file": "doc_30_equipment_inspection_log.pdf",
+      "expected_type": "Inspection Log",
+      "detected_type": "contract",
+      "structures_detected": [
+        "label_value_pair",
+        "checkbox_group",
+        "heading",
+        "form_row",
+        "signature_stamp"
+      ],
+      "fields_count": 9,
+      "tables_count": 0,
+      "latency_ms": 37.06
+    },
+    {
+      "file": "doc_31_conference_brochure_3col.pdf",
+      "expected_type": "Brochure",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 3,
+      "tables_count": 0,
+      "latency_ms": 39.08
+    },
+    {
+      "file": "doc_32_certificate_of_insurance.pdf",
+      "expected_type": "Certificate of Insurance",
+      "detected_type": "invoice",
+      "structures_detected": [
+        "table",
+        "label_value_pair",
+        "heading",
+        "form_row",
+        "signature_stamp"
+      ],
+      "fields_count": 8,
+      "tables_count": 1,
+      "latency_ms": 38.16
+    },
+    {
+      "file": "doc_33_german_commercial_invoice.pdf",
+      "expected_type": "Commercial Invoice",
+      "detected_type": "invoice",
+      "structures_detected": [
+        "table",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 5,
+      "tables_count": 1,
+      "latency_ms": 36.37
+    },
+    {
+      "file": "doc_34_clean_scan_image.png",
+      "expected_type": "Store Receipt",
+      "detected_type": "receipt",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 4,
+      "tables_count": 0,
+      "latency_ms": 340.43
+    },
+    {
+      "file": "doc_35_project_milestone_report.pdf",
+      "expected_type": "Milestone Report",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 4,
+      "tables_count": 0,
+      "latency_ms": 35.37
+    },
+    {
+      "file": "doc_36_nda_confidentiality_notice.pdf",
+      "expected_type": "NDA Agreement",
+      "detected_type": "contract",
+      "structures_detected": [
+        "watermark",
+        "label_value_pair",
+        "heading",
+        "form_row",
+        "signature_stamp"
+      ],
+      "fields_count": 7,
+      "tables_count": 0,
+      "latency_ms": 32.57
+    },
+    {
+      "file": "doc_37_customs_declaration_form.pdf",
+      "expected_type": "Customs Declaration",
+      "detected_type": "invoice",
+      "structures_detected": [
+        "table",
+        "label_value_pair",
+        "checkbox_group",
+        "heading",
+        "form_row",
+        "signature_stamp"
+      ],
+      "fields_count": 10,
+      "tables_count": 1,
+      "latency_ms": 38.8
+    },
+    {
+      "file": "doc_38_service_level_agreement.pdf",
+      "expected_type": "SLA Agreement",
+      "detected_type": "contract",
+      "structures_detected": [
+        "heading",
+        "form_row",
+        "label_value_pair",
+        "signature_stamp"
+      ],
+      "fields_count": 7,
+      "tables_count": 0,
+      "latency_ms": 34.94
+    },
+    {
+      "file": "doc_39_inventory_transfer_manifest.pdf",
+      "expected_type": "Transfer Manifest",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "chart_diagram",
+        "table",
+        "label_value_pair",
+        "heading",
+        "form_row"
+      ],
+      "fields_count": 7,
+      "tables_count": 1,
+      "latency_ms": 47.25
+    },
+    {
+      "file": "doc_40_payroll_remittance_advice.pdf",
+      "expected_type": "Payroll Advice",
+      "detected_type": "unknown",
+      "structures_detected": [
+        "table",
+        "heading",
+        "form_row",
+        "label_value_pair"
+      ],
+      "fields_count": 5,
+      "tables_count": 1,
+      "latency_ms": 36.83
+    }
+  ]
+}

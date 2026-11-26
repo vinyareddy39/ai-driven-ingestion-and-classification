@@ -1,0 +1,131 @@
+{
+  "type": "invoice",
+  "type_confidence": 0.999,
+  "top_candidates": [
+    {
+      "type": "invoice",
+      "score": 0.999
+    },
+    {
+      "type": "receipt",
+      "score": 0.0004
+    },
+    {
+      "type": "letter",
+      "score": 0.0002
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "invoice",
+      "confidence": 0.9984
+    }
+  ],
+  "fields": [
+    {
+      "label": "Invoice Number",
+      "value": "INV-84920",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Invoice Date",
+      "value": "2026-10-14",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Due Date",
+      "value": "2026-11-14",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Customer Name",
+      "value": "Horizon Analytics LLC",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Billing Address",
+      "value": "450 Silicon Parkway, Austin, TX 78701",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [
+    {
+      "Description": "Cloud Enterprise Hosting Q4",
+      "Qty": "1",
+      "Unit Price": "$4,200.00",
+      "Total": "$4,200.00"
+    },
+    {
+      "Description": "Dedicated VPC Firewall Support",
+      "Qty": "1",
+      "Unit Price": "$850.00",
+      "Total": "$850.00"
+    },
+    {
+      "Description": "Subtotal",
+      "Total": "$5,050.00"
+    },
+    {
+      "Description": "Tax Amount (8.25%)",
+      "Total": "$416.63"
+    },
+    {
+      "Description": "Total Amount",
+      "Total": "$5,466.63"
+    }
+  ],
+  "sensitive_findings": [
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": [
+          42.0,
+          157.25,
+          293.75994873046875,
+          171.07000732421875
+        ],
+        "label": "Billing Address",
+        "start": 0,
+        "end": 19
+      },
+      "confidence": 0.94,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_FINANCE_VAULT",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 24
+  },
+  "needs_review": false,
+  "review_reasons": [],
+  "pipeline_version": "2.2.0",
+  "title_block": "APEX CLOUD SYSTEMS INC.",
+  "dates": [
+    "2026-10-14",
+    "2026-11-14"
+  ]
+}

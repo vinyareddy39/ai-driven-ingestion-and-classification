@@ -1,0 +1,185 @@
+{
+  "generated_at": "2026-11-26T16:09:55.156574+00:00",
+  "files": {
+    "syn_extra_01_noisy_receipt.png": {
+      "size_bytes": 28640,
+      "sha256": "4a1fcf0b5addea29210e80cf4eef571e2571cf0a8600e32d4d5bcbdd9550ad6c",
+      "created_timestamp": "2026-11-26T16:09:55.245295+00:00",
+      "ground_truth_file": "syn_extra_01_noisy_receipt.json"
+    },
+    "syn_extra_02_skewed_invoice.png": {
+      "size_bytes": 42282,
+      "sha256": "c7544968480304e3a685659d296071c1ba3ca1681c6b78bc1f451abfb8907088",
+      "created_timestamp": "2026-11-26T16:09:55.265160+00:00",
+      "ground_truth_file": "syn_extra_02_skewed_invoice.json"
+    },
+    "syn_extra_03_faint_receipt.png": {
+      "size_bytes": 20438,
+      "sha256": "cc7c746b6ad1533287960f0b28ec390bd8ce14e5e9d009b804f98cd773cc1bb4",
+      "created_timestamp": "2026-11-26T16:09:55.284282+00:00",
+      "ground_truth_file": "syn_extra_03_faint_receipt.json"
+    },
+    "syn_extra_04_shadowed_bill.png": {
+      "size_bytes": 26382,
+      "sha256": "23b20ef189f1c8513d48257118b3462b77567207030e254f75db72faf469b793",
+      "created_timestamp": "2026-11-26T16:09:55.299105+00:00",
+      "ground_truth_file": "syn_extra_04_shadowed_bill.json"
+    },
+    "syn_extra_05_stained_memo.png": {
+      "size_bytes": 27478,
+      "sha256": "0f2baf83d365b1221ef8ecbee13d1cc6e4e8867f8d442a8acab85c11bb2c737a",
+      "created_timestamp": "2026-11-26T16:09:55.315322+00:00",
+      "ground_truth_file": "syn_extra_05_stained_memo.json"
+    },
+    "syn_extra_06_image_only_contract.pdf": {
+      "size_bytes": 2253582,
+      "sha256": "178a20f19987da4605badca3b2ee0563bd153d61c0187c1227793d9e7f8024eb",
+      "created_timestamp": "2026-11-26T16:09:55.362055+00:00",
+      "ground_truth_file": "syn_extra_06_image_only_contract.json"
+    },
+    "syn_extra_07_image_only_statement.pdf": {
+      "size_bytes": 2253582,
+      "sha256": "3421c61e5f79fff2d467d557304cc22c179e073ad8eeb7d5a1f26d5386d51de9",
+      "created_timestamp": "2026-11-26T16:09:55.395322+00:00",
+      "ground_truth_file": "syn_extra_07_image_only_statement.json"
+    },
+    "syn_extra_08_image_only_invoice.pdf": {
+      "size_bytes": 2253582,
+      "sha256": "c411de3aeb5042872a47b8fe5c5ff3dc4196e01c4441c39ee489ea1562ecb351",
+      "created_timestamp": "2026-11-26T16:09:55.428033+00:00",
+      "ground_truth_file": "syn_extra_08_image_only_invoice.json"
+    },
+    "syn_extra_09_image_only_medical.pdf": {
+      "size_bytes": 2253582,
+      "sha256": "338a78ded3b6821939097edcc702d8de47654561ab12e8ffab8a2aebfbcb8330",
+      "created_timestamp": "2026-11-26T16:09:55.474261+00:00",
+      "ground_truth_file": "syn_extra_09_image_only_medical.json"
+    },
+    "syn_extra_10_image_only_kyc.pdf": {
+      "size_bytes": 2253582,
+      "sha256": "57b9a669edbac9c9ae0ca327b8aeb62426fa00854de34d0ba8ecd80780ad9b5e",
+      "created_timestamp": "2026-11-26T16:09:55.506066+00:00",
+      "ground_truth_file": "syn_extra_10_image_only_kyc.json"
+    },
+    "syn_extra_11_multipage_contract_3p.pdf": {
+      "size_bytes": 3918,
+      "sha256": "b2b6f9b5fe1545b09b4d81ae9dd0e812b6539e0b206d038cefa1203f47498438",
+      "created_timestamp": "2026-11-26T16:09:55.536457+00:00",
+      "ground_truth_file": "syn_extra_11_multipage_contract_3p.json"
+    },
+    "syn_extra_12_multipage_invoice_2p.pdf": {
+      "size_bytes": 2783,
+      "sha256": "de899d3ab713a397613761b985df1d6c1a9e2000247699823ffcc0533f9363f5",
+      "created_timestamp": "2026-11-26T16:09:55.555995+00:00",
+      "ground_truth_file": "syn_extra_12_multipage_invoice_2p.json"
+    },
+    "syn_extra_13_multipage_statement_2p.pdf": {
+      "size_bytes": 2813,
+      "sha256": "af6bbf48a5ef7d8e1f9fa2b40dc2846435ea3753ad45885dbdf2a2845a4022d7",
+      "created_timestamp": "2026-11-26T16:09:55.575850+00:00",
+      "ground_truth_file": "syn_extra_13_multipage_statement_2p.json"
+    },
+    "syn_extra_14_multipage_report_4p.pdf": {
+      "size_bytes": 5143,
+      "sha256": "f9dc49fbd42e0a21d3b886e40be02413fb906340f9ec7538643bc3933b50b673",
+      "created_timestamp": "2026-11-26T16:09:55.602828+00:00",
+      "ground_truth_file": "syn_extra_14_multipage_report_4p.json"
+    },
+    "syn_extra_15_multipage_customs_2p.pdf": {
+      "size_bytes": 2809,
+      "sha256": "e05f1e47341cab435f63f993a86fe601745aa0e02e1c76a668a5b73f3c3ea627",
+      "created_timestamp": "2026-11-26T16:09:55.623125+00:00",
+      "ground_truth_file": "syn_extra_15_multipage_customs_2p.json"
+    },
+    "syn_extra_16_nolabel_values.pdf": {
+      "size_bytes": 1526,
+      "sha256": "f370875a3cfdbee5e145448c9fc2f1716703ce061e9605057736ed7030204b16",
+      "created_timestamp": "2026-11-26T16:09:55.639149+00:00",
+      "ground_truth_file": "syn_extra_16_nolabel_values.json"
+    },
+    "syn_extra_17_nolabel_address_block.pdf": {
+      "size_bytes": 1588,
+      "sha256": "4104429851497e70381ed0213468a76de1ba7a88c6ad04e07932ba9091738cfa",
+      "created_timestamp": "2026-11-26T16:09:55.654765+00:00",
+      "ground_truth_file": "syn_extra_17_nolabel_address_block.json"
+    },
+    "syn_extra_18_nolabel_code_dump.pdf": {
+      "size_bytes": 1384,
+      "sha256": "695863f6570d7c2a71620396a965c88beb59a2c902802207d49531ac75c68e35",
+      "created_timestamp": "2026-11-26T16:09:55.671020+00:00",
+      "ground_truth_file": "syn_extra_18_nolabel_code_dump.json"
+    },
+    "syn_extra_19_nolabel_receipt_rows.pdf": {
+      "size_bytes": 1548,
+      "sha256": "426a2972cb2ea3527dc4db633ba7e364049368bb8346de62a332b5738e48ca3a",
+      "created_timestamp": "2026-11-26T16:09:55.687539+00:00",
+      "ground_truth_file": "syn_extra_19_nolabel_receipt_rows.json"
+    },
+    "syn_extra_20_nolabel_shipping_coords.pdf": {
+      "size_bytes": 1390,
+      "sha256": "199a9a421272fa20730f45f0a6f04ed19f554fb7992b040d6118dceb4c18ba2f",
+      "created_timestamp": "2026-11-26T16:09:55.703779+00:00",
+      "ground_truth_file": "syn_extra_20_nolabel_shipping_coords.json"
+    },
+    "syn_extra_21_astronomy_telescope_log.pdf": {
+      "size_bytes": 1805,
+      "sha256": "037c97dc9356365fc7121e9bc7cb332abe35d12b6ce2f626d5e70c599e6dd566",
+      "created_timestamp": "2026-11-26T16:09:55.722655+00:00",
+      "ground_truth_file": "syn_extra_21_astronomy_telescope_log.json"
+    },
+    "syn_extra_22_culinary_recipe.pdf": {
+      "size_bytes": 1955,
+      "sha256": "1458c4b42160b3211336b802277ef972fee43b81221b888700eadfdc570d2b6e",
+      "created_timestamp": "2026-11-26T16:09:55.751690+00:00",
+      "ground_truth_file": "syn_extra_22_culinary_recipe.json"
+    },
+    "syn_extra_23_chess_pgn_game.pdf": {
+      "size_bytes": 1958,
+      "sha256": "c077dbc9a9912c7628433e93f2c906d9affaa79b483d216fe10642d08c0dcf05",
+      "created_timestamp": "2026-11-26T16:09:55.768287+00:00",
+      "ground_truth_file": "syn_extra_23_chess_pgn_game.json"
+    },
+    "syn_extra_24_poetry_anthology.pdf": {
+      "size_bytes": 1647,
+      "sha256": "90759e0c53b28144acfc82a376f235754b41c8f6b31e03b05b98c71ebab3aa82",
+      "created_timestamp": "2026-11-26T16:09:55.785488+00:00",
+      "ground_truth_file": "syn_extra_24_poetry_anthology.json"
+    },
+    "syn_extra_25_weather_station_telemetry.pdf": {
+      "size_bytes": 1787,
+      "sha256": "bee32e96d1fce650f957d0f276318a913d28b58891bf700c8c50b2aa709e9ba0",
+      "created_timestamp": "2026-11-26T16:09:55.805553+00:00",
+      "ground_truth_file": "syn_extra_25_weather_station_telemetry.json"
+    },
+    "syn_extra_26_equipment_lease.pdf": {
+      "size_bytes": 1633,
+      "sha256": "5a6b63365788c09528cd8910c473d272f67d653d02e5f6beb931f5ea09a1618a",
+      "created_timestamp": "2026-11-26T16:09:55.822099+00:00",
+      "ground_truth_file": "syn_extra_26_equipment_lease.json"
+    },
+    "syn_extra_27_hotel_folio.pdf": {
+      "size_bytes": 1780,
+      "sha256": "badbc033f42a794217a9d5fca9b6c39c63dada2eeef5333efbf61bf3b57af12c",
+      "created_timestamp": "2026-11-26T16:09:55.842127+00:00",
+      "ground_truth_file": "syn_extra_27_hotel_folio.json"
+    },
+    "syn_extra_28_consulting_invoice.pdf": {
+      "size_bytes": 1619,
+      "sha256": "6ecb4ff5303d3fb3661f300714182dac57b8e75a2ad429fb127417f35fb1f90f",
+      "created_timestamp": "2026-11-26T16:09:55.859360+00:00",
+      "ground_truth_file": "syn_extra_28_consulting_invoice.json"
+    },
+    "syn_extra_29_credit_card_statement.pdf": {
+      "size_bytes": 1629,
+      "sha256": "b282442f72644d4bbc028ede5bc807279014181066432d8571e25939b052e917",
+      "created_timestamp": "2026-11-26T16:09:55.876599+00:00",
+      "ground_truth_file": "syn_extra_29_credit_card_statement.json"
+    },
+    "syn_extra_30_certificate_completion.pdf": {
+      "size_bytes": 1633,
+      "sha256": "67c91ff78a99b81e85f89652ac316fb5ae202ec0cf48646876539956d2503f5f",
+      "created_timestamp": "2026-11-26T16:09:55.892378+00:00",
+      "ground_truth_file": "syn_extra_30_certificate_completion.json"
+    }
+  }
+}

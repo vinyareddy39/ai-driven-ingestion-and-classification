@@ -1,0 +1,202 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.4492,
+  "top_candidates": [
+    {
+      "type": "kyc_form",
+      "score": 0.4492
+    },
+    {
+      "type": "bank_statement",
+      "score": 0.1652
+    },
+    {
+      "type": "receipt",
+      "score": 0.0861
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.4492
+    }
+  ],
+  "fields": [
+    {
+      "label": "Full Name",
+      "value": "Robert Liam Gallagher",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Social Security Number",
+      "value": "333-44-5555",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Date of Birth",
+      "value": "1991-06-22",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Contact Phone",
+      "value": "(555) 392-8104",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Emergency Contact",
+      "value": "Fiona Gallagher (Spouse)",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Emergency Phone",
+      "value": "(555) 392-8109",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Direct Deposit Bank",
+      "value": "First Federal Credit Union",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Routing Number",
+      "value": "011000015",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Account Number",
+      "value": "881029384",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [
+    {
+      "type": "US_SSN",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          127.25,
+          253.0699920654297,
+          141.07000732421875
+        ],
+        "label": "Social Security Number",
+        "start": 0,
+        "end": 11
+      },
+      "confidence": 0.98,
+      "masked_value": "***-**-5555"
+    },
+    {
+      "type": "PHONE_NUMBER",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          151.25,
+          223.03997802734375,
+          165.07000732421875
+        ],
+        "label": "Contact Phone",
+        "start": 1,
+        "end": 14
+      },
+      "confidence": 0.95,
+      "masked_value": "***-***-8104"
+    },
+    {
+      "type": "PHONE_NUMBER",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          175.25,
+          239.72999572753906,
+          189.07000732421875
+        ],
+        "label": "Emergency Phone",
+        "start": 1,
+        "end": 14
+      },
+      "confidence": 0.95,
+      "masked_value": "***-***-8109"
+    },
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": null,
+        "label": "",
+        "start": 121,
+        "end": 131
+      },
+      "confidence": 0.67,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    },
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": null,
+        "label": "",
+        "start": 149,
+        "end": 171
+      },
+      "confidence": 0.67,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    },
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": null,
+        "label": "",
+        "start": 225,
+        "end": 236
+      },
+      "confidence": 0.67,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_MANUAL_TRIAGE_QUEUE",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'kyc_form' confidence (0.45) below threshold (0.50).",
+    "Sensitive finding (ADDRESS) in field '' flagged for review."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "NEW EMPLOYEE ONBOARDING FORM",
+  "dates": [
+    "1991-06-22"
+  ]
+}

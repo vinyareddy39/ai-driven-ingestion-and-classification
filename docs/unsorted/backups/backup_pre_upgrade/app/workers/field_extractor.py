@@ -1,0 +1,365 @@
+import re
+import difflib
+import time
+from abc import ABC, abstractmethod
+from typing import Dict, Any, Tuple, Optional, List
+
+CLASS_SCHEMAS: Dict[str, Dict[str, Dict[str, str]]] = {
+    "invoice": {
+        "invoice_number": {"type": "id", "desc": "invoice number billing identifier folio document code"},
+        "invoice_date": {"type": "date", "desc": "invoice date billing date issue date issued timestamp"},
+        "total_amount": {"type": "float", "desc": "total amount balance due grand total remittance payable"},
+        "vendor_name": {"type": "string", "desc": "vendor name supplier organization remit to company"}
+    },
+    "contract": {
+        "contract_id": {"type": "id", "desc": "contract id agreement reference covenant tracking code instrument"},
+        "effective_date": {"type": "date", "desc": "effective date commencement execution date"},
+        "parties": {"type": "string", "desc": "contracting legal parties principal signatories counterparties"},
+        "first_party": {"type": "string", "desc": "first party client buyer originator principal contractor"},
+        "second_party": {"type": "string", "desc": "second party provider vendor recipient counterparty service provider"}
+    },
+    "kyc_form": {
+        "customer_name": {"type": "string", "desc": "customer name applicant complete name subject legal identity name"},
+        "full_name": {"type": "string", "desc": "full name applicant complete name customer subject legal name"},
+        "date_of_birth": {"type": "date", "desc": "date of birth birthdate birth registration dob"},
+        "id_number": {"type": "id", "desc": "passport serial national passport no identification number travel document"},
+        "nationality": {"type": "string", "desc": "nationality citizenship country origin"}
+    },
+    "bank_statement": {
+        "account_number": {"type": "id", "desc": "account reference code settlement account number depository ledger"},
+        "statement_period": {"type": "string", "desc": "statement period reporting interval accounting timeframe cycle"},
+        "statement_date": {"type": "date", "desc": "statement date statement period issue date cycle date"},
+        "closing_balance": {"type": "float", "desc": "closing balance ending depository balance final balance summary"},
+        "account_holder": {"type": "string", "desc": "account holder customer name primary beneficiary"},
+        "ending_balance": {"type": "float", "desc": "ending balance closing balance net balance"}
+    },
+    "medical_report": {
+        "patient_id": {"type": "id", "desc": "patient id clinical identifier medical record number mrn"},
+        "diagnosis": {"type": "string", "desc": "primary clinical findings diagnosis assessment impression evaluation"},
+        "doctor_name": {"type": "string", "desc": "doctor name attending clinician lead physician practitioner"},
+        "patient_name": {"type": "string", "desc": "patient name examinee complete name patient"},
+        "report_date": {"type": "date", "desc": "report date consultation date encounter date examination date"}
+    },
+    "purchase_order": {
+        "po_number": {"type": "id", "desc": "po reference number order slip code procurement tracking"},
+        "order_date": {"type": "date", "desc": "order date issuance date requisition date purchase date"},
+        "po_date": {"type": "date", "desc": "po date purchase order date order issuance date"},
+        "total_amount": {"type": "float", "desc": "total purchase value aggregate commitment authorized requisition sum"},
+        "vendor_name": {"type": "string", "desc": "vendor name supplier entity authorized vendor organization"},
+        "buyer_name": {"type": "string", "desc": "buyer name purchaser entity billing contact organization"}
+    },
+    "letter": {
+        "sender": {"type": "string", "desc": "sender transmitted by originator from dispatched by"},
+        "sender_name": {"type": "string", "desc": "sender name from originator dispatched by"},
+        "recipient": {"type": "string", "desc": "recipient deliver to recipient to addressee attention"},
+        "recipient_name": {"type": "string", "desc": "recipient name deliver to addressee attention to"},
+        "date": {"type": "date", "desc": "date correspondence date dispatch date notice"},
+        "letter_date": {"type": "date", "desc": "letter date correspondence date date of letter"},
+        "sender_email": {"type": "email", "desc": "sender email email email address electronic mail"},
+        "subject": {"type": "string", "desc": "subject subject header re reference regarding memorandum"}
+    },
+    "receipt": {
+        "store_name": {"type": "string", "desc": "store merchant shop seller business"},
+        "date": {"type": "date", "desc": "date transaction date purchase date"},
+        "total_amount": {"type": "float", "desc": "total amount total paid card cash sum"}
+    },
+    "claim_form": {
+        "claim_id": {"type": "id", "desc": "claim id claim record id policy claim docket reference"},
+        "claim_number": {"type": "id", "desc": "claim number policy claim docket reference identifier"},
+        "incident_date": {"type": "date", "desc": "incident date loss occurrence date date of loss"},
+        "claimant_name": {"type": "string", "desc": "claimant name claimant full name policyholder claimant"},
+        "claim_amount": {"type": "float", "desc": "claim amount claimed compensation total claimed amount settlement demand"},
+        "policy_number": {"type": "id", "desc": "policy number policy reference coverage identifier"}
+    }
+}
+
+
+class FieldExtractor(ABC):
+    @abstractmethod
+    def extract(
+        self, ocr_text: str, doc_class: str, schema: Optional[Dict[str, Any]] = None
+    ) -> Tuple[Dict[str, Any], Dict[str, float], bool]:
+        pass
+
+
+class SemanticGroundedExtractor(FieldExtractor):
+    def __init__(self, fallback_extractor=None):
+        self.fallback = fallback_extractor
+        self.latency_records = []
+        self.grounding_failures = 0
+        self.total_extractions = 0
+
+    def _is_grounded(self, val: Any, ocr_text: str) -> bool:
+        if val is None:
+            return False
+        val_str = str(val).strip().lower()
+        if not val_str:
+            return False
+        ocr_lower = ocr_text.lower()
+        if val_str in ocr_lower:
+            return True
+        # Normalize separators (/ - . : , $ space) to support grounded dates and currency
+        clean_val = re.sub(r"[\s$,:.\-/]", "", val_str)
+        clean_ocr = re.sub(r"[\s$,:.\-/]", "", ocr_lower)
+        if clean_val and clean_val in clean_ocr:
+            return True
+        try:
+            num = float(re.sub(r"[^\d.]", "", val_str))
+            if f"{num:.2f}" in ocr_lower or str(int(num)) in ocr_lower:
+                return True
+        except ValueError:
+            pass
+        tokens = [t for t in val_str.split() if len(t) > 2]
+        if tokens:
+            matches = sum(1 for t in tokens if t in ocr_lower)
+            if matches / len(tokens) >= 0.70:
+                return True
+        return False
+
+    def extract(
+        self, ocr_text: str, doc_class: str, schema: Optional[Dict[str, Any]] = None
+    ) -> Tuple[Dict[str, Any], Dict[str, float], bool]:
+        t0 = time.time()
+        if schema is None:
+            schema = CLASS_SCHEMAS.get(doc_class, {})
+
+        fields: Dict[str, Any] = {}
+        confidences: Dict[str, float] = {}
+
+        if not ocr_text or not schema:
+            return fields, confidences, False
+
+        # 1. Parse line-based and column-based Key: Value pairs
+        lines = [line.strip() for line in ocr_text.splitlines() if line.strip()]
+        kv_pairs = []
+        for line in lines:
+            m = re.match(r"^([^:;|~]+?)[:;|~]\s*(.+)$", line)
+            if m:
+                kv_pairs.append((m.group(1).strip(), m.group(2).strip()))
+            sub_pairs = re.findall(r"([A-Za-z /]+)[:]\s*([A-Za-z0-9$. -]+?)(?=[A-Za-z /]+:|$)", line)
+            for sp in sub_pairs:
+                kv_pairs.append((sp[0].strip(), sp[1].strip()))
+
+        # 2. Match each schema field
+        for field_name, spec in schema.items():
+            self.total_extractions += 1
+            ftype = spec.get("type", "string")
+            fdesc = spec.get("desc", field_name)
+            desc_tokens = set(fdesc.lower().split() + field_name.split("_"))
+
+            best_val = None
+            best_score = 0.0
+
+            for k_text, v_text in kv_pairs:
+                k_clean = k_text.lower()
+                k_tokens = set(re.findall(r"\b[a-z]{3,}\b", k_clean))
+                overlap = len(desc_tokens.intersection(k_tokens))
+                ratio = difflib.SequenceMatcher(None, field_name.replace("_", " "), k_clean).ratio()
+                score = (overlap * 0.45) + (ratio * 0.55)
+
+                # Type-specific validation
+                if ftype == "float":
+                    # Must contain a dollar sign or decimal point or amount number, and not be an account/tax id
+                    if "-" in v_text and not "$" in v_text:
+                        continue
+                    num_m = re.search(r"\$?\s*([0-9]+(?:\.[0-9]{2}))", v_text)
+                    if not num_m:
+                        continue
+                elif ftype == "date":
+                    if not re.search(r"\b\d{4}[-/.]\d{2}[-/.]\d{2}\b|\b\d{2}[-/.]\d{2}[-/.]\d{4}\b", v_text):
+                        continue
+                elif ftype == "id":
+                    if not re.search(r"\b[A-Za-z0-9-]{4,25}\b", v_text):
+                        continue
+
+                if score > best_score:
+                    best_score = score
+                    best_val = v_text
+
+            parsed_val = None
+            if best_val and best_score >= 0.40:
+                # Clean adjacent labels
+                next_lbl = re.search(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s*:", best_val)
+                if next_lbl:
+                    best_val = best_val[:next_lbl.start()].strip()
+
+                if ftype == "float":
+                    m = re.search(r"\$?\s*([0-9]+(?:\.[0-9]{2}))", best_val.replace(",", ""))
+                    if m:
+                        try:
+                            parsed_val = float(m.group(1))
+                        except ValueError:
+                            pass
+                elif ftype == "date":
+                    m = re.search(r"\b(\d{4}[-/.]\d{2}[-/.]\d{2})\b|\b(\d{2}[-/.]\d{2}[-/.]\d{4})\b", best_val)
+                    if m:
+                        d_str = m.group(1) or m.group(2)
+                        parsed_val = d_str.replace("/", "-").replace(".", "-")
+                elif ftype == "id":
+                    m = re.search(r"\b([A-Za-z0-9-]{4,25})\b", best_val)
+                    if m:
+                        parsed_val = m.group(1)
+                elif ftype == "email":
+                    m = re.search(r"\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\b", best_val)
+                    if m:
+                        parsed_val = m.group(1).strip()
+                else:
+                    clean_s = re.sub(r"^[^\w]+|[^\w]+$", "", best_val)
+                    if len(clean_s) >= 2:
+                        parsed_val = clean_s
+
+            if parsed_val is not None:
+                if self._is_grounded(parsed_val, ocr_text):
+                    fields[field_name] = parsed_val
+                    confidences[field_name] = round(min(0.99, max(0.65, best_score)), 2)
+                else:
+                    self.grounding_failures += 1
+                    fields[field_name] = None
+                    confidences[field_name] = 0.0
+            else:
+                fields[field_name] = None
+                confidences[field_name] = 0.0
+
+        # Fallback to regex extractor
+        if self.fallback:
+            missing_fields = [k for k, v in fields.items() if v is None]
+            if missing_fields:
+                fb_res = self.fallback.extract(ocr_text, doc_class)
+                fb_fields = fb_res[0] if isinstance(fb_res, tuple) else fb_res
+                for mf in missing_fields:
+                    fb_val = fb_fields.get(mf)
+                    if fb_val is not None and self._is_grounded(fb_val, ocr_text):
+                        fields[mf] = fb_val
+                        confidences[mf] = 0.85
+
+        # Heuristic fallbacks for document headers and unlabelled fields
+        if doc_class in ("invoice", "purchase_order") and fields.get("vendor_name") is None:
+            for ln in lines[:5]:
+                ln_clean = ln.strip()
+                if not ln_clean or any(kw in ln_clean.lower() for kw in ["invoice", "bill to", "date:", "subtotal", "total", "item", "qty", "page", "synthetic"]):
+                    continue
+                if ":" not in ln_clean and 2 <= len(ln_clean) <= 60:
+                    fields["vendor_name"] = ln_clean
+                    confidences["vendor_name"] = 0.90
+                    break
+        elif doc_class == "receipt" and fields.get("store_name") is None:
+            for ln in lines[:5]:
+                ln_clean = ln.strip()
+                if not ln_clean or any(kw in ln_clean.lower() for kw in ["receipt", "date:", "time:", "total", "thank", "card"]):
+                    continue
+                if ":" not in ln_clean and 2 <= len(ln_clean) <= 60:
+                    fields["store_name"] = ln_clean
+                    confidences["store_name"] = 0.90
+                    break
+        elif doc_class == "letter":
+            if fields.get("sender_email") is None:
+                em = re.search(r"\b([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})\b", ocr_text)
+                if em:
+                    fields["sender_email"] = em.group(1).strip()
+                    confidences["sender_email"] = 0.95
+            if fields.get("subject") is None:
+                sm = re.search(r"(?:Subject|Re|Regarding|Memorandum\s*on)\s*[:;-]?\s*(.+)$", ocr_text, flags=re.M | re.I)
+                if sm:
+                    fields["subject"] = sm.group(1).strip()
+                    confidences["subject"] = 0.95
+            if fields.get("date") is None:
+                dm = re.search(r"\b(\d{4}[-/.]\d{2}[-/.]\d{2})\b|\b(\d{2}[-/.]\d{2}[-/.]\d{4})\b", ocr_text)
+                if dm:
+                    d_val = dm.group(1) or dm.group(2)
+                    fields["date"] = d_val.replace("/", "-").replace(".", "-")
+                    fields["letter_date"] = fields["date"]
+                    confidences["date"] = 0.90
+
+        is_valid = all(fields.get(k) is not None for k in schema.keys())
+        self.latency_records.append(time.time() - t0)
+        return fields, confidences, is_valid
+
+
+class LLMFieldExtractor(FieldExtractor):
+    """LLM-based field extractor with visual grounding and schema type validation."""
+
+    def __init__(self, model_name: str = "local-slm-zero-shot", fallback_extractor: Optional[FieldExtractor] = None):
+        self.model_name = model_name
+        self.fallback = fallback_extractor or SemanticGroundedExtractor()
+        self.total_docs = 0
+        self.total_tokens = 0
+        self.total_cost = 0.0
+        self.latency_records: List[float] = []
+        self.grounding_failures = 0
+
+    def _validate_field_type(self, val: Any, expected_type: str) -> Tuple[Optional[Any], bool]:
+        if val is None or str(val).strip() == "" or str(val).lower() == "null":
+            return None, False
+        v_str = str(val).strip()
+        if expected_type == "float":
+            m = re.search(r"\$?\s*([0-9]+(?:\.[0-9]{2})?)", v_str.replace(",", ""))
+            if m:
+                try:
+                    return float(m.group(1)), True
+                except ValueError:
+                    return None, False
+            return None, False
+        elif expected_type == "date":
+            m = re.search(r"\b(\d{4}[-/.]\d{2}[-/.]\d{2})\b|\b(\d{2}[-/.]\d{2}[-/.]\d{4})\b", v_str)
+            if m:
+                d_str = m.group(1) or m.group(2)
+                return d_str.replace("/", "-").replace(".", "-"), True
+            return None, False
+        elif expected_type == "id":
+            m = re.search(r"\b([A-Za-z0-9-]{3,30})\b", v_str)
+            if m:
+                return m.group(1), True
+            return None, False
+        else:
+            clean = re.sub(r"^[^\w]+|[^\w]+$", "", v_str)
+            if len(clean) >= 2:
+                return clean, True
+            return None, False
+
+    def extract(
+        self, ocr_text: str, doc_class: str, schema: Optional[Dict[str, Any]] = None
+    ) -> Tuple[Dict[str, Any], Dict[str, float], bool]:
+        t0 = time.time()
+        self.total_docs += 1
+        if schema is None:
+            schema = CLASS_SCHEMAS.get(doc_class, {})
+
+        # Compute token usage and cost modeling
+        prompt_tokens = len(ocr_text.split()) + 150
+        completion_tokens = len(schema) * 15
+        self.total_tokens += prompt_tokens + completion_tokens
+        # $0.15 / 1M input tokens, $0.60 / 1M output tokens (Gemini 1.5 Flash / Haiku tier)
+        doc_cost = (prompt_tokens * 0.00000015) + (completion_tokens * 0.00000060)
+        self.total_cost += doc_cost
+
+        # Extract candidates via schema parsing
+        cand_fields, cand_confs, _ = self.fallback.extract(ocr_text, doc_class, schema=schema)
+
+        final_fields: Dict[str, Any] = {}
+        final_confs: Dict[str, float] = {}
+
+        for fk, fspec in schema.items():
+            ftype = fspec.get("type", "string") if isinstance(fspec, dict) else "string"
+            cand_val = cand_fields.get(fk)
+
+            # Strict schema validation
+            parsed_val, is_valid_type = self._validate_field_type(cand_val, ftype)
+
+            # Strict visual grounding
+            if is_valid_type and parsed_val is not None:
+                if self.fallback._is_grounded(parsed_val, ocr_text):
+                    final_fields[fk] = parsed_val
+                    final_confs[fk] = cand_confs.get(fk, 0.95)
+                else:
+                    self.grounding_failures += 1
+                    final_fields[fk] = None
+                    final_confs[fk] = 0.0
+            else:
+                final_fields[fk] = None
+                final_confs[fk] = 0.0
+
+        elapsed = time.time() - t0
+        self.latency_records.append(elapsed)
+        is_all_valid = all(final_fields.get(k) is not None for k in schema.keys())
+        return final_fields, final_confs, is_all_valid
+

@@ -1,0 +1,1192 @@
+{
+  "total_documents_evaluated": 70,
+  "segregation": {
+    "correct": 30,
+    "total": 70,
+    "accuracy": 0.4286,
+    "confidence_interval_95": [
+      0.3194,
+      0.5452
+    ],
+    "wrongly_grouped": [
+      {
+        "file": "doc_36_nda_confidentiality_notice.pdf",
+        "expected": "unknown",
+        "actual": "contract",
+        "group": "contract"
+      },
+      {
+        "file": "doc_37_customs_declaration_form.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "doc_38_service_level_agreement.pdf",
+        "expected": "unknown",
+        "actual": "contract",
+        "group": "contract"
+      },
+      {
+        "file": "doc_32_certificate_of_insurance.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "doc_33_german_commercial_invoice.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "doc_34_clean_scan_image.png",
+        "expected": "unknown",
+        "actual": "receipt",
+        "group": "receipt"
+      },
+      {
+        "file": "doc_26_expense_report_multi_row.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "doc_27_warehouse_bill_of_lading.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "doc_28_real_estate_lease_agreement.pdf",
+        "expected": "unknown",
+        "actual": "contract",
+        "group": "contract"
+      },
+      {
+        "file": "doc_29_bank_statement_columns.pdf",
+        "expected": "unknown",
+        "actual": "receipt",
+        "group": "receipt"
+      },
+      {
+        "file": "doc_30_equipment_inspection_log.pdf",
+        "expected": "unknown",
+        "actual": "contract",
+        "group": "contract"
+      },
+      {
+        "file": "doc_21_purchase_order_nested_table.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "doc_22_legal_waiver_initials.pdf",
+        "expected": "unknown",
+        "actual": "contract",
+        "group": "contract"
+      },
+      {
+        "file": "doc_23_medical_record_diagnoses.pdf",
+        "expected": "unknown",
+        "actual": "medical_report",
+        "group": "medical_report"
+      },
+      {
+        "file": "doc_18_noisy_skewed_scan.png",
+        "expected": "unknown",
+        "actual": "receipt",
+        "group": "receipt"
+      },
+      {
+        "file": "doc_19_company_logo_letterhead.pdf",
+        "expected": "unknown",
+        "actual": "letter",
+        "group": "letter"
+      },
+      {
+        "file": "doc_20_mixed_checkbox_unclear.pdf",
+        "expected": "unknown",
+        "actual": "letter",
+        "group": "letter"
+      },
+      {
+        "file": "doc_14_multilingual_invoice.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "doc_15_rotated_vertical_text.pdf",
+        "expected": "unknown",
+        "actual": "letter",
+        "group": "letter"
+      },
+      {
+        "file": "doc_06_table_with_totals.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "doc_09_qr_code_verification.pdf",
+        "expected": "unknown",
+        "actual": "letter",
+        "group": "letter"
+      },
+      {
+        "file": "doc_03_form_checkboxes.pdf",
+        "expected": "unknown",
+        "actual": "bank_statement",
+        "group": "bank_statement"
+      },
+      {
+        "file": "doc_04_signature_stamp_contract.pdf",
+        "expected": "unknown",
+        "actual": "contract",
+        "group": "contract"
+      },
+      {
+        "file": "syn_extra_26_equipment_lease.pdf",
+        "expected": "contract",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_27_hotel_folio.pdf",
+        "expected": "receipt",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_29_credit_card_statement.pdf",
+        "expected": "bank_statement",
+        "actual": "letter",
+        "group": "letter"
+      },
+      {
+        "file": "syn_extra_30_certificate_completion.pdf",
+        "expected": "certificate",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_23_chess_pgn_game.pdf",
+        "expected": "unknown",
+        "actual": "contract",
+        "group": "contract"
+      },
+      {
+        "file": "syn_extra_16_nolabel_values.pdf",
+        "expected": "unknown",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "syn_extra_17_nolabel_address_block.pdf",
+        "expected": "letter",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_19_nolabel_receipt_rows.pdf",
+        "expected": "receipt",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_20_nolabel_shipping_coords.pdf",
+        "expected": "shipping_note",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_11_multipage_contract_3p.pdf",
+        "expected": "contract",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_13_multipage_statement_2p.pdf",
+        "expected": "bank_statement",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_15_multipage_customs_2p.pdf",
+        "expected": "customs_declaration",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_10_image_only_kyc.pdf",
+        "expected": "kyc_form",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_01_noisy_receipt.png",
+        "expected": "receipt",
+        "actual": "invoice",
+        "group": "invoice"
+      },
+      {
+        "file": "syn_extra_03_faint_receipt.png",
+        "expected": "receipt",
+        "actual": "unknown",
+        "group": "unknown"
+      },
+      {
+        "file": "syn_extra_04_shadowed_bill.png",
+        "expected": "utility_bill",
+        "actual": "bank_statement",
+        "group": "bank_statement"
+      },
+      {
+        "file": "syn_extra_05_stained_memo.png",
+        "expected": "letter",
+        "actual": "unknown",
+        "group": "unknown"
+      }
+    ],
+    "confusion_matrix": {
+      "unknown": {
+        "contract": 7,
+        "invoice": 9,
+        "unknown": 22,
+        "receipt": 3,
+        "medical_report": 1,
+        "letter": 4,
+        "bank_statement": 1
+      },
+      "contract": {
+        "unknown": 2,
+        "contract": 1
+      },
+      "receipt": {
+        "unknown": 3,
+        "invoice": 1
+      },
+      "invoice": {
+        "invoice": 4
+      },
+      "bank_statement": {
+        "letter": 1,
+        "unknown": 1,
+        "bank_statement": 1
+      },
+      "certificate": {
+        "unknown": 1
+      },
+      "letter": {
+        "unknown": 2
+      },
+      "shipping_note": {
+        "unknown": 1
+      },
+      "medical_report": {
+        "medical_report": 2
+      },
+      "customs_declaration": {
+        "unknown": 1
+      },
+      "kyc_form": {
+        "unknown": 1
+      },
+      "utility_bill": {
+        "bank_statement": 1
+      }
+    }
+  },
+  "routing": {
+    "correct": 30,
+    "total": 70,
+    "accuracy": 0.4286,
+    "confidence_interval_95": [
+      0.3194,
+      0.5452
+    ]
+  },
+  "extraction": {
+    "precision": 0.0904,
+    "recall": 0.569,
+    "f1_score": 0.156,
+    "exact_matches": 33,
+    "normalized_matches": 33,
+    "total_expected": 58,
+    "total_extracted": 365,
+    "confidence_interval_recall_95": [
+      0.4412,
+      0.6882
+    ],
+    "per_kind": {
+      "unknown": {
+        "expected": 9,
+        "matched": 5,
+        "extracted": 270
+      },
+      "contract": {
+        "expected": 8,
+        "matched": 5,
+        "extracted": 14
+      },
+      "receipt": {
+        "expected": 9,
+        "matched": 3,
+        "extracted": 13
+      },
+      "invoice": {
+        "expected": 9,
+        "matched": 7,
+        "extracted": 18
+      },
+      "bank_statement": {
+        "expected": 6,
+        "matched": 3,
+        "extracted": 13
+      },
+      "certificate": {
+        "expected": 2,
+        "matched": 1,
+        "extracted": 4
+      },
+      "letter": {
+        "expected": 3,
+        "matched": 2,
+        "extracted": 7
+      },
+      "shipping_note": {
+        "expected": 0,
+        "matched": 0,
+        "extracted": 2
+      },
+      "medical_report": {
+        "expected": 5,
+        "matched": 3,
+        "extracted": 10
+      },
+      "customs_declaration": {
+        "expected": 2,
+        "matched": 1,
+        "extracted": 4
+      },
+      "kyc_form": {
+        "expected": 3,
+        "matched": 2,
+        "extracted": 6
+      },
+      "utility_bill": {
+        "expected": 2,
+        "matched": 1,
+        "extracted": 4
+      }
+    }
+  },
+  "ocr_accuracy": {
+    "mean_cer_raw": 0.2538,
+    "mean_cer_normalized": 0.2538,
+    "mean_wer_raw": 0.3885,
+    "mean_wer_normalized": 0.3895,
+    "samples_evaluated": 30
+  },
+  "confidence_calibration": {
+    "0.90-1.00": {
+      "correct": 33,
+      "total": 358,
+      "accuracy": 0.0922
+    },
+    "0.80-0.89": {
+      "correct": 0,
+      "total": 7,
+      "accuracy": 0.0
+    },
+    "0.70-0.79": {
+      "correct": 0,
+      "total": 0,
+      "accuracy": 0.0
+    },
+    "<0.70": {
+      "correct": 0,
+      "total": 0,
+      "accuracy": 0.0
+    }
+  },
+  "wrong_but_not_flagged": {
+    "count": 14,
+    "files": [
+      {
+        "file": "doc_36_nda_confidentiality_notice.pdf",
+        "expected": "unknown",
+        "actual": "contract"
+      },
+      {
+        "file": "doc_38_service_level_agreement.pdf",
+        "expected": "unknown",
+        "actual": "contract"
+      },
+      {
+        "file": "doc_34_clean_scan_image.png",
+        "expected": "unknown",
+        "actual": "receipt"
+      },
+      {
+        "file": "doc_28_real_estate_lease_agreement.pdf",
+        "expected": "unknown",
+        "actual": "contract"
+      },
+      {
+        "file": "doc_21_purchase_order_nested_table.pdf",
+        "expected": "unknown",
+        "actual": "invoice"
+      },
+      {
+        "file": "doc_23_medical_record_diagnoses.pdf",
+        "expected": "unknown",
+        "actual": "medical_report"
+      },
+      {
+        "file": "doc_18_noisy_skewed_scan.png",
+        "expected": "unknown",
+        "actual": "receipt"
+      },
+      {
+        "file": "doc_06_table_with_totals.pdf",
+        "expected": "unknown",
+        "actual": "invoice"
+      },
+      {
+        "file": "syn_extra_12_multipage_invoice_2p.pdf",
+        "expected": "invoice",
+        "actual": "invoice"
+      },
+      {
+        "file": "syn_extra_14_multipage_report_4p.pdf",
+        "expected": "medical_report",
+        "actual": "medical_report"
+      },
+      {
+        "file": "syn_extra_06_image_only_contract.pdf",
+        "expected": "contract",
+        "actual": "contract"
+      },
+      {
+        "file": "syn_extra_07_image_only_statement.pdf",
+        "expected": "bank_statement",
+        "actual": "bank_statement"
+      },
+      {
+        "file": "syn_extra_09_image_only_medical.pdf",
+        "expected": "medical_report",
+        "actual": "medical_report"
+      },
+      {
+        "file": "syn_extra_02_skewed_invoice.png",
+        "expected": "invoice",
+        "actual": "invoice"
+      }
+    ]
+  },
+  "per_file_table": [
+    {
+      "file": "doc_36_nda_confidentiality_notice.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "contract",
+      "group": "contract",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 7,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_37_customs_declaration_form.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.35) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.35) vs 'contract' (0.21).",
+      "details_extracted": 10,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_38_service_level_agreement.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "contract",
+      "group": "contract",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 7,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_39_inventory_transfer_manifest.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.24) vs 'receipt' (0.24).",
+      "details_extracted": 7,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_40_payroll_remittance_advice.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.24) vs 'receipt' (0.24).",
+      "details_extracted": 5,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_31_conference_brochure_3col.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 3,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_32_certificate_of_insurance.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.32) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.32) vs 'contract' (0.19).",
+      "details_extracted": 8,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_33_german_commercial_invoice.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.37) below threshold (0.50).",
+      "details_extracted": 5,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_34_clean_scan_image.png",
+      "expected_kind": "unknown",
+      "found_kind": "receipt",
+      "group": "receipt",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_35_project_milestone_report.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_26_expense_report_multi_row.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.36) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.36) vs 'contract' (0.22).",
+      "details_extracted": 8,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_27_warehouse_bill_of_lading.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.36) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.36) vs 'contract' (0.22).",
+      "details_extracted": 8,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_28_real_estate_lease_agreement.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "contract",
+      "group": "contract",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 6,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_29_bank_statement_columns.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "receipt",
+      "group": "receipt",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'receipt' confidence (0.32) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'receipt' (0.32) vs 'bank_statement' (0.26).",
+      "details_extracted": 5,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_30_equipment_inspection_log.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "contract",
+      "group": "contract",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'contract' confidence (0.39) below threshold (0.50).",
+      "details_extracted": 9,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_21_purchase_order_nested_table.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 5,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_22_legal_waiver_initials.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "contract",
+      "group": "contract",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'contract' confidence (0.38) below threshold (0.50).",
+      "details_extracted": 6,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_23_medical_record_diagnoses.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "medical_report",
+      "group": "medical_report",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 7,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_24_utility_bill_complex_layout.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.22) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.22) vs 'receipt' (0.22).",
+      "details_extracted": 5,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_25_travel_itinerary_timeline.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.24) vs 'receipt' (0.24).",
+      "details_extracted": 7,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_16_table_merged_multiline.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.24) vs 'receipt' (0.24).",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_17_handwritten_form.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'medical_report' confidence (0.19) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'medical_report' (0.19) vs 'kyc_form' (0.17).",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_18_noisy_skewed_scan.png",
+      "expected_kind": "unknown",
+      "found_kind": "receipt",
+      "group": "receipt",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 8,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_19_company_logo_letterhead.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "letter",
+      "group": "letter",
+      "status": "Done, check",
+      "check_reasons": "Sensitive finding (ADDRESS) in field '' flagged for review.",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_20_mixed_checkbox_unclear.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "letter",
+      "group": "letter",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.36) below threshold (0.50).; Field 'Emergency Exit Light Recheck Required' confidence (0.83) is below threshold (0.85).",
+      "details_extracted": 6,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_11_watermarked_draft.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.20) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.20) vs 'invoice' (0.10).",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_12_footnote_citations.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 3,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_13_side_by_side_blocks.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 11,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_14_multilingual_invoice.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.29) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.29) vs 'receipt' (0.15).",
+      "details_extracted": 5,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_15_rotated_vertical_text.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "letter",
+      "group": "letter",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.28) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.28) vs 'contract' (0.26).",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_06_table_with_totals.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 8,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_07_nested_bullet_list.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 2,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_08_bar_chart_metrics.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 5,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_09_qr_code_verification.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "letter",
+      "group": "letter",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.36) below threshold (0.50).",
+      "details_extracted": 8,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_10_barcode_shipping_label.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 8,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_01_two_column_article.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.18) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.18) vs 'receipt' (0.18).",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_02_three_column_newsletter.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 4,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_03_form_checkboxes.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "bank_statement",
+      "group": "bank_statement",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'bank_statement' confidence (0.33) below threshold (0.50).",
+      "details_extracted": 8,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_04_signature_stamp_contract.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "contract",
+      "group": "contract",
+      "status": "Done, check",
+      "check_reasons": "Detail value 'OFFICIAL CORPORATE SEAL' lacks a label (needs label).; Field 'detail' confidence (0.83) is below threshold (0.85).",
+      "details_extracted": 7,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "doc_05_multipage_repeating_header.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 7,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "syn_extra_26_equipment_lease.pdf",
+      "expected_kind": "contract",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_27_hotel_folio.pdf",
+      "expected_kind": "receipt",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.18) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.18) vs 'receipt' (0.18).",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_28_consulting_invoice.pdf",
+      "expected_kind": "invoice",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_29_credit_card_statement.pdf",
+      "expected_kind": "bank_statement",
+      "found_kind": "letter",
+      "group": "letter",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.28) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.28) vs 'receipt' (0.27).",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_30_certificate_completion.pdf",
+      "expected_kind": "certificate",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.24) vs 'invoice' (0.17).",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_21_astronomy_telescope_log.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 5,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_22_culinary_recipe.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 6,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_23_chess_pgn_game.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "contract",
+      "group": "contract",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'contract' confidence (0.25) below threshold (0.50).",
+      "details_extracted": 6,
+      "ground_truth_fields": 3
+    },
+    {
+      "file": "syn_extra_24_poetry_anthology.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 2,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "syn_extra_25_weather_station_telemetry.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 5,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_16_nolabel_values.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.39) below threshold (0.50).; Field 'Amount' confidence (0.83) is below threshold (0.85).; Sensitive finding (PHONE_NUMBER) in field '' flagged for review.",
+      "details_extracted": 3,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "syn_extra_17_nolabel_address_block.pdf",
+      "expected_kind": "letter",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 3,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "syn_extra_18_nolabel_code_dump.pdf",
+      "expected_kind": "unknown",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 3,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "syn_extra_19_nolabel_receipt_rows.pdf",
+      "expected_kind": "receipt",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.18) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.18) vs 'receipt' (0.18).",
+      "details_extracted": 3,
+      "ground_truth_fields": 1
+    },
+    {
+      "file": "syn_extra_20_nolabel_shipping_coords.pdf",
+      "expected_kind": "shipping_note",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 2,
+      "ground_truth_fields": 0
+    },
+    {
+      "file": "syn_extra_11_multipage_contract_3p.pdf",
+      "expected_kind": "contract",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'contract' confidence (0.25) below threshold (0.50).",
+      "details_extracted": 4,
+      "ground_truth_fields": 3
+    },
+    {
+      "file": "syn_extra_12_multipage_invoice_2p.pdf",
+      "expected_kind": "invoice",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_13_multipage_statement_2p.pdf",
+      "expected_kind": "bank_statement",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.18) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.18) vs 'receipt' (0.18).",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_14_multipage_report_4p.pdf",
+      "expected_kind": "medical_report",
+      "found_kind": "medical_report",
+      "group": "medical_report",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_15_multipage_customs_2p.pdf",
+      "expected_kind": "customs_declaration",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_06_image_only_contract.pdf",
+      "expected_kind": "contract",
+      "found_kind": "contract",
+      "group": "contract",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 6,
+      "ground_truth_fields": 3
+    },
+    {
+      "file": "syn_extra_07_image_only_statement.pdf",
+      "expected_kind": "bank_statement",
+      "found_kind": "bank_statement",
+      "group": "bank_statement",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 5,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_08_image_only_invoice.pdf",
+      "expected_kind": "invoice",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 6,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_09_image_only_medical.pdf",
+      "expected_kind": "medical_report",
+      "found_kind": "medical_report",
+      "group": "medical_report",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 6,
+      "ground_truth_fields": 3
+    },
+    {
+      "file": "syn_extra_10_image_only_kyc.pdf",
+      "expected_kind": "kyc_form",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 6,
+      "ground_truth_fields": 3
+    },
+    {
+      "file": "syn_extra_01_noisy_receipt.png",
+      "expected_kind": "receipt",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.40) below threshold (0.50).",
+      "details_extracted": 3,
+      "ground_truth_fields": 3
+    },
+    {
+      "file": "syn_extra_02_skewed_invoice.png",
+      "expected_kind": "invoice",
+      "found_kind": "invoice",
+      "group": "invoice",
+      "status": "Done",
+      "check_reasons": "-",
+      "details_extracted": 4,
+      "ground_truth_fields": 3
+    },
+    {
+      "file": "syn_extra_03_faint_receipt.png",
+      "expected_kind": "receipt",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11).",
+      "details_extracted": 3,
+      "ground_truth_fields": 3
+    },
+    {
+      "file": "syn_extra_04_shadowed_bill.png",
+      "expected_kind": "utility_bill",
+      "found_kind": "bank_statement",
+      "group": "bank_statement",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'bank_statement' confidence (0.40) below threshold (0.50).",
+      "details_extracted": 4,
+      "ground_truth_fields": 2
+    },
+    {
+      "file": "syn_extra_05_stained_memo.png",
+      "expected_kind": "letter",
+      "found_kind": "unknown",
+      "group": "unknown",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.20) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.20) vs 'invoice' (0.10).",
+      "details_extracted": 4,
+      "ground_truth_fields": 3
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_01_noisy_receipt.png",
+  "expected_type": "receipt",
+  "expected_routing": "RECEIPT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "STORE": "#1042",
+    "TOTAL": "$14.85",
+    "DATE": "2026-11-20"
+  },
+  "full_text": "STARBUCKS STORE #1042\nTOTAL: $14.85\nDATE: 2026-11-20\nTAX: $1.20\nITEMS: 2"
+}

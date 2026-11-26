@@ -1,0 +1,51 @@
+{
+  "id": "doc_01_invoice_3col_ruled",
+  "title": "ACME INDUSTRIAL SERVICES",
+  "doc_type": "invoice",
+  "headers": [
+    "Description",
+    "Qty",
+    "Amount"
+  ],
+  "rows": [
+    [
+      "Heavy duty hydraulic filter replacement",
+      "2",
+      "340.00"
+    ],
+    [
+      "Synthetic compressor lubricant 20L",
+      "4",
+      "480.00"
+    ],
+    [
+      "High pressure brass control valve",
+      "1",
+      "125.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Expedited Freight Surcharge",
+      "$45.00"
+    ],
+    [
+      "Environmental Handling Fee",
+      "$18.50"
+    ]
+  ],
+  "totals": [
+    [
+      "Subtotal",
+      "$945.00"
+    ],
+    [
+      "Tax Amount",
+      "$75.60"
+    ],
+    [
+      "Total Due",
+      "$1,084.10"
+    ]
+  ]
+}

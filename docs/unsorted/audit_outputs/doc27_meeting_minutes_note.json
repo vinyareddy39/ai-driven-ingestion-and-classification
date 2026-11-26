@@ -1,0 +1,152 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.3954,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.3954
+    },
+    {
+      "type": "receipt",
+      "score": 0.1687
+    },
+    {
+      "type": "invoice",
+      "score": 0.0623
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.3954
+    }
+  ],
+  "fields": [
+    {
+      "label": "Meeting Date",
+      "value": "2026-11-06",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Time",
+      "value": "10:00 AM - 12:30 PM EST",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Meeting Location",
+      "value": "Executive Boardroom A & Virtual Zoom",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Meeting Chair",
+      "value": "Douglas Davenport, Chairman",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Attendees Present",
+      "value": "Douglas Davenport, Brenda Miller, Carlos Santana, Dr. Julia Chen",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Resolution Passed",
+      "value": "Motion to approve Q1 capital expenditure budget of $3,200,000.00 passed",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Next Meeting Date",
+      "value": "2026-12-15",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          127.25,
+          224.1699981689453,
+          141.07000732421875
+        ],
+        "label": "Time",
+        "start": 14,
+        "end": 23
+      },
+      "confidence": 0.62,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    },
+    {
+      "type": "PERSON_NAME",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          163.25,
+          465.34991455078125,
+          177.07000732421875
+        ],
+        "label": "Attendees Present",
+        "start": 50,
+        "end": 64
+      },
+      "confidence": 0.65,
+      "masked_value": "D*** [PERSON]"
+    },
+    {
+      "type": "PERSON_NAME",
+      "location": {
+        "page": 1,
+        "bbox": null,
+        "label": "",
+        "start": 254,
+        "end": 286
+      },
+      "confidence": 0.7,
+      "masked_value": "D*** [PERSON]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_MANUAL_TRIAGE_QUEUE",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'letter' confidence (0.40) below threshold (0.50).",
+    "Sensitive finding (ADDRESS) in field 'Time' flagged for review.",
+    "Sensitive finding (PERSON_NAME) in field 'Attendees Present' flagged for review.",
+    "Sensitive finding (PERSON_NAME) in field '' flagged for review."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "EXECUTIVE BOARD MEETING MINUTES",
+  "dates": [
+    "2026-11-06",
+    "2026-12-15"
+  ]
+}

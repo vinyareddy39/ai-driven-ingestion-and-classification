@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_11_multipage_contract_3p.pdf",
+  "expected_type": "contract",
+  "expected_routing": "CONTRACT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "TENANT": "OMEGA SYSTEMS",
+    "RENT": "$8,500/MONTH",
+    "TERM": "36 MONTHS"
+  },
+  "full_text": "COMMERCIAL LEASE AGREEMENT\nTENANT: OMEGA SYSTEMS\nRENT: $8,500/MONTH\nTERM: 36 MONTHS"
+}

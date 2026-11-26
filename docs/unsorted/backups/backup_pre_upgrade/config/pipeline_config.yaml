@@ -1,0 +1,116 @@
+pipeline:
+  name: ecm-ai-ingest
+  version: 1.0.0
+  environment: development
+  storage_bucket: ecm-raw-assets
+  dlq_max_retries: 3
+  retry_backoff_seconds: 1.0
+classes:
+  invoice:
+    risk: low
+    default_threshold: 0.9
+    tuned_threshold: 0.90
+    retention_class: FINANCIAL_7_YEARS
+    acl: CONFIDENTIAL_FINANCE
+    target_workflow: AP_INVOICE_PROCESSING
+  receipt:
+    risk: low
+    default_threshold: 0.90
+    tuned_threshold: 0.90
+    retention_class: FINANCIAL_7_YEARS
+    acl: CONFIDENTIAL_FINANCE
+    target_workflow: AP_RECEIPT_PROCESSING
+  contract:
+    risk: low
+    default_threshold: 0.9
+    tuned_threshold: 0.90
+    retention_class: LEGAL_10_YEARS
+    acl: RESTRICTED_LEGAL
+    target_workflow: CONTRACT_EXECUTION
+  kyc_form:
+    risk: high
+    default_threshold: 0.95
+    tuned_threshold: 0.95
+    retention_class: COMPLIANCE_10_YEARS
+    acl: RESTRICTED_KYC
+    target_workflow: CUSTOMER_ONBOARDING
+  bank_statement:
+    risk: high
+    default_threshold: 0.95
+    tuned_threshold: 0.95
+    retention_class: FINANCIAL_7_YEARS
+    acl: CONFIDENTIAL_FINANCE
+    target_workflow: TREASURY_RECONCILIATION
+  medical_report:
+    risk: high
+    default_threshold: 0.95
+    tuned_threshold: 0.95
+    retention_class: HEALTH_RECORD_PERMANENT
+    acl: RESTRICTED_MEDICAL
+    target_workflow: CLINICAL_REVIEW
+  purchase_order:
+    risk: low
+    default_threshold: 0.9
+    tuned_threshold: 0.90
+    retention_class: PROCUREMENT_5_YEARS
+    acl: INTERNAL_PROCUREMENT
+    target_workflow: PO_MATCHING
+  letter:
+    risk: low
+    default_threshold: 0.9
+    tuned_threshold: 0.90
+    retention_class: GENERAL_3_YEARS
+    acl: GENERAL_ACCESS
+    target_workflow: CORRESPONDENCE_ROUTING
+  claim_form:
+    risk: high
+    default_threshold: 0.95
+    tuned_threshold: 0.95
+    retention_class: INSURANCE_7_YEARS
+    acl: RESTRICTED_CLAIMS
+    target_workflow: CLAIMS_ADJUDICATION
+  unknown:
+    risk: high
+    default_threshold: 1.0
+    tuned_threshold: 1.0
+    retention_class: TEMPORARY_QUARANTINE
+    acl: RESTRICTED_REVIEW
+    target_workflow: MANUAL_TRIAGE
+decision_gate:
+  low_risk_auto_threshold: 0.9
+  high_risk_auto_threshold: 0.95
+  review_floor: 0.6
+  conflict_stricter_rule: true
+  auto_accept_unknown: false
+compliance_floors:
+  high_risk_floor: 0.95
+  low_risk_floor: 0.90
+pii_policy:
+  sensitivity:
+    high:
+    - US_SSN
+    - CREDIT_CARD
+    - PASSPORT
+    - MEDICAL_LICENSE
+    medium:
+    - US_EIN
+    - PHONE_NUMBER
+    - EMAIL_ADDRESS
+    - IBAN_CODE
+    - PERSON
+    low:
+    - DATE_TIME
+    - LOCATION
+    - IP_ADDRESS
+  mask_in_logs: true
+  mask_char: '*'
+  conflict_trigger_sensitivity: high
+queues:
+  live_queue: ecm:queue:live
+  bulk_queue: ecm:queue:bulk
+  dlq_queue: ecm:queue:dlq
+  bulk_rate_limit_per_second: 50
+reprocessing:
+  max_concurrency: 4
+  preserve_human_verified: true
+  emit_conflict_diff: true

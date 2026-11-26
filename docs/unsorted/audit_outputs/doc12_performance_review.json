@@ -1,0 +1,105 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.1111,
+  "top_candidates": [
+    {
+      "type": "invoice",
+      "score": 0.1111
+    },
+    {
+      "type": "receipt",
+      "score": 0.1111
+    },
+    {
+      "type": "contract",
+      "score": 0.1111
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.1111
+    }
+  ],
+  "fields": [
+    {
+      "label": "Employee Name",
+      "value": "Samantha Sterling",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Employee ID",
+      "value": "HR-8819",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Job Role",
+      "value": "Lead Product Designer",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Reviewing Manager",
+      "value": "Victoria Hayes",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Appraisal Period",
+      "value": "FY 2026",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Overall Rating",
+      "value": "Exceeds Expectations (4.8 / 5.0)",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Recommended Merit Increase",
+      "value": "6.5%",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Key Achievements",
+      "value": "Led the redesign of the user onboarding flow resulting in a 24% uplift in retention.",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'invoice' confidence (0.11) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "ANNUAL PERFORMANCE APPRAISAL",
+  "dates": []
+}

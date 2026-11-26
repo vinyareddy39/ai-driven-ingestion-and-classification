@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_06_image_only_contract.pdf",
+  "expected_type": "contract",
+  "expected_routing": "CONTRACT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "BETWEEN": "DELTA CORP AND EPSILON LLC",
+    "EFFECTIVE": "2026-11-01",
+    "GOVERNING LAW": "DELAWARE"
+  },
+  "full_text": "MASTER SERVICES AGREEMENT\nBETWEEN: DELTA CORP AND EPSILON LLC\nEFFECTIVE: 2026-11-01\nGOVERNING LAW: DELAWARE"
+}

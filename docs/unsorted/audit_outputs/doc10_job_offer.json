@@ -1,0 +1,115 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.3965,
+  "top_candidates": [
+    {
+      "type": "letter",
+      "score": 0.3965
+    },
+    {
+      "type": "receipt",
+      "score": 0.1432
+    },
+    {
+      "type": "contract",
+      "score": 0.1432
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.3965
+    }
+  ],
+  "fields": [
+    {
+      "label": "Formal Offer of Employment",
+      "value": "Candidate Name: Alexander Wright",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Candidate Name",
+      "value": "Alexander Wright",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Offer Date",
+      "value": "2026-11-05",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Position",
+      "value": "Senior Machine Learning Scientist",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Department",
+      "value": "Applied Perception Research",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Starting Base Salary",
+      "value": "$190,000.00",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Signing Bonus",
+      "value": "$25,000.00",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Target Start Date",
+      "value": "2027-01-15",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Offer Expiration Date",
+      "value": "2026-11-20",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'letter' confidence (0.40) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "NEXUS ARTIFICIAL INTELLIGENCE CORP.",
+  "dates": [
+    "2026-11-05",
+    "2027-01-15",
+    "2026-11-20"
+  ]
+}

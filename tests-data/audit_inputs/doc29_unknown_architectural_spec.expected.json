@@ -1,0 +1,11 @@
+{
+  "document_kind": "unknown",
+  "key_values": {
+    "project_code": "BLDG-NORTH-770",
+    "sheet_number": "A-104",
+    "architect": "Marcus Sterling, AIA",
+    "concrete_strength": "5,000 PSI",
+    "release_date": "2026-10-10"
+  },
+  "notes": "Explicitly unknown schema (Architectural Blueprint Spec)"
+}

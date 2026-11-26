@@ -1,0 +1,10 @@
+{
+  "file": "syn_extra_30_certificate_completion.pdf",
+  "expected_type": "certificate",
+  "expected_routing": "CERTIFICATE_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "AWARDED TO": "SARAH CONNOR",
+    "DATE": "2026-11-22"
+  },
+  "full_text": "CERTIFICATE OF COMPLETION\nAWARDED TO: SARAH CONNOR\nPROGRAM: ADVANCED MACHINE LEARNING\nDATE: 2026-11-22"
+}

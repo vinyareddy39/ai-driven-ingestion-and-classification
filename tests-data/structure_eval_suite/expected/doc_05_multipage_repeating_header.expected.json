@@ -1,0 +1,27 @@
+{
+  "file_name": "doc_05_multipage_repeating_header.pdf",
+  "document_type": "Document",
+  "expected_structures": [
+    "header_footer",
+    "heading",
+    "label_value_pair",
+    "paragraph"
+  ],
+  "expected_fields": {
+    "Audit Engagement": "ENG-2026-88",
+    "Principal Auditor": "Marcus Sterling, CPA"
+  },
+  "expected_tables": [],
+  "expected_checkboxes": {},
+  "expected_signatures": [],
+  "expected_lists": [],
+  "expected_codes": [],
+  "header_footer_texts": [
+    "ACME GLOBAL HOLDINGS - QUARTERLY AUDIT 2026",
+    "Internal Use Only",
+    "Page 1 of 2",
+    "Page 2 of 2"
+  ],
+  "watermark_texts": [],
+  "footnote_texts": []
+}

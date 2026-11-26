@@ -1,0 +1,51 @@
+{
+  "id": "doc_09_freight_waybill_5col_ruled",
+  "title": "OCEANIC FREIGHT FORWARDERS",
+  "doc_type": "waybill",
+  "headers": [
+    "Item No",
+    "Package Desc",
+    "Dimensions",
+    "Weight Kg",
+    "Freight Cost"
+  ],
+  "rows": [
+    [
+      "1",
+      "Machine parts crate",
+      "120x80x60 cm",
+      "240.0",
+      "380.00"
+    ],
+    [
+      "2",
+      "Electronic assemblies pallet",
+      "100x120x80 cm",
+      "180.0",
+      "290.00"
+    ],
+    [
+      "3",
+      "Spare pump housing crate",
+      "90x90x70 cm",
+      "150.0",
+      "240.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Port Facility Surcharge",
+      "$65.00"
+    ]
+  ],
+  "totals": [
+    [
+      "Total Weight",
+      "570.0 kg"
+    ],
+    [
+      "Total Freight Due",
+      "$910.00"
+    ]
+  ]
+}

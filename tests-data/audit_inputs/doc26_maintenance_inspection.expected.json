@@ -1,0 +1,11 @@
+{
+  "document_kind": "report",
+  "key_values": {
+    "inspection_id": "CHK-2026-881",
+    "equipment": "Rooftop Chiller Unit #3",
+    "date": "2026-10-25",
+    "status": "Operational / Pass",
+    "next_service": "2027-04-25"
+  },
+  "notes": ""
+}

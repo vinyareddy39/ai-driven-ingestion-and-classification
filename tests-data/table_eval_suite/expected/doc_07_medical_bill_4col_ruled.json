@@ -1,0 +1,51 @@
+{
+  "id": "doc_07_medical_bill_4col_ruled",
+  "title": "METRO HEALTH CLINIC",
+  "doc_type": "medical_statement",
+  "headers": [
+    "Service Date",
+    "Description of Care",
+    "Billing Code",
+    "Amount"
+  ],
+  "rows": [
+    [
+      "2026-11-17",
+      "Comprehensive diagnostic consultation",
+      "CPT-99214",
+      "185.00"
+    ],
+    [
+      "2026-11-17",
+      "Standard blood panel chemistry",
+      "CPT-80053",
+      "120.00"
+    ],
+    [
+      "2026-11-17",
+      "Diagnostic chest X-Ray complete",
+      "CPT-71046",
+      "210.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Patient Copay Required",
+      "$35.00"
+    ],
+    [
+      "Primary Insurance Paid",
+      "$480.00"
+    ]
+  ],
+  "totals": [
+    [
+      "Total Charges",
+      "$515.00"
+    ],
+    [
+      "Patient Responsibility",
+      "$35.00"
+    ]
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.0,
+  "top_candidates": [],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "low contrast",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 4223.34,
+      "noise_level": 9758,
+      "confidence_penalty": 0.04
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.0
+    }
+  ],
+  "fields": [],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Insufficient text content to classify with confidence."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "ITEM",
+  "dates": []
+}

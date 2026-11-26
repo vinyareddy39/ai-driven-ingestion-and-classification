@@ -1,0 +1,11 @@
+{
+  "file": "syn_extra_03_faint_receipt.png",
+  "expected_type": "receipt",
+  "expected_routing": "RECEIPT_PROCESSING_SYSTEM",
+  "expected_fields": {
+    "FEE": "$24.00",
+    "HOURS": "4",
+    "PLATE": "7XYZ89"
+  },
+  "full_text": "CENTRAL PARKING GARAGE\nHOURS: 4\nFEE: $24.00\nPLATE: 7XYZ89"
+}

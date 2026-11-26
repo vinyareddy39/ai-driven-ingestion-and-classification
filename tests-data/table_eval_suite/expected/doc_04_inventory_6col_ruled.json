@@ -1,0 +1,51 @@
+{
+  "id": "doc_04_inventory_6col_ruled",
+  "title": "APEX LOGISTICS WAREHOUSE",
+  "doc_type": "inventory_report",
+  "headers": [
+    "Item ID",
+    "Item Name",
+    "Category",
+    "In Stock",
+    "Reorder Level",
+    "Unit Cost"
+  ],
+  "rows": [
+    [
+      "ITM-01",
+      "Ball Bearing 50mm",
+      "Mechanical",
+      "150",
+      "30",
+      "12.50"
+    ],
+    [
+      "ITM-02",
+      "O-Ring Seal Pack",
+      "Plastics",
+      "420",
+      "100",
+      "3.20"
+    ],
+    [
+      "ITM-03",
+      "Control Relay 24V",
+      "Electrical",
+      "85",
+      "20",
+      "28.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Warehouse Location",
+      "Building B-4"
+    ]
+  ],
+  "totals": [
+    [
+      "Total Items Tracked",
+      "655"
+    ]
+  ]
+}

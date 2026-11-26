@@ -1,0 +1,144 @@
+{
+  "type": "claim_form",
+  "type_confidence": 0.9603,
+  "top_candidates": [
+    {
+      "type": "claim_form",
+      "score": 0.9603
+    },
+    {
+      "type": "letter",
+      "score": 0.0152
+    },
+    {
+      "type": "receipt",
+      "score": 0.0076
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "claim_form",
+      "confidence": 0.9603
+    }
+  ],
+  "fields": [
+    {
+      "label": "Automobile Loss & Damage Claim Form",
+      "value": "Claim Number: CLM-2026-8841",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Claim Number",
+      "value": "CLM-2026-8841",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Policyholder",
+      "value": "Timothy Sterling",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Policy Number",
+      "value": "POL-99210-A",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Incident Date",
+      "value": "2026-10-22",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Location of Incident",
+      "value": "Route 9, Framingham, MA",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Vehicle Make & Model",
+      "value": "2024 Honda Accord Touring",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Estimated Repair Cost",
+      "value": "$4,850.00",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Deductible",
+      "value": "$500.00",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          201.25,
+          313.64996337890625,
+          215.07000732421875
+        ],
+        "label": "Vehicle Make & Model",
+        "start": 0,
+        "end": 17
+      },
+      "confidence": 0.62,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    },
+    {
+      "type": "ADDRESS",
+      "location": {
+        "page": 1,
+        "bbox": null,
+        "label": "",
+        "start": 249,
+        "end": 296
+      },
+      "confidence": 0.67,
+      "masked_value": "[RESTRICTED ADDRESS]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_CLAIMS_SECURITY_VAULT",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 12
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Sensitive finding (ADDRESS) in field 'Vehicle Make & Model' flagged for review.",
+    "Sensitive finding (ADDRESS) in field '' flagged for review."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "LIBERTY CASUALTY INSURANCE GROUP",
+  "dates": [
+    "2026-10-22"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "document_types": {
+    "invoice": {
+      "name": "invoice",
+      "label": "Invoice",
+      "fields": [
+        {"key": "invoice_number", "label": "Invoice Number", "type": "string", "hint": "e.g. INV-12345", "pii": false, "required": true},
+        {"key": "invoice_date", "label": "Invoice Date", "type": "date", "hint": "YYYY-MM-DD", "pii": false, "required": true},
+        {"key": "vendor_name", "label": "Vendor Name", "type": "string", "hint": "Supplier or merchant", "pii": false, "required": true},
+        {"key": "total_amount", "label": "Total Amount", "type": "float", "hint": "Total due / balance", "pii": false, "required": true}
+      ]
+    },
+    "letter": {
+      "name": "letter",
+      "label": "Letter / Memorandum",
+      "fields": [
+        {"key": "date", "label": "Date", "type": "date", "hint": "YYYY-MM-DD", "pii": false, "required": true},
+        {"key": "sender_name", "label": "Sender Name", "type": "string", "hint": "e.g. Mr. Bobby Lewis", "pii": false, "required": true},
+        {"key": "recipient_name", "label": "Recipient Name", "type": "string", "hint": "e.g. Lance Berg", "pii": false, "required": true},
+        {"key": "sender_email", "label": "Sender Email", "type": "email", "hint": "e.g. name@example.com", "pii": true, "required": true},
+        {"key": "subject", "label": "Subject", "type": "string", "hint": "RE: topic or memorandum", "pii": false, "required": true}
+      ]
+    },
+    "receipt": {
+      "name": "receipt",
+      "label": "Receipt",
+      "fields": [
+        {"key": "store_name", "label": "Store Name", "type": "string", "hint": "Merchant or shop", "pii": false, "required": true},
+        {"key": "date", "label": "Date", "type": "date", "hint": "YYYY-MM-DD", "pii": false, "required": true},
+        {"key": "total_amount", "label": "Total Amount", "type": "float", "hint": "Total paid", "pii": false, "required": true}
+      ]
+    },
+    "contract": {
+      "name": "contract",
+      "label": "Contract / Agreement",
+      "fields": [
+        {"key": "contract_id", "label": "Contract ID", "type": "string", "hint": "Reference code", "pii": false, "required": true},
+        {"key": "effective_date", "label": "Effective Date", "type": "date", "hint": "YYYY-MM-DD", "pii": false, "required": true},
+        {"key": "first_party", "label": "First Party", "type": "string", "hint": "First entity", "pii": false, "required": true},
+        {"key": "second_party", "label": "Second Party", "type": "string", "hint": "Second entity", "pii": false, "required": true},
+        {"key": "authorized_signatory", "label": "Authorized Signatory", "type": "string", "hint": "Signatory name", "pii": false, "required": true},
+        {"key": "notification_email", "label": "Notification Email", "type": "email", "hint": "Notice email", "pii": true, "required": true},
+        {"key": "subject", "label": "Subject", "type": "string", "hint": "Contract subject", "pii": false, "required": true},
+        {"key": "page_condition", "label": "Page Condition", "type": "string", "hint": "Visual condition", "pii": false, "required": false}
+      ]
+    },
+    "bank_statement": {
+      "name": "bank_statement",
+      "label": "Bank Statement",
+      "fields": [
+        {"key": "account_number", "label": "Account Number", "type": "string", "hint": "Account identifier", "pii": true, "required": true},
+        {"key": "statement_period", "label": "Statement Period", "type": "string", "hint": "Cycle interval", "pii": false, "required": false},
+        {"key": "closing_balance", "label": "Closing Balance", "type": "float", "hint": "Ending balance", "pii": false, "required": true}
+      ]
+    },
+    "medical_report": {
+      "name": "medical_report",
+      "label": "Medical Report",
+      "fields": [
+        {"key": "patient_id", "label": "Patient ID", "type": "string", "hint": "MRN / Patient ID", "pii": true, "required": true},
+        {"key": "patient_name", "label": "Patient Name", "type": "string", "hint": "Full name", "pii": true, "required": false},
+        {"key": "doctor_name", "label": "Doctor Name", "type": "string", "hint": "Attending physician", "pii": false, "required": true},
+        {"key": "diagnosis", "label": "Diagnosis", "type": "string", "hint": "Primary clinical finding", "pii": true, "required": true}
+      ]
+    },
+    "kyc_form": {
+      "name": "kyc_form",
+      "label": "KYC Form",
+      "fields": [
+        {"key": "customer_name", "label": "Customer Name", "type": "string", "hint": "Legal name", "pii": true, "required": true},
+        {"key": "id_number", "label": "ID Number", "type": "string", "hint": "Passport or National ID", "pii": true, "required": true},
+        {"key": "date_of_birth", "label": "Date of Birth", "type": "date", "hint": "YYYY-MM-DD", "pii": true, "required": true}
+      ]
+    },
+    "purchase_order": {
+      "name": "purchase_order",
+      "label": "Purchase Order",
+      "fields": [
+        {"key": "po_number", "label": "PO Number", "type": "string", "hint": "Procurement tracking code", "pii": false, "required": true},
+        {"key": "po_date", "label": "PO Date", "type": "date", "hint": "YYYY-MM-DD", "pii": false, "required": true},
+        {"key": "vendor_name", "label": "Vendor Name", "type": "string", "hint": "Supplier entity", "pii": false, "required": true},
+        {"key": "order_total", "label": "Order Total", "type": "float", "hint": "Authorized total", "pii": false, "required": true}
+      ]
+    },
+    "unknown": {
+      "name": "unknown",
+      "label": "Unknown Document",
+      "fields": []
+    }
+  }
+}

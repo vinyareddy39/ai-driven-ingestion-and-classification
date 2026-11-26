@@ -1,96 +1,107 @@
 # Document Reader
 
-An AI document reading application with ZERO DEFAULTS:
-- Reads documents from scratch with high-resolution image rendering and OpenCV deskew/denoise.
-- Extracts document type, header title, and all physical fields with vision AI and OCR cross-check.
-- Exact value preservation: casing, commas, and suffixes (e.g. `PhD`, `DDS`, `Jr.`) are strictly preserved.
-- Dynamic table columns generated on the fly from the union of extracted field labels per document group.
-- Real duplicate check: detects same content (SHA-256) while reading again from scratch with duplicate note.
-- Check and edit split screen: preview original document page side-by-side with extracted details, confidence scores, and edit/add/remove capabilities.
-- Learning: persists user corrections to continuously improve future extraction.
-- ZIP export: downloads original files, dynamic CSV, and multi-sheet Excel (.xlsx) workbooks.
+An AI document reading and structure extraction platform designed with a clean, decoupled architecture:
+- **/backend**: Server-side FastAPI application, layout analyzers, database models, and background workers.
+- **/frontend**: Client-side React/TypeScript single-page application (SPA).
+- **/tests-data**: Benchmark files, ground truth datasets, and evaluation suites.
+- **/docs**: Architecture specifications, deployment manuals, and project records.
+- **/scripts**: Operational, evaluation, and diagnostic utilities.
 
 ---
 
-## 1. Prerequisites & Installation
+## 1. Directory Structure
 
-### Python & Node.js
-- Python 3.11+
-- Node.js 18+ and npm
-
-Install Python dependencies:
-```bash
-pip install -r requirements.txt
-pip install anthropic openpyxl bcrypt
+```
+ml/
+├── backend/                  # Everything that runs on the server
+│   ├── app/                  # Application code (api, core, models, workers, adapters)
+│   ├── config/               # Pipeline, taxonomy, and detector YAML configs
+│   ├── migrations/           # Database schema migrations (Alembic)
+│   ├── tests/                # Backend unit and integration test suites
+│   ├── .env.example          # Backend environment variable template (NO secrets)
+│   ├── Dockerfile            # Container deployment definition
+│   ├── pytest.ini            # Pytest test discovery config
+│   └── requirements.txt      # Python dependencies
+│
+├── frontend/                 # Everything that runs in the browser
+│   ├── src/                  # React + TypeScript source (App.tsx, api client)
+│   ├── index.html            # SPA entry HTML
+│   ├── package.json          # Frontend dependencies
+│   ├── vite.config.ts        # Vite configuration
+│   └── .env.example          # Frontend environment template (NO secrets)
+│
+├── tests-data/               # Test documents and benchmarks (outside app code)
+│   ├── synthetic_tests/      # Ground-truth synthetic test documents
+│   ├── benchmark_60/         # Standard 60-document benchmark suite
+│   ├── test_folders/         # Nested folder upload fixtures
+│   ├── test_robust_proofs/   # Degraded, noisy, and rotated test images
+│   ├── structure_eval_suite/ # Page structure recognition benchmarks
+│   └── table_eval_suite/     # Table detection & arithmetic checks
+│
+├── docs/                     # Project documentation
+│   ├── DEPLOYMENT.md         # Step-by-step Render & Vercel deployment guide
+│   ├── api-contract.md       # API endpoint contracts and specifications
+│   └── unsorted/             # Historical test logs and proof archives
+│
+├── scripts/                  # Standalone maintenance & benchmark scripts
+│   ├── record_baseline_ui.js # Playwright E2E browser UI test automation
+│   ├── start_services.ps1    # Automated server launcher
+│   └── verify_all.ps1        # Full pipeline verification script
+│
+├── evidence/                 # Verification evidence captures
+│   ├── before/               # Pre-restructuring tests & UI screenshots
+│   └── after/                # Post-restructuring tests & UI screenshots
+│
+├── .gitignore                # Strict exclusion for secrets, logs, and build artifacts
+├── Makefile                  # Build and run aliases
+└── README.md                 # Project overview and instructions
 ```
 
-Install Frontend dependencies:
+---
+
+## 2. Quickstart & Commands
+
+### Prerequisites
+* Python 3.11+
+* Node.js 18+ & npm
+
+### Starting the Backend
+```bash
+cd backend
+uvicorn app.api.app:app --host 127.0.0.1 --port 8000
+```
+*API is accessible at `http://127.0.0.1:8000` with interactive docs at `http://127.0.0.1:8000/docs`.*
+
+### Starting the Frontend
 ```bash
 cd frontend
-npm install
+npm run dev -- --host 0.0.0.0 --port 5173
 ```
+*Web application is accessible at `http://localhost:5173`.*
 
-### Tesseract OCR Installation
-- **Windows**: Install using winget or the official installer:
-  ```powershell
-  winget install UB-Mannheim.TesseractOCR
-  ```
-  Add `C:\Program Files\Tesseract-OCR` to your system `PATH`.
-- **macOS**:
-  ```bash
-  brew install tesseract
-  ```
-- **Linux (Ubuntu/Debian)**:
-  ```bash
-  sudo apt-get install -y tesseract-ocr
-  ```
+### Running the Test Suite
+```bash
+cd backend
+pytest
+```
 
 ---
 
-## 2. Environment Configuration
+## 3. Configuration & Environment Variables
 
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
+### Backend Configuration (`backend/.env`)
+Copy `backend/.env.example` to `backend/.env` and configure:
+* `DATABASE_URL`: Connection string (`postgresql://...` for production, `sqlite:///./data/ecm_pipeline.db` for local).
+* `JWT_SECRET`: Random 32+ character key for HS256 auth tokens.
+* `OCR_ENGINE`: `hybrid` (recommended for <512MB RAM free-tier) or `trocr` (for GPU instances).
+* `DELETE_UPLOAD_AFTER_PROCESSING`: `true` to purge temporary files from ephemeral disk after DB commit.
 
-Configure `ANTHROPIC_API_KEY`:
-```ini
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-MODEL_NAME=claude-sonnet-5-5
-JWT_SECRET=your_secure_secret_key
-DATABASE_URL=sqlite:///./data/ecm_pipeline.db
-```
-
-*Note: If `ANTHROPIC_API_KEY` is not provided or invalid, the app reports honest `Failed` status with the exact error and stores zero placeholder values.*
+### Frontend Configuration (`frontend/.env`)
+Copy `frontend/.env.example` to `frontend/.env`:
+* `VITE_API_URL`: Backend URL (e.g. `http://localhost:8000` for local dev or your Render URL in production).
 
 ---
 
-## 3. Running the App
+## 4. Production Deployment
 
-### Start Backend
-In the root directory:
-```bash
-python -m uvicorn app.api.app:app --host 127.0.0.1 --port 8000
-```
-
-### Start Frontend
-In `frontend/`:
-```bash
-cd frontend
-npm run dev
-```
-
-Open your browser at `http://localhost:5173`.
-All requests to `/api` are automatically proxied to `http://127.0.0.1:8000`.
-
----
-
-## 4. Architecture & Workflow
-
-1. **Sign in / Register**: Secure authentication with bcrypt password hashing and HS256 JWT tokens. No seeded or hard-coded default accounts.
-2. **Upload**: Drag-and-drop or select multiple documents. Real duplicate detection compares SHA-256 hashes against previous uploads and reads every upload again from scratch.
-3. **Reading**: Live stage progression (`Waiting` -> `Reading` -> `Extracting` -> `Done` / `Failed`). Computes visual page condition (`clean`, `slightly skewed`, `speckled background`) from image contours and noise variance.
-4. **Results**: Groups documents by detected type. Columns are dynamically generated only from the fields present in that group. High confidence values mark `Done`; values with confidence < 85% mark `Done, check`.
-5. **Check and edit**: Split screen displays the high-resolution original document on the left and editable field values with confidence metrics on the right. User edits are persisted in the database and logged to the `corrections` table for learning.
-6. **Download all as ZIP**: Packages the batch with original documents, `results.csv`, and `results.xlsx` (with one sheet per document type).
+For detailed production instructions covering Render Free Web Service (512MB limit), Render PostgreSQL (30-day lifecycle management), and Vercel Hobby tier, refer to [DEPLOYMENT.md](docs/DEPLOYMENT.md).

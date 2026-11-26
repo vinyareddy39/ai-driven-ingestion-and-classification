@@ -1,0 +1,430 @@
+{
+  "timestamp": "2026-11-26T16:11:02.794Z",
+  "batch1_extra_files": [
+    {
+      "group": "invoice",
+      "file_name": "syn_extra_01_noisy_receipt.png",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.40) below threshold (0.50)."
+    },
+    {
+      "group": "invoice",
+      "file_name": "syn_extra_02_skewed_invoice.png",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "invoice",
+      "file_name": "syn_extra_08_image_only_invoice.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "invoice",
+      "file_name": "syn_extra_12_multipage_invoice_2p.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "invoice",
+      "file_name": "syn_extra_16_nolabel_values.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.39) below threshold (0.50).; Field 'Amount' confidence (0.83) is below threshold (0.85).; Sensitive finding (PHONE_NUMBER) in field '' flagged for review."
+    },
+    {
+      "group": "invoice",
+      "file_name": "syn_extra_28_consulting_invoice.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_03_faint_receipt.png",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_05_stained_memo.png",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.20) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.20) vs 'invoice' (0.10)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_10_image_only_kyc.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_11_multipage_contract_3p.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'contract' confidence (0.25) below threshold (0.50)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_13_multipage_statement_2p.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.18) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.18) vs 'receipt' (0.18)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_15_multipage_customs_2p.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_17_nolabel_address_block.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_18_nolabel_code_dump.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_19_nolabel_receipt_rows.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.18) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.18) vs 'receipt' (0.18)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_20_nolabel_shipping_coords.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_21_astronomy_telescope_log.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_22_culinary_recipe.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_24_poetry_anthology.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_25_weather_station_telemetry.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_26_equipment_lease.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_27_hotel_folio.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.18) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.18) vs 'receipt' (0.18)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "syn_extra_30_certificate_completion.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.24) vs 'invoice' (0.17)."
+    },
+    {
+      "group": "bank_statement",
+      "file_name": "syn_extra_04_shadowed_bill.png",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'bank_statement' confidence (0.40) below threshold (0.50)."
+    },
+    {
+      "group": "bank_statement",
+      "file_name": "syn_extra_07_image_only_statement.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "contract",
+      "file_name": "syn_extra_06_image_only_contract.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "contract",
+      "file_name": "syn_extra_23_chess_pgn_game.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'contract' confidence (0.25) below threshold (0.50)."
+    },
+    {
+      "group": "medical_report",
+      "file_name": "syn_extra_09_image_only_medical.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "medical_report",
+      "file_name": "syn_extra_14_multipage_report_4p.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "letter",
+      "file_name": "syn_extra_29_credit_card_statement.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.28) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.28) vs 'receipt' (0.27)."
+    }
+  ],
+  "batch2_base_files": [
+    {
+      "group": "unknown",
+      "file_name": "doc_01_two_column_article.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.18) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.18) vs 'receipt' (0.18)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_02_three_column_newsletter.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_05_multipage_repeating_header.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_07_nested_bullet_list.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_08_bar_chart_metrics.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_10_barcode_shipping_label.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_11_watermarked_draft.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.20) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.20) vs 'invoice' (0.10)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_12_footnote_citations.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_13_side_by_side_blocks.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_16_table_merged_multiline.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.24) vs 'receipt' (0.24)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_17_handwritten_form.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'medical_report' confidence (0.19) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'medical_report' (0.19) vs 'kyc_form' (0.17)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_24_utility_bill_complex_layout.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.22) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.22) vs 'receipt' (0.22)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_25_travel_itinerary_timeline.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.24) vs 'receipt' (0.24)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_31_conference_brochure_3col.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_35_project_milestone_report.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.11) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.11) vs 'receipt' (0.11)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_39_inventory_transfer_manifest.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.24) vs 'receipt' (0.24)."
+    },
+    {
+      "group": "unknown",
+      "file_name": "doc_40_payroll_remittance_advice.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.24) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.24) vs 'receipt' (0.24)."
+    },
+    {
+      "group": "bank_statement",
+      "file_name": "doc_03_form_checkboxes.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'bank_statement' confidence (0.33) below threshold (0.50)."
+    },
+    {
+      "group": "contract",
+      "file_name": "doc_04_signature_stamp_contract.pdf",
+      "status": "Done, check",
+      "check_reasons": "Detail value 'OFFICIAL CORPORATE SEAL' lacks a label (needs label).; Field 'detail' confidence (0.83) is below threshold (0.85)."
+    },
+    {
+      "group": "contract",
+      "file_name": "doc_22_legal_waiver_initials.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'contract' confidence (0.38) below threshold (0.50)."
+    },
+    {
+      "group": "contract",
+      "file_name": "doc_28_real_estate_lease_agreement.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "contract",
+      "file_name": "doc_30_equipment_inspection_log.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'contract' confidence (0.39) below threshold (0.50)."
+    },
+    {
+      "group": "contract",
+      "file_name": "doc_36_nda_confidentiality_notice.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "contract",
+      "file_name": "doc_38_service_level_agreement.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "invoice",
+      "file_name": "doc_06_table_with_totals.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "invoice",
+      "file_name": "doc_14_multilingual_invoice.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.29) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.29) vs 'receipt' (0.15)."
+    },
+    {
+      "group": "invoice",
+      "file_name": "doc_21_purchase_order_nested_table.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "invoice",
+      "file_name": "doc_26_expense_report_multi_row.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.36) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.36) vs 'contract' (0.22)."
+    },
+    {
+      "group": "invoice",
+      "file_name": "doc_27_warehouse_bill_of_lading.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.36) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.36) vs 'contract' (0.22)."
+    },
+    {
+      "group": "invoice",
+      "file_name": "doc_32_certificate_of_insurance.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.32) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.32) vs 'contract' (0.19)."
+    },
+    {
+      "group": "invoice",
+      "file_name": "doc_33_german_commercial_invoice.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.37) below threshold (0.50)."
+    },
+    {
+      "group": "invoice",
+      "file_name": "doc_37_customs_declaration_form.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'invoice' confidence (0.35) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'invoice' (0.35) vs 'contract' (0.21)."
+    },
+    {
+      "group": "letter",
+      "file_name": "doc_09_qr_code_verification.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.36) below threshold (0.50)."
+    },
+    {
+      "group": "letter",
+      "file_name": "doc_15_rotated_vertical_text.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.28) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'letter' (0.28) vs 'contract' (0.26)."
+    },
+    {
+      "group": "letter",
+      "file_name": "doc_19_company_logo_letterhead.pdf",
+      "status": "Done, check",
+      "check_reasons": "Sensitive finding (ADDRESS) in field '' flagged for review."
+    },
+    {
+      "group": "letter",
+      "file_name": "doc_20_mixed_checkbox_unclear.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'letter' confidence (0.36) below threshold (0.50).; Field 'Emergency Exit Light Recheck Required' confidence (0.83) is below threshold (0.85)."
+    },
+    {
+      "group": "receipt",
+      "file_name": "doc_18_noisy_skewed_scan.png",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "receipt",
+      "file_name": "doc_29_bank_statement_columns.pdf",
+      "status": "Done, check",
+      "check_reasons": "Top candidate 'receipt' confidence (0.32) below threshold (0.50).; Classification margin between top 2 candidates is close (< 0.15): 'receipt' (0.32) vs 'bank_statement' (0.26)."
+    },
+    {
+      "group": "receipt",
+      "file_name": "doc_34_clean_scan_image.png",
+      "status": "Done",
+      "check_reasons": "-"
+    },
+    {
+      "group": "medical_report",
+      "file_name": "doc_23_medical_record_diagnoses.pdf",
+      "status": "Done",
+      "check_reasons": "-"
+    }
+  ],
+  "batch1_count": 30,
+  "batch2_count": 40,
+  "total_count": 70
+}

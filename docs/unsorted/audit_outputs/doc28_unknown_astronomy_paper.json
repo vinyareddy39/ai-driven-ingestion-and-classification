@@ -1,0 +1,112 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.1111,
+  "top_candidates": [
+    {
+      "type": "invoice",
+      "score": 0.1111
+    },
+    {
+      "type": "receipt",
+      "score": 0.1111
+    },
+    {
+      "type": "contract",
+      "score": 0.1111
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.1111
+    }
+  ],
+  "fields": [
+    {
+      "label": "Preprint Identifier",
+      "value": "arXiv:2026.09841v2 [astro-ph.GA]",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Lead Researcher",
+      "value": "Dr. Helena Drake, Institute for Astrophysics",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Co-Authors",
+      "value": "Liam O'Connor, Kenji Sato",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Telescope Facility",
+      "value": "Atacama Large Millimeter Array (ALMA)",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Observation Band",
+      "value": "Band 7 Submillimeter (345 GHz)",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Abstract",
+      "value": "We report high-resolution interferometric observations of rotational transitions in carbon",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [
+    {
+      "type": "PERSON_NAME",
+      "location": {
+        "page": 1,
+        "bbox": [
+          78.0,
+          149.25,
+          356.42999267578125,
+          163.07000732421875
+        ],
+        "label": "Lead Researcher",
+        "start": 0,
+        "end": 16
+      },
+      "confidence": 0.65,
+      "masked_value": "D*** [PERSON]"
+    }
+  ],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "RESTRICTED_MANUAL_TRIAGE_QUEUE",
+    "is_restricted": true,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'invoice' confidence (0.11) below threshold (0.50).",
+    "Sensitive finding (PERSON_NAME) in field 'Lead Researcher' flagged for review."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "SPECTRAL EMISSION MAPPING OF",
+  "dates": []
+}

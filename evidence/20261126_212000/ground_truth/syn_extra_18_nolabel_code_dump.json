@@ -1,0 +1,7 @@
+{
+  "file": "syn_extra_18_nolabel_code_dump.pdf",
+  "expected_type": "unknown",
+  "expected_routing": "MANUAL_TRIAGE_QUEUE",
+  "expected_fields": {},
+  "full_text": "0x4A 0x2B 0x9F 0x01\nCHECKSUM: 0xEE41\nBUFFER: 1024"
+}

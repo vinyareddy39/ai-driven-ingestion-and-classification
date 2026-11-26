@@ -1,0 +1,105 @@
+{
+  "type": "unknown",
+  "type_confidence": 0.1774,
+  "top_candidates": [
+    {
+      "type": "kyc_form",
+      "score": 0.1774
+    },
+    {
+      "type": "invoice",
+      "score": 0.1733
+    },
+    {
+      "type": "receipt",
+      "score": 0.0928
+    }
+  ],
+  "page_conditions": [
+    {
+      "page": 1,
+      "condition": "clean (digital)",
+      "orientation_degrees": 0,
+      "skew_angle": 0.0,
+      "denoised": false,
+      "blur_score": 100.0,
+      "noise_level": 0,
+      "confidence_penalty": 0.0
+    }
+  ],
+  "logical_documents": [
+    {
+      "document_index": 1,
+      "start_page": 1,
+      "end_page": 1,
+      "type": "unknown",
+      "confidence": 0.1774
+    }
+  ],
+  "fields": [
+    {
+      "label": "Customs Declaration ID",
+      "value": "CUST-2026-1184",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Exporting Country",
+      "value": "United States",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Importing Country",
+      "value": "United Kingdom",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Harmonized Code (HS Code)",
+      "value": "8471.50.0150",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Exporter",
+      "value": "Silicon Valley Chips Ltd",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Importer",
+      "value": "Thames Computing Technologies Plc",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Declared Customs Value",
+      "value": "$12,400.00 USD",
+      "confidence": 0.98,
+      "page": 1
+    },
+    {
+      "label": "Duty Payable",
+      "value": "$496.00 USD",
+      "confidence": 0.98,
+      "page": 1
+    }
+  ],
+  "table_rows": [],
+  "sensitive_findings": [],
+  "detectors_run": 11,
+  "routing": {
+    "destination": "MANUAL_TRIAGE_QUEUE",
+    "is_restricted": false,
+    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+    "sla_hours": 4
+  },
+  "needs_review": true,
+  "review_reasons": [
+    "Top candidate 'kyc_form' confidence (0.18) below threshold (0.50)."
+  ],
+  "pipeline_version": "2.2.0",
+  "title_block": "INTERNATIONAL COMMERCIAL CUSTOMS INVOICE",
+  "dates": []
+}

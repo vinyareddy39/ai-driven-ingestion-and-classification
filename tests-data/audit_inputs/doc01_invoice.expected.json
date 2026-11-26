@@ -1,0 +1,13 @@
+{
+  "document_kind": "invoice",
+  "key_values": {
+    "invoice_number": "INV-84920",
+    "invoice_date": "2026-10-14",
+    "due_date": "2026-11-14",
+    "customer_name": "Horizon Analytics LLC",
+    "total_amount": "$5,466.63",
+    "tax_amount": "$416.63",
+    "subtotal": "$5,050.00"
+  },
+  "notes": ""
+}

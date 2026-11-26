@@ -1,0 +1,51 @@
+{
+  "id": "doc_02_invoice_4col_unruled",
+  "title": "VERTEX CLOUD CONSULTING",
+  "doc_type": "invoice",
+  "headers": [
+    "Service Item",
+    "Hours",
+    "Hourly Rate",
+    "Total"
+  ],
+  "rows": [
+    [
+      "Architecture assessment & planning",
+      "10",
+      "150.00",
+      "1500.00"
+    ],
+    [
+      "Database migration script execution",
+      "8",
+      "150.00",
+      "1200.00"
+    ],
+    [
+      "Security audit & penetration review",
+      "6",
+      "175.00",
+      "1050.00"
+    ]
+  ],
+  "same_line_pairs": [
+    [
+      "Client Partner Discount",
+      "-$150.00"
+    ],
+    [
+      "Travel Reimbursement",
+      "$85.00"
+    ]
+  ],
+  "totals": [
+    [
+      "Subtotal",
+      "$3,750.00"
+    ],
+    [
+      "Total Due",
+      "$3,685.00"
+    ]
+  ]
+}
