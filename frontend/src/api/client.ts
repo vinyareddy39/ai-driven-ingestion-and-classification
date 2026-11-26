@@ -1,6 +1,8 @@
 /** API client for frontend. */
 
-const API_BASE = '/api';
+const API_BASE = (import.meta as any).env?.VITE_API_URL
+  ? `${(import.meta as any).env.VITE_API_URL}/api`
+  : '/api';
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('token');
@@ -16,20 +18,68 @@ export interface User {
 export interface FieldItem {
   id?: string;
   label: string;
+  orig_label?: string;
   value: string;
   orig?: string;
   conf?: number;
+  val_conf?: number;
+  lbl_conf?: number;
+  structure_type?: string;
+  structure_group?: string;
+  structure_confidence?: number;
+  region_id?: string;
+  reason?: string;
+  suggested_label?: string;
+  alternatives?: string[];
+  hint?: string;
+  grounding_span?: any;
+  split_suggestion?: any;
+  in_more_details?: boolean;
+  is_promoted?: boolean;
   src?: string;
   page?: number;
   bbox?: number[] | null;
   is_sensitive?: boolean;
   detector_tag?: string | null;
   is_unlabelled?: boolean;
+  is_edited?: boolean;
+}
+
+export interface RegionItem {
+  region_id: string;
+  structure_type: string;
+  confidence: number;
+  bbox: number[];
+  reading_order: number;
+  page_number: number;
+  text?: string;
+  column_index?: number;
+  metadata?: Record<string, any>;
+}
+
+export interface TableArithmeticCheck {
+  type: string;
+  row_index?: number;
+  column?: string;
+  status: 'verified' | 'mismatch';
+  message: string;
+  computed?: number;
+  expected?: number;
+}
+
+export interface TableItem {
+  id?: string;
+  page?: number;
+  headers: string[];
+  rows: Array<Record<string, string>>;
+  bbox?: number[] | null;
+  arithmetic_checks?: TableArithmeticCheck[];
 }
 
 export interface FileItem {
   id: string;
   name: string;
+  relative_path?: string;
   type: string;
   cond: string;
   dup?: string;
@@ -37,7 +87,13 @@ export interface FileItem {
   stage: string;
   error?: string;
   check_reasons?: string | null;
+  document_summary?: string;
+  tags?: string[];
+  raw_text_by_page?: Record<string, string>;
+  layout_blocks?: any[];
   fields: FieldItem[];
+  tables?: TableItem[];
+  regions?: RegionItem[];
 }
 
 export interface BatchItem {
@@ -92,6 +148,58 @@ export const api = {
       localStorage.removeItem('token');
       return null;
     }
+    return res.json();
+  },
+
+  async initBatch(batchName?: string): Promise<{ id: string; name: string }> {
+    const formData = new FormData();
+    if (batchName) formData.append('batch_name', batchName);
+    const res = await fetch(`${API_BASE}/batches`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Failed to create batch');
+    return res.json();
+  },
+
+  async appendBatchFiles(
+    batchId: string,
+    files: File[],
+    relativePaths: string[]
+  ): Promise<{ batch_id: string; added_count: number; total_count: number }> {
+    const formData = new FormData();
+    files.forEach((f) => formData.append('files', f));
+    formData.append('relative_paths', JSON.stringify(relativePaths));
+
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const res = await fetch(`${API_BASE}/batches/${batchId}/files`, {
+          method: 'POST',
+          headers: getAuthHeader(),
+          body: formData,
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || `Failed to append files (${res.status})`);
+        }
+        return await res.json();
+      } catch (err: any) {
+        retries--;
+        if (retries === 0) throw err;
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+    }
+    throw new Error('Upload failed after retries');
+  },
+
+  async startBatch(batchId: string): Promise<any> {
+    const res = await fetch(`${API_BASE}/batches/${batchId}/start`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    if (!res.ok) throw new Error('Failed to start batch reading');
     return res.json();
   },
 
@@ -171,6 +279,30 @@ export const api = {
     return data;
   },
 
+  async updateTables(fileId: string, tables: TableItem[]) {
+    const res = await fetch(`${API_BASE}/files/${fileId}/tables`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify({ tables }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to save tables');
+    return data;
+  },
+
+  async getLabelSuggestions(docType?: string): Promise<string[]> {
+    const query = docType ? `?doc_type=${encodeURIComponent(docType)}` : '';
+    const res = await fetch(`${API_BASE}/label-suggestions${query}`, {
+      headers: getAuthHeader(),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.suggestions || [];
+  },
+
   async retryFile(fileId: string) {
     const res = await fetch(`${API_BASE}/files/${fileId}/retry`, {
       method: 'POST',
@@ -205,6 +337,20 @@ export const api = {
     return data;
   },
 
+  async reclassifyRegion(fileId: string, regionId: string, newStructureType: string) {
+    const res = await fetch(`${API_BASE}/files/${fileId}/regions/${regionId}/reclassify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeader(),
+      },
+      body: JSON.stringify({ new_structure_type: newStructureType }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Failed to reclassify region');
+    return data;
+  },
+
   getPageImageUrl(fileId: string, pageNum: number = 1): string {
     const token = localStorage.getItem('token') || '';
     return `${API_BASE}/files/${fileId}/page/${pageNum}?token=${encodeURIComponent(token)}`;
@@ -214,4 +360,99 @@ export const api = {
     const token = localStorage.getItem('token') || '';
     return `${API_BASE}/batches/${batchId}/download?token=${encodeURIComponent(token)}`;
   },
+
+  getCorrectionsExportUrl(format: 'json' | 'csv' = 'csv'): string {
+    const token = localStorage.getItem('token') || '';
+    return `${API_BASE}/corrections/export?format=${format}&token=${encodeURIComponent(token)}`;
+  },
+
+  async exportCorrections(format: 'json' | 'csv' = 'json') {
+    const res = await fetch(`${API_BASE}/corrections/export?format=${format}`, {
+      headers: getAuthHeader(),
+    });
+    if (!res.ok) throw new Error('Failed to export corrections');
+    return format === 'json' ? await res.json() : await res.text();
+  },
+  async acceptAllSuggestions(fileId: string) {
+    const res = await fetch(`${API_BASE}/files/${fileId}/accept-all`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    if (!res.ok) throw new Error('Failed to accept suggestions');
+    return await res.json();
+  },
+
+  async promoteDetail(fileId: string, fieldId: string) {
+    const res = await fetch(`${API_BASE}/files/${fileId}/promote-detail`, {
+      method: 'POST',
+      headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field_id: fieldId }),
+    });
+    if (!res.ok) throw new Error('Failed to promote detail');
+    return await res.json();
+  },
+
+  async acceptSplit(fileId: string, fieldId: string) {
+    const res = await fetch(`${API_BASE}/files/${fileId}/accept-split`, {
+      method: 'POST',
+      headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ field_id: fieldId }),
+    });
+    if (!res.ok) throw new Error('Failed to accept split');
+    return await res.json();
+  },
+
+  async bulkVerifyClean(batchId: string) {
+    const res = await fetch(`${API_BASE}/batches/${batchId}/bulk-verify-clean`, {
+      method: 'POST',
+      headers: getAuthHeader(),
+    });
+    if (!res.ok) throw new Error('Failed to bulk verify clean documents');
+    return await res.json();
+  },
+
+  async getWorkerHealth(): Promise<{ status: string; workers: any; database: any }> {
+    const res = await fetch(`${API_BASE}/health/workers`);
+    if (!res.ok) throw new Error('Failed to fetch worker health');
+    return await res.json();
+  },
+
+  async exportAccountData(): Promise<Blob> {
+    const res = await fetch(`${API_BASE}/account/export`, {
+      headers: getAuthHeader(),
+    });
+    if (!res.ok) throw new Error('Failed to export account data');
+    return await res.blob();
+  },
 };
+
+export async function pingBackendWithColdStartRetry(
+  onWakingUp?: (isWaking: boolean, elapsedSec: number) => void,
+  maxWaitSec: number = 65
+): Promise<boolean> {
+  const startTime = Date.now();
+
+  while ((Date.now() - startTime) < maxWaitSec * 1000) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const res = await fetch(`${API_BASE}/health/workers`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        if (onWakingUp) onWakingUp(false, Math.round((Date.now() - startTime) / 1000));
+        return true;
+      }
+    } catch {
+      // Backend may be sleeping / booting up
+    }
+
+    const elapsed = Math.round((Date.now() - startTime) / 1000);
+    if (elapsed >= 2 && onWakingUp) {
+      onWakingUp(true, elapsed);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+  }
+
+  if (onWakingUp) onWakingUp(false, Math.round((Date.now() - startTime) / 1000));
+  return false;
+}

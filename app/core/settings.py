@@ -113,10 +113,10 @@ class AppSettings(BaseSettings):
     SEARCH_BACKEND: str = Field(default="memory")
     OPENSEARCH_URL: str = Field(default="http://localhost:9200")
     OPENSEARCH_INDEX: str = Field(default="ecm_documents")
-    OCR_ENGINE: str = Field(default="trocr", description="OCR engine backend: trocr | hybrid | tesseract")
-    OCR_BATCH_SIZE: int = Field(default=16, description="TrOCR inference batch size")
-    OCR_USE_GPU: bool = Field(default=True, description="Whether to utilize CUDA acceleration for OCR")
-    OCR_MODEL: str = Field(default="microsoft/trocr-base-printed", description="HuggingFace model id for TrOCR")
+    OCR_ENGINE: str = Field(default="hybrid", description="OCR engine backend: hybrid | tesseract | trocr")
+    OCR_BATCH_SIZE: int = Field(default=8, description="OCR inference batch size")
+    OCR_USE_GPU: bool = Field(default=False, description="Whether to utilize CUDA acceleration for OCR")
+    OCR_MODEL: str = Field(default="microsoft/trocr-base-printed", description="HuggingFace model id for TrOCR if enabled")
     OCR_DPI: int = Field(default=200, description="DPI resolution for PDF page rendering")
     OCR_CACHE_ENABLED: bool = Field(default=True, description="Whether to cache OCR results by file sha256 hash")
     CONFIG_PATH: str = Field(default="./config/pipeline_config.yaml")
@@ -125,6 +125,7 @@ class AppSettings(BaseSettings):
     VIRUS_SCANNER_BACKEND: str = Field(default="mock")
     ALLOW_LOCAL_EXPORT: bool = Field(default=True, description="Permit local export of restricted document classes in development")
     DOWNLOAD_EXPIRY_HOURS: int = Field(default=24, description="Hours before temporary export zip archives expire and are cleaned up")
+    DELETE_UPLOAD_AFTER_PROCESSING: bool = Field(default=True, description="Delete temporary file from ephemeral local disk after processing")
 
 
 class ProductionSecurityError(ValueError):

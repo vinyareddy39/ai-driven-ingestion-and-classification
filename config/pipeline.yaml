@@ -1,0 +1,111 @@
+# Enterprise Document Ingestion & Classification Pipeline Specification
+# Central operational configuration for confidence scoring, thresholds, and execution flags.
+
+pipeline:
+  name: "generalizing-document-ingestion-pipeline"
+  version: "2.2.0"
+  description: "Generalized multi-modal ingestion, layout-aware field extraction, holistic classification, and PII detection"
+
+confidence:
+  # Digital vector PDF text layer extraction baseline confidence
+  embedded_text_layer_confidence: 0.98
+
+  # Threshold below which a field is flagged for human review
+  field_review_threshold: 0.85
+
+  # Document classification minimum confidence and ambiguity delta
+  classification_review_floor: 0.50
+  classification_ambiguity_margin: 0.15
+
+  # Scanned OCR word confidence aggregation strategy ('mean', 'min', 'harmonic')
+  ocr_confidence_aggregation: "mean"
+
+layout:
+  # Minimum vertical gap to split lines (in pixels at 150 DPI)
+  line_merge_y_threshold: 4.0
+  # Horizontal gap between label and value
+  label_value_x_gap_min: 15.0
+  # Table detection minimum aligned columns
+  table_min_columns: 2
+  table_min_rows: 2
+  # Multi-column detection gap threshold in points
+  column_gap_threshold: 28.0
+  # Margins for header and footer isolation
+  header_top_margin_max: 72.0
+  footer_bottom_margin_max: 72.0
+
+structures:
+  types:
+    - id: "label_value_pair"
+      name: "Label-Value Pair"
+      group: "fields"
+      extract_as_field: true
+    - id: "table"
+      name: "Table Grid"
+      group: "tables"
+      extract_as_field: false
+    - id: "list"
+      name: "List"
+      group: "lists"
+      extract_as_field: true
+    - id: "paragraph"
+      name: "Paragraph"
+      group: "raw_text"
+      extract_as_field: false
+    - id: "heading"
+      name: "Heading"
+      group: "fields"
+      extract_as_field: true
+    - id: "form_row"
+      name: "Form Row"
+      group: "fields"
+      extract_as_field: true
+    - id: "checkbox_group"
+      name: "Checkbox / Radio Group"
+      group: "checkboxes"
+      extract_as_field: true
+    - id: "signature_stamp"
+      name: "Signature / Stamp / Seal"
+      group: "signatures_and_stamps"
+      extract_as_field: true
+    - id: "handwriting"
+      name: "Handwriting / Filled-in"
+      group: "fields"
+      extract_as_field: true
+    - id: "image_logo"
+      name: "Logo / Image"
+      group: "images_and_charts"
+      extract_as_field: true
+    - id: "chart_diagram"
+      name: "Chart / Diagram"
+      group: "images_and_charts"
+      extract_as_field: true
+    - id: "barcode_qr"
+      name: "Barcode / QR Code"
+      group: "codes"
+      extract_as_field: true
+    - id: "header_footer"
+      name: "Header / Footer / Page Num"
+      group: "headers_footers"
+      extract_as_field: false
+    - id: "footnote"
+      name: "Footnote / Reference"
+      group: "raw_text"
+      extract_as_field: false
+    - id: "watermark"
+      name: "Watermark / Background"
+      group: "watermarks"
+      extract_as_field: false
+    - id: "side_by_side"
+      name: "Side-by-Side Block"
+      group: "fields"
+      extract_as_field: true
+    - id: "other"
+      name: "Other"
+      group: "fields"
+      extract_as_field: true
+
+runtime:
+  reprocess_supported: true
+  preserve_original_casing: true
+  autocorrect_ocr: false

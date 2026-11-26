@@ -424,6 +424,55 @@ td.empty {
   gap: 4px;
 }
 
+.fr-label-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.fr-label-input {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--fg);
+  min-height: 36px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.fr-label-input:focus {
+  border-color: #0284c7;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+}
+
+.btn-not-field {
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-not-field:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
 .fr-value-area {
   width: 100%;
   font-size: 14px;

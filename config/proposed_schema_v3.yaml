@@ -1,0 +1,66 @@
+version: 3.0.0-proposed
+accuracy_target: 0.95
+document_types:
+  invoice:
+    recommended_fields:
+    - invoice_number
+    - invoice_date
+    - vendor_name
+    - customer_name
+    review_required_fields:
+    - due_date
+    - total_amount
+    - subtotal
+    - tax_amount
+    removed_fields: {}
+  receipt:
+    recommended_fields:
+    - receipt_number
+    - date
+    - merchant_name
+    - total_paid
+    review_required_fields:
+    - payment_method
+    removed_fields: {}
+  contract:
+    recommended_fields:
+    - first_party
+    - second_party
+    - governing_law
+    review_required_fields:
+    - contract_id
+    - effective_date
+    removed_fields:
+      signatory: 'Workflow: none; Recommendation: MOVE TO RAW TEXT'
+      expiration_date: 'Workflow: none; Recommendation: MOVE TO RAW TEXT'
+  medical_report:
+    recommended_fields:
+    - patient_name
+    review_required_fields:
+    - patient_id
+    - date_of_birth
+    - doctor_name
+    - diagnosis
+    - test_date
+    - specimen_type
+    removed_fields: {}
+  bank_statement:
+    recommended_fields:
+    - account_holder
+    - account_number
+    - opening_balance
+    - closing_balance
+    review_required_fields:
+    - statement_period
+    - bank_name
+    removed_fields: {}
+  purchase_order:
+    recommended_fields:
+    - vendor_name
+    review_required_fields:
+    - po_number
+    - order_date
+    - total_amount
+    removed_fields:
+      shipping_address: 'Workflow: none; Recommendation: MOVE TO RAW TEXT'
+      buyer_name: 'Workflow: none; Recommendation: MOVE TO RAW TEXT'

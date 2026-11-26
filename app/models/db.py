@@ -137,6 +137,7 @@ class FileModel(Base):
     id = Column(String(36), primary_key=True, default=gen_uuid)
     batch_id = Column(String(36), ForeignKey("batches.id", ondelete="CASCADE"), nullable=False, index=True)
     original_name = Column(String(512), nullable=False)
+    relative_path = Column(String(1024), nullable=True)
     stored_path = Column(String(1024), nullable=False)
     sha256 = Column(String(64), nullable=False, index=True)
     cache_key = Column(String(128), index=True, nullable=True)
@@ -153,6 +154,15 @@ class FileModel(Base):
     model_name = Column(String(128), nullable=True)
     is_fallback = Column(Boolean, default=False)
     prompt_version = Column(String(32), nullable=True)
+    pipeline_version = Column(String(32), nullable=True, default="2.3.0")
+    registry_version = Column(String(32), nullable=True, default="2.3.0")
+    document_summary = Column(Text, nullable=True)
+    tags = Column(Text, nullable=True)
+    raw_text_by_page = Column(Text, nullable=True)
+    tables_data = Column(Text, nullable=True)
+    regions_data = Column(Text, nullable=True)
+    preview_data = Column(Text, nullable=True)
+    file_blob = Column(Text, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=True)
     finished_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
@@ -167,6 +177,7 @@ class FieldModel(Base):
     id = Column(String(36), primary_key=True, default=gen_uuid)
     file_id = Column(String(36), ForeignKey("files.id", ondelete="CASCADE"), nullable=False, index=True)
     label = Column(String(255), nullable=False)
+    original_label = Column(String(255), nullable=True)
     value = Column(Text, nullable=False)
     original_value = Column(Text, nullable=False)
     confidence = Column(Float, default=1.0)
@@ -176,6 +187,8 @@ class FieldModel(Base):
     bbox = Column(Text, nullable=True)
     is_sensitive = Column(Boolean, default=False)
     detector_tag = Column(String(64), nullable=True)
+    is_edited = Column(Boolean, default=False)
+    meta_info = Column(Text, nullable=True)
 
     file = relationship("FileModel", back_populates="fields")
 
@@ -187,8 +200,14 @@ class CorrectionModel(Base):
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     doc_type = Column(String(255), nullable=False)
     label = Column(String(255), nullable=False)
+    original_label = Column(String(255), nullable=True)
+    new_label = Column(String(255), nullable=True)
     original_value = Column(Text, nullable=False)
     corrected_value = Column(Text, nullable=False)
+    new_value = Column(Text, nullable=True)
+    who_edited = Column(String(255), nullable=True)
+    document_id = Column(String(64), nullable=True, index=True)
+    pipeline_version = Column(String(32), nullable=True)
     layout_hint = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow)
 
@@ -342,20 +361,35 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 def get_db_url() -> str:
-    return os.getenv("DATABASE_URL", "sqlite:///./data/ecm_pipeline.db")
+    url = os.getenv("DATABASE_URL", "sqlite:///./data/ecm_pipeline.db")
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    return url
 
 
 def init_db(db_url: str = None):
     global _engine, _SessionFactory
+    if db_url is None and _engine is not None:
+        return _engine
+
     if db_url is None:
         db_url = get_db_url()
 
     if db_url.startswith("sqlite:///"):
         path = db_url.replace("sqlite:///", "")
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-
-    connect_args = {"check_same_thread": False, "timeout": 30.0} if "sqlite" in db_url else {}
-    _engine = create_engine(db_url, connect_args=connect_args)
+        connect_args = {"check_same_thread": False, "timeout": 30.0}
+        _engine = create_engine(db_url, connect_args=connect_args)
+    else:
+        # PostgreSQL on Render: enable pre-ping to handle idle dropouts and connection limits
+        _engine = create_engine(
+            db_url,
+            pool_size=5,
+            max_overflow=5,
+            pool_recycle=1800,
+            pool_pre_ping=True,
+            connect_args={"connect_timeout": 30}
+        )
     Base.metadata.create_all(bind=_engine)
 
     # Idempotent migrations for files and fields tables
@@ -371,11 +405,32 @@ def init_db(db_url: str = None):
                     ("model_name", "VARCHAR(128)"),
                     ("is_fallback", "BOOLEAN DEFAULT 0"),
                     ("prompt_version", "VARCHAR(32)"),
+                    ("pipeline_version", "VARCHAR(32)"),
+                    ("registry_version", "VARCHAR(32)"),
+                    ("document_summary", "TEXT"),
+                    ("tags", "TEXT"),
+                    ("raw_text_by_page", "TEXT"),
+                    ("tables_data", "TEXT"),
+                    ("regions_data", "TEXT"),
                     ("check_reasons", "TEXT"),
+                    ("relative_path", "VARCHAR(1024)"),
+                    ("preview_data", "TEXT"),
+                    ("file_blob", "TEXT"),
                 ]
                 for col_name, col_type in columns_to_add:
                     if col_name not in existing_cols:
                         conn.execute(text(f"ALTER TABLE files ADD COLUMN {col_name} {col_type}"))
+                conn.commit()
+
+        if "fields" in insp.get_table_names():
+            existing_field_cols = [c["name"] for c in insp.get_columns("fields")]
+            with _engine.connect() as conn:
+                field_cols_to_add = [
+                    ("meta_info", "TEXT"),
+                ]
+                for col_name, col_type in field_cols_to_add:
+                    if col_name not in existing_field_cols:
+                        conn.execute(text(f"ALTER TABLE fields ADD COLUMN {col_name} {col_type}"))
                 conn.commit()
 
         if "batches" in insp.get_table_names():
@@ -405,10 +460,28 @@ def init_db(db_url: str = None):
                     ("bbox", "TEXT"),
                     ("is_sensitive", "BOOLEAN DEFAULT 0"),
                     ("detector_tag", "VARCHAR(64)"),
+                    ("original_label", "VARCHAR(255)"),
+                    ("is_edited", "BOOLEAN DEFAULT 0"),
                 ]
                 for col_name, col_type in field_cols_to_add:
                     if col_name not in existing_field_cols:
                         conn.execute(text(f"ALTER TABLE fields ADD COLUMN {col_name} {col_type}"))
+                conn.commit()
+
+        if "corrections" in insp.get_table_names():
+            existing_corr_cols = [c["name"] for c in insp.get_columns("corrections")]
+            with _engine.connect() as conn:
+                corr_cols_to_add = [
+                    ("original_label", "VARCHAR(255)"),
+                    ("new_label", "VARCHAR(255)"),
+                    ("who_edited", "VARCHAR(255)"),
+                    ("document_id", "VARCHAR(64)"),
+                    ("pipeline_version", "VARCHAR(32)"),
+                    ("new_value", "TEXT"),
+                ]
+                for col_name, col_type in corr_cols_to_add:
+                    if col_name not in existing_corr_cols:
+                        conn.execute(text(f"ALTER TABLE corrections ADD COLUMN {col_name} {col_type}"))
                 conn.commit()
     except Exception:
         pass

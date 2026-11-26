@@ -19,7 +19,7 @@ import cv2
 import fitz  # PyMuPDF
 import numpy as np
 from PIL import Image
-import torch
+
 
 from app.core.config import get_app_settings
 from app.core.interfaces import BoundingBox, OCREngine, OCRResult
@@ -117,6 +117,7 @@ class TrOCRManager:
     _lock = threading.Lock()
 
     def __init__(self, model_name: str, use_gpu: bool = True):
+        import torch
         self.model_name = model_name
         self.device = "cuda" if (use_gpu and torch.cuda.is_available()) else "cpu"
         self.fp16 = (self.device == "cuda")
@@ -146,6 +147,7 @@ class TrOCRManager:
 
     @classmethod
     def get_instance(cls, model_name: str = "microsoft/trocr-base-printed", use_gpu: bool = True) -> "TrOCRManager":
+        import torch
         with cls._lock:
             if cls._instance is None or cls._instance.model_name != model_name or (use_gpu and cls._instance.device != "cuda" and torch.cuda.is_available()):
                 cls._instance = cls(model_name, use_gpu=use_gpu)
@@ -160,6 +162,7 @@ class TrOCRManager:
         if not crops:
             return []
 
+        import torch
         results = []
         with self.gpu_lock:
             for i in range(0, len(crops), batch_size):
@@ -527,32 +530,62 @@ class TrOCREngine(OCREngine):
 # ---------------------------------------------------------------------------
 
 class HybridOCREngine(OCREngine):
-    """Legacy OCR engine using PyMuPDF and Tesseract with image pre-processing."""
+    """Lightweight OCR engine using PyMuPDF and optional Tesseract without heavy PyTorch models."""
 
     def __init__(self, engine_name: str = "HybridPyMuPDF-Tesseract", engine_version: str = "2.4.0"):
         self.engine_name = engine_name
         self.engine_version = engine_version
 
-    def extract_text(self, file_bytes: bytes, file_type: str) -> OCRResult:
-        doc = fitz.open(stream=file_bytes, filetype=file_type.lower().replace(".", ""))
+    def extract_text(self, file_bytes: bytes, file_type: str, *args, **kwargs) -> OCRResult:
+        ft = file_type.lower().replace(".", "")
+        try:
+            doc = fitz.open(stream=file_bytes, filetype=ft)
+        except Exception:
+            doc = fitz.open(stream=file_bytes)
         pages_text = []
         bboxes = []
+        methods = []
         for i, page in enumerate(doc):
             t = page.get_text("text").strip()
-            pages_text.append(t)
-            for w in page.get_text("words"):
-                bboxes.append(BoundingBox(text=w[4], x0=float(w[0]), y0=float(w[1]), x1=float(w[2]), y1=float(w[3]), page=i + 1))
+            w_list = page.get_text("words")
+            if not t:
+                # Attempt lightweight OCR via pytesseract if installed/available
+                ocr_text = ""
+                try:
+                    import pytesseract
+                    from PIL import Image
+                    pix = page.get_pixmap()
+                    img = Image.open(io.BytesIO(pix.tobytes("png")))
+                    ocr_text = pytesseract.image_to_string(img).strip()
+                    data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
+                    for j in range(len(data['text'])):
+                        word = data['text'][j].strip()
+                        if word:
+                            bx = float(data['left'][j])
+                            by = float(data['top'][j])
+                            bw = float(data['width'][j])
+                            bh = float(data['height'][j])
+                            bboxes.append(BoundingBox(text=word, x0=bx, y0=by, x1=bx+bw, y1=by+bh, page=i + 1))
+                    methods.append("tesseract")
+                except Exception:
+                    methods.append("direct_image")
+                pages_text.append(ocr_text or "")
+            else:
+                methods.append("text_layer")
+                pages_text.append(t)
+                for w in w_list:
+                    bboxes.append(BoundingBox(text=w[4], x0=float(w[0]), y0=float(w[1]), x1=float(w[2]), y1=float(w[3]), page=i + 1))
         return OCRResult(
             full_text="\n\n".join(pages_text),
             pages_count=len(doc),
             bounding_boxes=bboxes,
             engine_name=self.engine_name,
             engine_version=self.engine_version,
-            page_methods=["text_layer"] * len(doc),
+            page_methods=methods if methods else ["text_layer"] * len(doc),
         )
 
-    def extract_bounding_boxes(self, file_bytes: bytes, file_type: str) -> List[BoundingBox]:
-        return self.extract_text(file_bytes, file_type).bounding_boxes
+    def extract_bounding_boxes(self, file_bytes: bytes, file_type: str, *args, **kwargs) -> List[BoundingBox]:
+        return self.extract_text(file_bytes, file_type, *args, **kwargs).bounding_boxes
 
     def generate_searchable_pdf(self, file_bytes: bytes, file_type: str) -> bytes:
         return file_bytes

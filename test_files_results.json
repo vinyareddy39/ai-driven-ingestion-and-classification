@@ -1,0 +1,548 @@
+{
+  "trap_02_lab_report.pdf": {
+    "type": "medical_report",
+    "type_confidence": 0.989,
+    "top_candidates": [
+      {
+        "type": "medical_report",
+        "score": 0.989
+      },
+      {
+        "type": "invoice",
+        "score": 0.0014
+      },
+      {
+        "type": "receipt",
+        "score": 0.0014
+      }
+    ],
+    "page_conditions": [
+      {
+        "page": 1,
+        "condition": "low contrast",
+        "orientation_degrees": 0,
+        "skew_angle": 0.0,
+        "denoised": false,
+        "blur_score": 802.02,
+        "noise_level": 5130,
+        "confidence_penalty": 0.04
+      }
+    ],
+    "logical_documents": [
+      {
+        "document_index": 1,
+        "start_page": 1,
+        "end_page": 1,
+        "type": "medical_report",
+        "confidence": 0.989
+      }
+    ],
+    "fields": [
+      {
+        "label": "REPORT NO",
+        "value": "LAB-5521-X",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "PATIENT",
+        "value": "RAVI KUMAR NAIDU",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "SPECIMEN",
+        "value": "BLOOD SERUM",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "COLLECTED ON",
+        "value": "2026-10-30",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "HEMOGLOBIN",
+        "value": "13.8 G/dL",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "PHYSICIAN",
+        "value": "DR. ANITA RAO MD",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "REMARKS",
+        "value": "WITHIN NORMAL RANGE",
+        "confidence": 0.88,
+        "page": 1
+      }
+    ],
+    "table_rows": [],
+    "sensitive_findings": [
+      {
+        "type": "PERSON_NAME",
+        "location": {
+          "page": 1,
+          "bbox": [
+            85.0,
+            505.0,
+            451.0,
+            532.0
+          ],
+          "label": "PHYSICIAN",
+          "start": 0,
+          "end": 16
+        },
+        "confidence": 0.95,
+        "masked_value": "D*** [PERSON]"
+      },
+      {
+        "type": "PERSON_NAME",
+        "location": {
+          "page": 1,
+          "bbox": null,
+          "label": "",
+          "start": 146,
+          "end": 170
+        },
+        "confidence": 0.95,
+        "masked_value": "D*** [PERSON]"
+      }
+    ],
+    "detectors_run": 11,
+    "routing": {
+      "destination": "RESTRICTED_HIPAA_SECURE_VAULT",
+      "is_restricted": true,
+      "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+      "sla_hours": 4
+    },
+    "needs_review": false,
+    "review_reasons": [],
+    "pipeline_version": "2.2.0",
+    "title_block": "LABORATORY REPORT",
+    "dates": [
+      "2026-10-30"
+    ]
+  },
+  "trap_03_mixed_case.pdf": {
+    "type": "unknown",
+    "type_confidence": 0.4404,
+    "top_candidates": [
+      {
+        "type": "invoice",
+        "score": 0.4404
+      },
+      {
+        "type": "letter",
+        "score": 0.3398
+      },
+      {
+        "type": "contract",
+        "score": 0.0596
+      }
+    ],
+    "page_conditions": [
+      {
+        "page": 1,
+        "condition": "low contrast",
+        "orientation_degrees": 0,
+        "skew_angle": 0.0,
+        "denoised": false,
+        "blur_score": 823.44,
+        "noise_level": 5395,
+        "confidence_penalty": 0.04
+      }
+    ],
+    "logical_documents": [
+      {
+        "document_index": 1,
+        "start_page": 1,
+        "end_page": 1,
+        "type": "unknown",
+        "confidence": 0.4404
+      }
+    ],
+    "fields": [
+      {
+        "label": "DATE",
+        "value": "2026-11-02",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "FROM",
+        "value": "EBRIGHT SOLUTIONS OF HYDERABAD",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "TO",
+        "value": "DR. KAVYA KEDDY, GREENLEAF PVT LTD",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "REFERENCE",
+        "value": "LOI/2026/0042",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "SUBJECT",
+        "value": "SUPPLY OF IPADS AND MACBOOKS",
+        "confidence": 0.88,
+        "page": 1
+      },
+      {
+        "label": "CONTACT",
+        "value": "KAVYA.R@EXAMPLE.IN",
+        "confidence": 0.88,
+        "page": 1
+      }
+    ],
+    "table_rows": [],
+    "sensitive_findings": [
+      {
+        "type": "PERSON_NAME",
+        "location": {
+          "page": 1,
+          "bbox": [
+            84.0,
+            337.0,
+            580.0,
+            365.0
+          ],
+          "label": "TO",
+          "start": 0,
+          "end": 15
+        },
+        "confidence": 0.65,
+        "masked_value": "D*** [PERSON]"
+      },
+      {
+        "type": "EMAIL",
+        "location": {
+          "page": 1,
+          "bbox": [
+            85.0,
+            505.0,
+            463.0,
+            532.0
+          ],
+          "label": "CONTACT",
+          "start": 0,
+          "end": 18
+        },
+        "confidence": 0.98,
+        "masked_value": "K***@EXAMPLE.IN"
+      },
+      {
+        "type": "ADDRESS",
+        "location": {
+          "page": 1,
+          "bbox": null,
+          "label": "",
+          "start": 130,
+          "end": 142
+        },
+        "confidence": 0.67,
+        "masked_value": "[RESTRICTED ADDRESS]"
+      }
+    ],
+    "detectors_run": 11,
+    "routing": {
+      "destination": "RESTRICTED_MANUAL_TRIAGE_QUEUE",
+      "is_restricted": true,
+      "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+      "sla_hours": 4
+    },
+    "needs_review": true,
+    "review_reasons": [
+      "Top candidate 'invoice' confidence (0.44) below threshold (0.50).",
+      "Sensitive finding (PERSON_NAME) in field 'TO' flagged for review.",
+      "Sensitive finding (ADDRESS) in field '' flagged for review."
+    ],
+    "pipeline_version": "2.2.0",
+    "title_block": "LETTER OF INTENT",
+    "dates": [
+      "2026-11-02"
+    ]
+  },
+  "trap_04_almost_empty.pdf": {
+    "type": "unknown",
+    "type_confidence": 0.1111,
+    "top_candidates": [
+      {
+        "type": "invoice",
+        "score": 0.1111
+      },
+      {
+        "type": "receipt",
+        "score": 0.1111
+      },
+      {
+        "type": "contract",
+        "score": 0.1111
+      }
+    ],
+    "page_conditions": [
+      {
+        "page": 1,
+        "condition": "low contrast",
+        "orientation_degrees": 0,
+        "skew_angle": 0.0,
+        "denoised": false,
+        "blur_score": 123.74,
+        "noise_level": 817,
+        "confidence_penalty": 0.04
+      }
+    ],
+    "logical_documents": [
+      {
+        "document_index": 1,
+        "start_page": 1,
+        "end_page": 1,
+        "type": "unknown",
+        "confidence": 0.1111
+      }
+    ],
+    "fields": [],
+    "table_rows": [],
+    "sensitive_findings": [],
+    "detectors_run": 11,
+    "routing": {
+      "destination": "MANUAL_TRIAGE_QUEUE",
+      "is_restricted": false,
+      "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+      "sla_hours": 4
+    },
+    "needs_review": true,
+    "review_reasons": [
+      "Top candidate 'invoice' confidence (0.11) below threshold (0.50)."
+    ],
+    "pipeline_version": "2.2.0",
+    "title_block": "PLEASE SEE ATTACHED. NOTICE",
+    "dates": []
+  },
+  "trap_05_noisy_skewed.pdf": {
+    "type": "unknown",
+    "type_confidence": 0.0,
+    "top_candidates": [],
+    "page_conditions": [
+      {
+        "page": 1,
+        "condition": "skewed (1.7\u00b0), noisy/speckled",
+        "orientation_degrees": 0,
+        "skew_angle": 1.71,
+        "denoised": true,
+        "blur_score": 28222.54,
+        "noise_level": 69372,
+        "confidence_penalty": 0.0770981404414153
+      }
+    ],
+    "logical_documents": [
+      {
+        "document_index": 1,
+        "start_page": 1,
+        "end_page": 1,
+        "type": "unknown",
+        "confidence": 0.0
+      }
+    ],
+    "fields": [],
+    "table_rows": [],
+    "sensitive_findings": [],
+    "detectors_run": 11,
+    "routing": {
+      "destination": "MANUAL_TRIAGE_QUEUE",
+      "is_restricted": false,
+      "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+      "sla_hours": 4
+    },
+    "needs_review": true,
+    "review_reasons": [
+      "Insufficient text content to classify with confidence."
+    ],
+    "pipeline_version": "2.2.0",
+    "title_block": "WWW",
+    "dates": []
+  },
+  "trap_06_duplicate_of_05.pdf": {
+    "type": "unknown",
+    "type_confidence": 0.0,
+    "top_candidates": [],
+    "page_conditions": [
+      {
+        "page": 1,
+        "condition": "skewed (1.7\u00b0), noisy/speckled",
+        "orientation_degrees": 0,
+        "skew_angle": 1.71,
+        "denoised": true,
+        "blur_score": 28222.54,
+        "noise_level": 69372,
+        "confidence_penalty": 0.0770981404414153
+      }
+    ],
+    "logical_documents": [
+      {
+        "document_index": 1,
+        "start_page": 1,
+        "end_page": 1,
+        "type": "unknown",
+        "confidence": 0.0
+      }
+    ],
+    "fields": [],
+    "table_rows": [],
+    "sensitive_findings": [],
+    "detectors_run": 11,
+    "routing": {
+      "destination": "MANUAL_TRIAGE_QUEUE",
+      "is_restricted": false,
+      "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+      "sla_hours": 4
+    },
+    "needs_review": true,
+    "review_reasons": [
+      "Insufficient text content to classify with confidence."
+    ],
+    "pipeline_version": "2.2.0",
+    "title_block": "WWW",
+    "dates": []
+  },
+  "v3_contract_0001.pdf": {
+    "type": "contract",
+    "type_confidence": 0.9627,
+    "top_candidates": [
+      {
+        "type": "contract",
+        "score": 0.9627
+      },
+      {
+        "type": "letter",
+        "score": 0.0287
+      },
+      {
+        "type": "receipt",
+        "score": 0.0027
+      }
+    ],
+    "page_conditions": [
+      {
+        "page": 1,
+        "condition": "skewed (-1.9\u00b0), low contrast",
+        "orientation_degrees": 0,
+        "skew_angle": -1.95,
+        "denoised": false,
+        "blur_score": 1266.83,
+        "noise_level": 7532,
+        "confidence_penalty": 0.0594808500651495
+      }
+    ],
+    "logical_documents": [
+      {
+        "document_index": 1,
+        "start_page": 1,
+        "end_page": 1,
+        "type": "contract",
+        "confidence": 0.9627
+      }
+    ],
+    "fields": [
+      {
+        "label": "CONTRACT ID",
+        "value": "CNT-99990001",
+        "confidence": 0.8605,
+        "page": 1
+      },
+      {
+        "label": "EFFECTIVE DATE",
+        "value": "2027-02-14",
+        "confidence": 0.8605,
+        "page": 1
+      },
+      {
+        "label": "FIRST PARTY",
+        "value": "MCDONALD AND DEPAUL LTD",
+        "confidence": 0.8605,
+        "page": 1
+      },
+      {
+        "label": "SECOND PARTY",
+        "value": "INOVA WORKS, PATEL AND SINGH",
+        "confidence": 0.8605,
+        "page": 1
+      },
+      {
+        "label": "AUTHORIZED SIGNATORY",
+        "value": "MARIA O'NEIL PHD",
+        "confidence": 0.8605,
+        "page": 1
+      },
+      {
+        "label": "NOTIFICATION EMAIL",
+        "value": "TRAPL@EXAMPLE.ORG",
+        "confidence": 0.8605,
+        "page": 1
+      },
+      {
+        "label": "SUBJECT",
+        "value": "ENTERPRISE PRODUCT COVERANT",
+        "confidence": 0.8605,
+        "page": 1
+      }
+    ],
+    "table_rows": [],
+    "sensitive_findings": [
+      {
+        "type": "EMAIL",
+        "location": {
+          "page": 1,
+          "bbox": [
+            85.0,
+            505.0,
+            580.0,
+            533.0
+          ],
+          "label": "NOTIFICATION EMAIL",
+          "start": 0,
+          "end": 17
+        },
+        "confidence": 0.98,
+        "masked_value": "T***@EXAMPLE.ORG"
+      },
+      {
+        "type": "ADDRESS",
+        "location": {
+          "page": 1,
+          "bbox": null,
+          "label": "",
+          "start": 76,
+          "end": 84
+        },
+        "confidence": 0.67,
+        "masked_value": "[RESTRICTED ADDRESS]"
+      }
+    ],
+    "detectors_run": 11,
+    "routing": {
+      "destination": "RESTRICTED_LEGAL_COMPLIANCE_VAULT",
+      "is_restricted": true,
+      "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+      "sla_hours": 12
+    },
+    "needs_review": true,
+    "review_reasons": [
+      "Sensitive finding (ADDRESS) in field '' flagged for review."
+    ],
+    "pipeline_version": "2.2.0",
+    "title_block": "MASTER SERVICES AGREEMENT",
+    "dates": [
+      "2027-02-14"
+    ]
+  }
+}

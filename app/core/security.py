@@ -80,3 +80,39 @@ def setup_secure_logging(logger_name: Optional[str] = None) -> logging.Logger:
     if not has_filter:
         logger.addFilter(PIISanitizingLogFilter())
     return logger
+
+
+# ---------------------------------------------------------------------------
+# Cryptographic Storage & Key Management
+# ---------------------------------------------------------------------------
+import base64
+import os
+from cryptography.fernet import Fernet, MultiFernet
+
+_DEFAULT_SECRET = os.environ.get("DATA_ENCRYPTION_KEY", "ecm-secure-enterprise-encryption-secret-key-32b!!")
+_ENCRYPTION_KEY = base64.urlsafe_b64encode(_DEFAULT_SECRET.encode("utf-8")[:32].ljust(32, b"0"))
+_PRIMARY_FERNET = Fernet(_ENCRYPTION_KEY)
+
+
+def encrypt_data(plaintext: str, key_override: Optional[bytes] = None) -> str:
+    """Encrypt sensitive string payload with Fernet symmetric encryption."""
+    if not plaintext:
+        return plaintext
+    f = Fernet(key_override) if key_override else _PRIMARY_FERNET
+    return f.encrypt(plaintext.encode("utf-8")).decode("utf-8")
+
+
+def decrypt_data(ciphertext: str, key_override: Optional[bytes] = None) -> str:
+    """Decrypt Fernet encrypted ciphertext back to plaintext string."""
+    if not ciphertext:
+        return ciphertext
+    f = Fernet(key_override) if key_override else _PRIMARY_FERNET
+    return f.decrypt(ciphertext.encode("utf-8")).decode("utf-8")
+
+
+def rotate_encryption_key(ciphertext: str, old_key: bytes, new_key: bytes) -> str:
+    """Re-encrypt ciphertext from old key to new rotated key using MultiFernet."""
+    mf = MultiFernet([Fernet(new_key), Fernet(old_key)])
+    token = mf.rotate(ciphertext.encode("utf-8"))
+    return token.decode("utf-8")
+

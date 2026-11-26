@@ -1,0 +1,266 @@
+# Document Taxonomy Configuration
+# Declarative, editable taxonomy for generalized document classification.
+# New document types can be added here without modifying application source code.
+
+version: "2.1.0"
+default_class: "unknown"
+ambiguity_margin: 0.15
+minimum_confidence: 0.50
+
+taxonomy:
+  invoice:
+    title: "Invoice"
+    description: "Commercial billing document requesting payment for goods or services rendered."
+    keywords:
+      - "invoice"
+      - "bill to"
+      - "remit to"
+      - "due date"
+      - "subtotal"
+      - "total amount"
+      - "tax"
+      - "payment terms"
+      - "amount due"
+      - "unit price"
+      - "item description"
+      - "qty"
+      - "balance due"
+    field_concepts:
+      - "invoice_number"
+      - "invoice_date"
+      - "due_date"
+      - "vendor_name"
+      - "customer_name"
+      - "total_amount"
+      - "tax_amount"
+      - "subtotal"
+    negative_keywords:
+      - "not an invoice"
+      - "not a tax invoice"
+      - "this is not an invoice"
+      - "quotation"
+      - "quote"
+      - "estimate"
+      - "pro forma"
+      - "proforma"
+      - "not a bill"
+    structural_cues:
+      has_line_items: true
+      has_totals_summary: true
+      has_parties: true
+
+  receipt:
+    title: "Receipt"
+    description: "Proof of purchase or payment acknowledgment."
+    keywords:
+      - "receipt"
+      - "paid"
+      - "payment received"
+      - "cash"
+      - "credit card"
+      - "transaction"
+      - "merchant"
+      - "store"
+      - "change due"
+      - "auth code"
+    field_concepts:
+      - "receipt_number"
+      - "date"
+      - "merchant_name"
+      - "total_paid"
+      - "payment_method"
+    negative_keywords:
+      - "not a receipt"
+      - "payment pending"
+      - "not proof of payment"
+      - "amount due"
+    structural_cues:
+      has_line_items: true
+      has_totals_summary: true
+
+  contract:
+    title: "Contract / Agreement"
+    description: "Legally binding agreement entered into by two or more parties."
+    keywords:
+      - "agreement"
+      - "contract"
+      - "parties"
+      - "whereas"
+      - "in witness whereof"
+      - "hereby agree"
+      - "terms and conditions"
+      - "governing law"
+      - "confidentiality"
+      - "indemnification"
+      - "termination"
+      - "effective date"
+      - "jurisdiction"
+    field_concepts:
+      - "contract_id"
+      - "effective_date"
+      - "expiration_date"
+      - "first_party"
+      - "second_party"
+      - "governing_law"
+      - "signatory"
+    negative_keywords:
+      - "does not constitute a contract"
+      - "not an agreement"
+      - "non-binding"
+      - "draft only"
+      - "informal discussion"
+    structural_cues:
+      has_signature_block: true
+      has_numbered_clauses: true
+
+  medical_report:
+    title: "Medical Report"
+    description: "Clinical, diagnostic, laboratory, or patient health record."
+    keywords:
+      - "patient"
+      - "diagnosis"
+      - "physician"
+      - "clinical"
+      - "hospital"
+      - "laboratory"
+      - "specimen"
+      - "medical history"
+      - "prescription"
+      - "findings"
+      - "impression"
+      - "treatment"
+      - "dosage"
+      - "vital signs"
+      - "blood pressure"
+      - "lab report"
+    field_concepts:
+      - "patient_name"
+      - "patient_id"
+      - "date_of_birth"
+      - "doctor_name"
+      - "diagnosis"
+      - "test_date"
+      - "specimen_type"
+    structural_cues:
+      has_clinical_sections: true
+      has_provider_header: true
+
+  bank_statement:
+    title: "Bank Statement"
+    description: "Official summary of financial transactions occurring over a given period on a bank account."
+    keywords:
+      - "statement"
+      - "account statement"
+      - "account number"
+      - "opening balance"
+      - "closing balance"
+      - "withdrawals"
+      - "deposits"
+      - "interest earned"
+      - "transaction date"
+      - "ledger balance"
+      - "available balance"
+    field_concepts:
+      - "account_holder"
+      - "account_number"
+      - "statement_period"
+      - "opening_balance"
+      - "closing_balance"
+      - "bank_name"
+    structural_cues:
+      has_transaction_table: true
+      has_balance_summary: true
+
+  kyc_form:
+    title: "KYC / Identification Form"
+    description: "Know Your Customer verification document or identity declaration."
+    keywords:
+      - "kyc"
+      - "identification"
+      - "identity verification"
+      - "national id"
+      - "passport number"
+      - "date of birth"
+      - "nationality"
+      - "residential address"
+      - "proof of identity"
+      - "full legal name"
+      - "declaration"
+    field_concepts:
+      - "full_name"
+      - "id_number"
+      - "id_type"
+      - "date_of_birth"
+      - "nationality"
+      - "address"
+    structural_cues:
+      has_personal_info_grid: true
+      has_declaration: true
+
+  purchase_order:
+    title: "Purchase Order"
+    description: "Commercial document issued by a buyer committing to pay the seller for specific products."
+    keywords:
+      - "purchase order"
+      - "po number"
+      - "order date"
+      - "vendor"
+      - "ship to"
+      - "requisition"
+      - "buyer"
+      - "approved by"
+      - "delivery terms"
+    field_concepts:
+      - "po_number"
+      - "order_date"
+      - "vendor_name"
+      - "ship_to"
+      - "total_order_amount"
+    structural_cues:
+      has_line_items: true
+      has_shipping_details: true
+
+  letter:
+    title: "Letter / Correspondence"
+    description: "Formal letter, memo, or correspondence between individuals or organizations."
+    keywords:
+      - "dear"
+      - "sincerely"
+      - "regards"
+      - "memorandum"
+      - "to:"
+      - "from:"
+      - "subject:"
+      - "date:"
+      - "attention:"
+    field_concepts:
+      - "sender"
+      - "recipient"
+      - "date"
+      - "subject"
+    structural_cues:
+      has_salutation: true
+      has_signoff: true
+
+  claim_form:
+    title: "Claim Form"
+    description: "Insurance or compensation claim submission."
+    keywords:
+      - "claim form"
+      - "claim number"
+      - "claimant"
+      - "policy number"
+      - "incident date"
+      - "loss description"
+      - "claimed amount"
+      - "coverage"
+    field_concepts:
+      - "claim_number"
+      - "policy_number"
+      - "claimant_name"
+      - "incident_date"
+      - "claim_amount"
+    structural_cues:
+      has_incident_details: true
+      has_claimant_signature: true
+

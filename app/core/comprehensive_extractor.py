@@ -279,20 +279,37 @@ def is_sensitive_detail(label: str, value: str) -> bool:
 
 
 def locate_text_bbox(page: fitz.Page, search_val: str) -> Optional[List[float]]:
-    """Locate search_val on PyMuPDF page and return normalized bbox [ymin, xmin, ymax, xmax] 0-1000."""
+    """Locate search_val on PyMuPDF page and return normalized bbox [ymin, xmin, ymax, xmax] 0-1000 covering the full text span."""
     try:
         clean = search_val.strip()
-        if not clean or len(clean) < 2:
+        if not clean or len(clean) < 1:
             return None
-        rects = page.search_for(clean[:40])
+        rects = page.search_for(clean)
+        if not rects:
+            words = clean.split()
+            if len(words) >= 2:
+                rf = page.search_for(words[0])
+                rl = page.search_for(words[-1])
+                if rf and rl:
+                    r0 = rf[0]
+                    r1 = rl[-1]
+                    rects = [fitz.Rect(min(r0.x0, r1.x0), min(r0.y0, r1.y0), max(r0.x1, r1.x1), max(r0.y1, r1.y1))]
+            elif len(clean) > 3:
+                sub = re.sub(r"[^\w\s]", "", clean).strip()
+                if sub:
+                    rects = page.search_for(sub)
         if rects:
-            r = rects[0]
+            union_rect = rects[0]
+            for r in rects[1:]:
+                union_rect |= r
             w = page.rect.width or 1.0
             h = page.rect.height or 1.0
-            ymin = round((r.y0 / h) * 1000, 1)
-            xmin = round((r.x0 / w) * 1000, 1)
-            ymax = round((r.y1 / h) * 1000, 1)
-            xmax = round((r.x1 / w) * 1000, 1)
+            pad_x = 1.5
+            pad_y = 1.0
+            ymin = max(0.0, round(((union_rect.y0 - pad_y) / h) * 1000, 1))
+            xmin = max(0.0, round(((union_rect.x0 - pad_x) / w) * 1000, 1))
+            ymax = min(1000.0, round(((union_rect.y1 + pad_y) / h) * 1000, 1))
+            xmax = min(1000.0, round(((union_rect.x1 + pad_x) / w) * 1000, 1))
             return [ymin, xmin, ymax, xmax]
     except Exception:
         pass

@@ -1,0 +1,57 @@
+# Routing Configuration Table
+# Declarative routing destinations based on document type and sensitivity status.
+# Can be updated by operators without modifying code.
+
+version: "2.1.0"
+default_review_queue: "MANUAL_HUMAN_REVIEW_QUEUE"
+
+routing_destinations:
+  invoice:
+    destination: "AP_INVOICE_PROCESSING"
+    restricted_destination: "RESTRICTED_FINANCE_VAULT"
+    sla_hours: 24
+
+  receipt:
+    destination: "EXPENSE_REIMBURSEMENT_SYSTEM"
+    restricted_destination: "RESTRICTED_EXPENSE_ARCHIVE"
+    sla_hours: 48
+
+  contract:
+    destination: "LEGAL_CONTRACT_REPOSITORY"
+    restricted_destination: "RESTRICTED_LEGAL_COMPLIANCE_VAULT"
+    sla_hours: 12
+
+  medical_report:
+    destination: "CLINICAL_RECORDS_SYSTEM"
+    restricted_destination: "RESTRICTED_HIPAA_SECURE_VAULT"
+    sla_hours: 4
+
+  bank_statement:
+    destination: "TREASURY_RECONCILIATION"
+    restricted_destination: "RESTRICTED_FINANCIAL_VAULT"
+    sla_hours: 24
+
+  kyc_form:
+    destination: "CUSTOMER_ONBOARDING_PIPELINE"
+    restricted_destination: "RESTRICTED_KYC_COMPLIANCE_VAULT"
+    sla_hours: 8
+
+  purchase_order:
+    destination: "PO_MATCHING_SYSTEM"
+    restricted_destination: "RESTRICTED_PROCUREMENT_VAULT"
+    sla_hours: 24
+
+  letter:
+    destination: "CORRESPONDENCE_MANAGEMENT"
+    restricted_destination: "RESTRICTED_CORRESPONDENCE_VAULT"
+    sla_hours: 72
+
+  claim_form:
+    destination: "CLAIMS_ADJUDICATION_WORKFLOW"
+    restricted_destination: "RESTRICTED_CLAIMS_SECURITY_VAULT"
+    sla_hours: 12
+
+  unknown:
+    destination: "MANUAL_TRIAGE_QUEUE"
+    restricted_destination: "RESTRICTED_MANUAL_TRIAGE_QUEUE"
+    sla_hours: 4
