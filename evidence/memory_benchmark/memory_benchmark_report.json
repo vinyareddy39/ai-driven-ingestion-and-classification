@@ -1,0 +1,52 @@
+{
+  "initial_rss_mb": 91.45,
+  "peak_rss_mb": 202.12,
+  "final_rss_mb": 163.55,
+  "total_batch_duration_seconds": 3.94,
+  "average_duration_per_file_seconds": 1.517,
+  "free_tier_512mb_limit_percent": 39.48,
+  "concurrency": 4,
+  "total_files": 10,
+  "file_durations": {
+    "tests-data/synthetic_tests/syn_05_multipage_two_documents.pdf": {
+      "duration_seconds": 0.26,
+      "extracted_fields": 12
+    },
+    "tests-data/audit_inputs/doc15_shipping_waybill.png": {
+      "duration_seconds": 3.401,
+      "extracted_fields": 9
+    },
+    "tests-data/synthetic_tests/syn_06_table_many_columns.pdf": {
+      "duration_seconds": 0.183,
+      "extracted_fields": 6
+    },
+    "tests-data/audit_inputs/doc07_employment_agreement.pdf": {
+      "duration_seconds": 0.132,
+      "extracted_fields": 13
+    },
+    "tests-data/audit_inputs/doc05_tax_w2.png": {
+      "duration_seconds": 3.642,
+      "extracted_fields": 10
+    },
+    "tests-data/audit_inputs/doc04_bank_statement.pdf": {
+      "duration_seconds": 0.099,
+      "extracted_fields": 13
+    },
+    "tests-data/synthetic_tests/syn_02_clean_image.png": {
+      "duration_seconds": 3.837,
+      "extracted_fields": 8
+    },
+    "tests-data/audit_inputs/doc02_receipt.png": {
+      "duration_seconds": 3.389,
+      "extracted_fields": 5
+    },
+    "tests-data/audit_inputs/doc01_invoice.pdf": {
+      "duration_seconds": 0.084,
+      "extracted_fields": 12
+    },
+    "tests-data/synthetic_tests/syn_01_clean_digital.pdf": {
+      "duration_seconds": 0.145,
+      "extracted_fields": 9
+    }
+  }
+}

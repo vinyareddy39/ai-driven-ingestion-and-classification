@@ -1,0 +1,219 @@
+[
+  {
+    "alias": "c_02.png (doc02_receipt)",
+    "file": "tests-data/audit_inputs/doc02_receipt.png",
+    "duration_ms": 2454.75,
+    "extracted_fields_count": 5,
+    "expected_fields_count": 6,
+    "matched_fields": 0,
+    "accuracy_pct": 0.0,
+    "sample_fields": [
+      {
+        "label": "Issuer Name",
+        "value": "77am hvu, Sete WA",
+        "confidence": 0.9499
+      },
+      {
+        "label": "Pome Meth Ia Ending",
+        "value": "012",
+        "confidence": 0.9649
+      },
+      {
+        "label": "\u2018ved Ern Prt",
+        "value": "$800",
+        "confidence": 0.9649
+      },
+      {
+        "label": "$900",
+        "value": "get $1450,",
+        "confidence": 0.9699
+      }
+    ]
+  },
+  {
+    "alias": "c_05.png (doc05_tax_w2)",
+    "file": "tests-data/audit_inputs/doc05_tax_w2.png",
+    "duration_ms": 1401.95,
+    "extracted_fields_count": 10,
+    "expected_fields_count": 6,
+    "matched_fields": 0,
+    "accuracy_pct": 0.0,
+    "sample_fields": [
+      {
+        "label": "Issuer Name",
+        "value": "Employee Secury Numbor 111-229858,",
+        "confidence": 0.9499
+      },
+      {
+        "label": "Employer Senticaon Number EIN",
+        "value": "849921085,",
+        "confidence": 0.9649
+      },
+      {
+        "label": "Employer Name Gren Lagi",
+        "value": "Caran",
+        "confidence": 0.9649
+      },
+      {
+        "label": "Empl Nam",
+        "value": "Jnr eh",
+        "confidence": 0.98
+      }
+    ]
+  },
+  {
+    "alias": "doc11_resignation_letter.png",
+    "file": "tests-data/audit_inputs/doc11_resignation_letter.png",
+    "duration_ms": 1392.82,
+    "extracted_fields_count": 4,
+    "expected_fields_count": 5,
+    "matched_fields": 0,
+    "accuracy_pct": 0.0,
+    "sample_fields": [
+      {
+        "label": "Issuer Name",
+        "value": "Ta Cate Lats",
+        "confidence": 0.9499
+      },
+      {
+        "label": "Paton Sone Fu",
+        "value": "Duan",
+        "confidence": 0.9649
+      },
+      {
+        "label": "Aya Wrhing Yw He Camry Wt",
+        "value": "20261114",
+        "confidence": 0.98
+      },
+      {
+        "label": "Ianto Cnt Am He Opertuny Owe",
+        "value": "get",
+        "confidence": 0.9649
+      }
+    ]
+  },
+  {
+    "alias": "doc15_shipping_waybill.png",
+    "file": "tests-data/audit_inputs/doc15_shipping_waybill.png",
+    "duration_ms": 1348.6,
+    "extracted_fields_count": 9,
+    "expected_fields_count": 5,
+    "matched_fields": 1,
+    "accuracy_pct": 20.0,
+    "sample_fields": [
+      {
+        "label": "Issuer Name",
+        "value": "\u2018Taking Number",
+        "confidence": 0.9499
+      },
+      {
+        "label": "(nai Cheapo Tenses Hu",
+        "value": "iL",
+        "confidence": 0.9649
+      },
+      {
+        "label": "Dstt",
+        "value": "aie FullmentCani",
+        "confidence": 0.98
+      },
+      {
+        "label": "\u2018senor Apex",
+        "value": "Hardware",
+        "confidence": 0.9649
+      }
+    ]
+  },
+  {
+    "alias": "doc19_vendor_price_notice.png",
+    "file": "tests-data/audit_inputs/doc19_vendor_price_notice.png",
+    "duration_ms": 1566.67,
+    "extracted_fields_count": 6,
+    "expected_fields_count": 5,
+    "matched_fields": 0,
+    "accuracy_pct": 0.0,
+    "sample_fields": [
+      {
+        "label": "Issuer Name",
+        "value": "fc Net: Annua Pre Aen",
+        "confidence": 0.9499
+      },
+      {
+        "label": "Te Ern",
+        "value": "2008-44",
+        "confidence": 0.9649
+      },
+      {
+        "label": "\u2018a Tet",
+        "value": "2028-1096",
+        "confidence": 0.9649
+      },
+      {
+        "label": "Etn Bn",
+        "value": "20270101",
+        "confidence": 0.9649
+      }
+    ]
+  },
+  {
+    "alias": "doc26_maintenance_inspection.png",
+    "file": "tests-data/audit_inputs/doc26_maintenance_inspection.png",
+    "duration_ms": 1456.81,
+    "extracted_fields_count": 8,
+    "expected_fields_count": 5,
+    "matched_fields": 1,
+    "accuracy_pct": 20.0,
+    "sample_fields": [
+      {
+        "label": "Issuer Name",
+        "value": "Inspection 0",
+        "confidence": 0.9499
+      },
+      {
+        "label": "Equipments",
+        "value": "Festop Chir Units",
+        "confidence": 0.98
+      },
+      {
+        "label": "Anubctuer Ame Commercial",
+        "value": "HVC",
+        "confidence": 0.9649
+      },
+      {
+        "label": "Irepocton Om",
+        "value": "2076-1025,",
+        "confidence": 0.9649
+      }
+    ]
+  },
+  {
+    "alias": "syn_02_clean_image.png",
+    "file": "tests-data/synthetic_tests/syn_02_clean_image.png",
+    "duration_ms": 1557.99,
+    "extracted_fields_count": 8,
+    "expected_fields_count": 0,
+    "matched_fields": 0,
+    "accuracy_pct": 100.0,
+    "sample_fields": [
+      {
+        "label": "Document Title",
+        "value": "METROPOLITAN CLINICAL LABS",
+        "confidence": 0.98
+      },
+      {
+        "label": "Issuer Name",
+        "value": "LABORATORY REPORT",
+        "confidence": 0.9499
+      },
+      {
+        "label": "Patient Name",
+        "value": "John Doe",
+        "confidence": 0.98
+      },
+      {
+        "label": "Specimen Type",
+        "value": "Blood Serum",
+        "confidence": 0.98
+      }
+    ]
+  }
+]

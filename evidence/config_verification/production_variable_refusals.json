@@ -1,0 +1,39 @@
+{
+  "failures_captured": [
+    {
+      "test": "Missing JWT_SECRET and SECRET_KEY in Production",
+      "refused": true,
+      "matched_error": true,
+      "raw_output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\ml\\backend\\app\\core\\settings.py\", line 198, in validate_production_safety\n    raise ProductionSecurityError(msg)\napp.core.settings.ProductionSecurityError: PRODUCTION STARTUP REFUSED:\n  - SECRET_KEY / JWT_SECRET must be configured with a cryptographically random secret with at least 32 characters in production (no default).\n  - STORAGE_BACKEND must be 's3' in production because cloud container disks are ephemeral; STORAGE_BACKEND='local' is forbidden."
+    },
+    {
+      "test": "Missing DATA_ENCRYPTION_KEY and ENCRYPTION_KEY in Production",
+      "refused": true,
+      "matched_error": true,
+      "raw_output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\ml\\backend\\app\\core\\settings.py\", line 198, in validate_production_safety\n    raise ProductionSecurityError(msg)\napp.core.settings.ProductionSecurityError: PRODUCTION STARTUP REFUSED:\n  - ENCRYPTION_KEY / DATA_ENCRYPTION_KEY is required in production with no default (minimum 32 characters). App refuses to start without it.\n  - STORAGE_BACKEND must be 's3' in production because cloud container disks are ephemeral; STORAGE_BACKEND='local' is forbidden."
+    },
+    {
+      "test": "Wildcard CORS in Production",
+      "refused": true,
+      "matched_error": true,
+      "raw_output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\ml\\backend\\app\\core\\settings.py\", line 198, in validate_production_safety\n    raise ProductionSecurityError(msg)\napp.core.settings.ProductionSecurityError: PRODUCTION STARTUP REFUSED:\n  - CORS_ORIGINS must be configured with an explicit whitelist of allowed frontend domains in production; wildcard ('*') is rejected.\n  - STORAGE_BACKEND must be 's3' in production because cloud container disks are ephemeral; STORAGE_BACKEND='local' is forbidden."
+    },
+    {
+      "test": "SQLite in Production",
+      "refused": true,
+      "matched_error": true,
+      "raw_output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\ml\\backend\\app\\core\\settings.py\", line 198, in validate_production_safety\n    raise ProductionSecurityError(msg)\napp.core.settings.ProductionSecurityError: PRODUCTION STARTUP REFUSED:\n  - DATABASE_URL must point to an enterprise database (PostgreSQL) in production; SQLite is rejected.\n  - STORAGE_BACKEND must be 's3' in production because cloud container disks are ephemeral; STORAGE_BACKEND='local' is forbidden."
+    },
+    {
+      "test": "Invalid MAX_UPLOAD_MB (exceeds limit)",
+      "refused": true,
+      "matched_error": true,
+      "raw_output": "Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n  File \"C:\\ml\\backend\\app\\core\\settings.py\", line 198, in validate_production_safety\n    raise ProductionSecurityError(msg)\napp.core.settings.ProductionSecurityError: PRODUCTION STARTUP REFUSED:\n  - MAX_UPLOAD_MB must be configured to a positive limit not exceeding 500 MB in production.\n  - STORAGE_BACKEND must be 's3' in production because cloud container disks are ephemeral; STORAGE_BACKEND='local' is forbidden."
+    }
+  ],
+  "encryption_persistence": {
+    "verified": true,
+    "original": "CONFIDENTIAL_PATIENT_SSN_987-65-4321",
+    "recovered": "CONFIDENTIAL_PATIENT_SSN_987-65-4321"
+  }
+}
