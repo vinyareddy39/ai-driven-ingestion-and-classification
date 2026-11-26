@@ -90,6 +90,8 @@ async def call_groq_text_async(
     on_retry: Optional[Any] = None,
 ) -> Optional[Dict[str, Any]]:
     """Groq LPU text extraction with non-reasoning compact model."""
+    if os.getenv("ENABLE_EXTERNAL_AI", "false").lower() not in ("true", "1"):
+        return None
     api_key = os.getenv("GROQ_API_KEY", "").strip()
     if not api_key:
         return None
@@ -154,6 +156,8 @@ async def call_gemini_text_async(
     on_retry: Optional[Any] = None,
 ) -> Optional[Dict[str, Any]]:
     """Gemini text extraction with non-reasoning compact model."""
+    if os.getenv("ENABLE_EXTERNAL_AI", "false").lower() not in ("true", "1"):
+        return None
     api_key = os.getenv("GEMINI_API_KEY", "").strip()
     if not api_key:
         return None
@@ -286,6 +290,8 @@ async def call_groq_vision_async(
     on_retry: Optional[Any] = None,
 ) -> Optional[Dict[str, Any]]:
     """Groq Vision async call with concurrency cap and exponential retry."""
+    if os.getenv("ENABLE_EXTERNAL_AI", "false").lower() not in ("true", "1"):
+        return None
     api_key = os.getenv("GROQ_API_KEY", "").strip()
     if not api_key:
         return None
@@ -353,6 +359,8 @@ async def call_gemini_vision_async(
     on_retry: Optional[Any] = None,
 ) -> Optional[Dict[str, Any]]:
     """Gemini Vision async call with concurrency cap and exponential retry."""
+    if os.getenv("ENABLE_EXTERNAL_AI", "false").lower() not in ("true", "1"):
+        return None
     api_key = os.getenv("GEMINI_API_KEY", "").strip()
     if not api_key:
         return None

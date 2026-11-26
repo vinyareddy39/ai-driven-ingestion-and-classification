@@ -549,11 +549,32 @@ class HybridOCREngine(OCREngine):
             t = page.get_text("text").strip()
             w_list = page.get_text("words")
             if not t:
-                # Attempt lightweight OCR via pytesseract if installed/available
+                # Attempt lightweight OCR via pytesseract using local Tesseract binary if available
                 ocr_text = ""
                 try:
                     import pytesseract
                     from PIL import Image
+
+                    # Auto-detect local tesseract binary
+                    for possible_cmd in [
+                        os.getenv("TESSERACT_CMD"),
+                        "C:/ml/tools/tesseract/tesseract.exe",
+                        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "tools", "tesseract", "tesseract.exe")),
+                        "tesseract",
+                    ]:
+                        if possible_cmd and (os.path.exists(possible_cmd) or possible_cmd == "tesseract"):
+                            pytesseract.pytesseract.tesseract_cmd = possible_cmd
+                            break
+
+                    for possible_tessdata in [
+                        os.getenv("TESSDATA_PREFIX"),
+                        "C:/ml/tools/tesseract/tessdata",
+                        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "tools", "tesseract", "tessdata")),
+                    ]:
+                        if possible_tessdata and os.path.exists(possible_tessdata):
+                            os.environ["TESSDATA_PREFIX"] = possible_tessdata
+                            break
+
                     pix = page.get_pixmap()
                     img = Image.open(io.BytesIO(pix.tobytes("png")))
                     ocr_text = pytesseract.image_to_string(img).strip()
@@ -568,14 +589,7 @@ class HybridOCREngine(OCREngine):
                             bboxes.append(BoundingBox(text=word, x0=bx, y0=by, x1=bx+bw, y1=by+bh, page=i + 1))
                     methods.append("tesseract")
                 except Exception:
-                    # Fallback to TrOCR for images when local tesseract binary is not installed
-                    try:
-                        trocr_fallback = TrOCREngine()
-                        trocr_res = trocr_fallback.extract_text(file_bytes, file_type, *args, **kwargs)
-                        if trocr_res and trocr_res.full_text:
-                            return trocr_res
-                    except Exception:
-                        pass
+                    # When Tesseract is unavailable and external AI is not allowed, avoid heavy TrOCR if restricted
                     methods.append("direct_image")
                 pages_text.append(ocr_text or "")
             else:

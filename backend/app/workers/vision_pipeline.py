@@ -82,9 +82,12 @@ def extract_document_text_llm(
         + few_shot_prompt
     )
 
-    # 1. Try Groq text model FIRST (openai/gpt-oss-20b - ultra high speed LPU ~200ms & generous 8,000 TPM limit)
+    # Check if external AI calls are permitted
+    external_ai_allowed = os.getenv("ENABLE_EXTERNAL_AI", "false").lower() in ("true", "1")
+
+    # 1. Try Groq text model FIRST if external AI is explicitly enabled
     groq_key = os.getenv("GROQ_API_KEY", "").strip()
-    if groq_key:
+    if external_ai_allowed and groq_key:
         for text_model in ["openai/gpt-oss-20b", "qwen/qwen3.8-27b"]:
             try:
                 req_data = {
@@ -138,9 +141,9 @@ def extract_document_text_llm(
     except Exception as e:
         logger.debug(f"Fast Lane Ollama attempt failed: {e}")
 
-    # 3. Fallback to Gemini text
+    # 3. Fallback to Gemini text if external AI is explicitly enabled
     gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
-    if gemini_key:
+    if external_ai_allowed and gemini_key:
         try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={gemini_key}"
             payload = {
@@ -692,10 +695,12 @@ def extract_document_vision(
     global _call_count
     _call_count += 1
 
-    groq_key = os.getenv("GROQ_API_KEY", "").strip()
-    openrouter_key = os.getenv("OPENROUTER_API_KEY", "").strip()
-    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+    external_ai_allowed = os.getenv("ENABLE_EXTERNAL_AI", "false").lower() in ("true", "1")
+
+    groq_key = os.getenv("GROQ_API_KEY", "").strip() if external_ai_allowed else ""
+    openrouter_key = os.getenv("OPENROUTER_API_KEY", "").strip() if external_ai_allowed else ""
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip() if external_ai_allowed else ""
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "").strip() if external_ai_allowed else ""
 
     # 1. Cloud Multimodal Vision (Groq & Gemini load-balanced for speed & accuracy)
     if groq_key and gemini_key:

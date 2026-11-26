@@ -498,6 +498,7 @@ def create_batch(
             }
 
         saved_files = []
+        max_upload_bytes = int(os.getenv("MAX_UPLOAD_MB", "200")) * 1024 * 1024
         for idx, upload in enumerate(files):
             filename = upload.filename or ""
             ext = os.path.splitext(filename)[1].lower()
@@ -505,6 +506,12 @@ def create_batch(
                 continue
 
             file_bytes = upload.file.read()
+            if len(file_bytes) > max_upload_bytes:
+                max_mb = max_upload_bytes // (1024 * 1024)
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"File '{filename}' exceeds maximum allowed upload size limit of {max_mb} MB.",
+                )
             sha256 = compute_sha256(file_bytes)
 
             clean_original_name = re.sub(r"\.\.+", "", os.path.basename(filename or safe_filename)).lstrip("._") or "document.pdf"
@@ -603,6 +610,7 @@ def append_files_to_batch(
                 rel_dict = {}
 
         saved_files = []
+        max_upload_bytes = int(os.getenv("MAX_UPLOAD_MB", "200")) * 1024 * 1024
         for idx, upload in enumerate(files):
             filename = upload.filename or ""
             ext = os.path.splitext(filename)[1].lower()
@@ -610,6 +618,12 @@ def append_files_to_batch(
                 continue
 
             file_bytes = upload.file.read()
+            if len(file_bytes) > max_upload_bytes:
+                max_mb = max_upload_bytes // (1024 * 1024)
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"File '{filename}' exceeds maximum allowed upload size limit of {max_mb} MB.",
+                )
             sha256 = compute_sha256(file_bytes)
 
             clean_original_name = re.sub(r"\.\.+", "", os.path.basename(filename or safe_filename)).lstrip("._") or "document.pdf"
@@ -1056,8 +1070,11 @@ def get_workers_health(db: Session = Depends(get_db)):
         ocr_status = f"unavailable: {str(e)}"
 
     waiting_count = db.query(FileModel).filter(FileModel.stage.in_(["Waiting", "Still reading"])).count()
+    external_ai_enabled = os.getenv("ENABLE_EXTERNAL_AI", "false").lower() in ("true", "1")
     return {
         "status": "healthy" if pipeline_ok else "degraded",
+        "external_ai_enabled": external_ai_enabled,
+        "external_ai_warning": "WARNING: External AI is enabled. Document content, extracted text and images may be transmitted to third-party APIs (Google Gemini, Groq, Anthropic)." if external_ai_enabled else None,
         "workers": {
             "status": "running",
             "active_tasks": waiting_count,

@@ -69,6 +69,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'details' | 'raw_text'>('details');
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [workerStatus, setWorkerStatus] = useState<string>('Ready');
+  const [externalAiWarning, setExternalAiWarning] = useState<string | null>(null);
   const [isWakingUp, setIsWakingUp] = useState(false);
   const [wakingElapsed, setWakingElapsed] = useState(0);
   const [isExportingAccount, setIsExportingAccount] = useState(false);
@@ -97,8 +98,15 @@ export default function App() {
       if (!isMounted) return;
       setIsWakingUp(false);
 
-      api.getWorkerHealth().then((h) => {
-        if (isMounted) setWorkerStatus(h.status === 'healthy' ? 'Ready' : 'Degraded');
+      api.getWorkerHealth().then((h: any) => {
+        if (isMounted) {
+          setWorkerStatus(h.status === 'healthy' ? 'Ready' : 'Degraded');
+          if (h.external_ai_warning) {
+            setExternalAiWarning(h.external_ai_warning);
+          } else {
+            setExternalAiWarning(null);
+          }
+        }
       }).catch(() => {
         if (isMounted) setWorkerStatus('Offline');
       });
@@ -950,6 +958,27 @@ export default function App() {
             </span>
           </div>
           <span style={{ fontSize: '11px', color: '#b45309' }}>Retrying automatically</span>
+        </div>
+      )}
+
+      {/* External Third-Party AI Data Transmission Warning */}
+      {externalAiWarning && (
+        <div
+          id="external-ai-warning-banner"
+          style={{
+            backgroundColor: '#fee2e2',
+            borderBottom: '1px solid #fca5a5',
+            color: '#991b1b',
+            padding: '10px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontSize: '13px',
+            fontWeight: 600,
+          }}
+        >
+          <span style={{ fontSize: '16px' }}>⚠️</span>
+          <span>{externalAiWarning}</span>
         </div>
       )}
 

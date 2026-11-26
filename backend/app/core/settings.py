@@ -35,6 +35,11 @@ class AppSettings(BaseSettings):
         default="",
         description="Secret key for signing RFC 7519 JWT tokens (read from environment or .env)",
     )
+    JWT_SECRET: Optional[str] = Field(
+        default=None,
+        description="Alias for SECRET_KEY to support standard JWT_SECRET naming",
+    )
+    JWT_ALGORITHM: str = Field(default="HS256", description="JWT signing algorithm")
     ACCESS_TOKEN_MINUTES: int = Field(default=30, description="Access token expiration window in minutes")
     REFRESH_TOKEN_DAYS: int = Field(default=7, description="Refresh token expiration window")
     AUTH_TOKENS: str = Field(
@@ -51,9 +56,19 @@ class AppSettings(BaseSettings):
         default="http://localhost:5173,http://127.0.0.1:5173",
         description="Comma-separated list of allowed CORS browser origins",
     )
-    DATA_ENCRYPTION_KEY: str = Field(
-        default="c2VjdXJlX2RldmVsb3BtZW50X2tleV9mb3JfcHJpdmFjeV8xMjM=",
-        description="Base64 or 32-byte secret for column-level health data encryption at rest",
+    DATA_ENCRYPTION_KEY: Optional[str] = Field(
+        default=None,
+        description="Base64 or 32-byte secret for column-level health/document data encryption at rest (REQUIRED in production, no default)",
+    )
+    ENCRYPTION_KEY: Optional[str] = Field(
+        default=None,
+        description="Alias for DATA_ENCRYPTION_KEY",
+    )
+
+    # External AI Opt-in & Third-Party Gate
+    ENABLE_EXTERNAL_AI: bool = Field(
+        default=False,
+        description="Strict opt-in gate: when False, external LLM/Vision APIs (Gemini, Groq, Anthropic, OpenRouter) are impossible",
     )
 
     # File Storage
@@ -144,25 +159,31 @@ def validate_production_safety(settings: AppSettings) -> bool:
 
     errors: List[str] = []
 
-    # 1. JWT Secret Key
-    if not settings.SECRET_KEY or "dev_" in settings.SECRET_KEY or len(settings.SECRET_KEY) < 32:
-        errors.append("SECRET_KEY must be a cryptographically random secret with at least 32 characters in production.")
+    # 1. JWT Secret Key (accepts SECRET_KEY or JWT_SECRET)
+    effective_jwt_secret = settings.SECRET_KEY or settings.JWT_SECRET or os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY") or ""
+    if not effective_jwt_secret or "dev_" in effective_jwt_secret or len(effective_jwt_secret) < 32:
+        errors.append("SECRET_KEY / JWT_SECRET must be configured with a cryptographically random secret with at least 32 characters in production (no default).")
 
     # 2. Database URL
     if not settings.DATABASE_URL or settings.DATABASE_URL.startswith("sqlite"):
         errors.append("DATABASE_URL must point to an enterprise database (PostgreSQL) in production; SQLite is rejected.")
 
-    # 3. Data Encryption Key
-    if not settings.DATA_ENCRYPTION_KEY or len(settings.DATA_ENCRYPTION_KEY) < 32:
-        errors.append("DATA_ENCRYPTION_KEY must be configured with a 32-byte secret for column-level encryption in production.")
+    # 3. Data Encryption Key (accepts ENCRYPTION_KEY or DATA_ENCRYPTION_KEY)
+    effective_enc_key = settings.DATA_ENCRYPTION_KEY or settings.ENCRYPTION_KEY or os.getenv("ENCRYPTION_KEY") or os.getenv("DATA_ENCRYPTION_KEY") or ""
+    if not effective_enc_key or len(effective_enc_key) < 32:
+        errors.append("ENCRYPTION_KEY / DATA_ENCRYPTION_KEY is required in production with no default (minimum 32 characters). App refuses to start without it.")
 
     # 4. CORS Origins
     if not settings.CORS_ORIGINS or "*" in settings.CORS_ORIGINS:
-        errors.append("CORS_ORIGINS must be an explicit whitelist of domains in production; wildcard ('*') is rejected.")
+        errors.append("CORS_ORIGINS must be configured with an explicit whitelist of allowed frontend domains in production; wildcard ('*') is rejected.")
 
     # 5. Role Header Bypass
     if settings.AUTH_ALLOW_ROLE_HEADER:
         errors.append("AUTH_ALLOW_ROLE_HEADER must be False in production (prevents unauthenticated privilege escalation).")
+
+    # 6. Upload Size Limit
+    if settings.MAX_UPLOAD_MB <= 0 or settings.MAX_UPLOAD_MB > 500:
+        errors.append("MAX_UPLOAD_MB must be configured to a positive limit not exceeding 500 MB in production.")
 
     # 6. Storage Backend
     if settings.STORAGE_BACKEND == "local":

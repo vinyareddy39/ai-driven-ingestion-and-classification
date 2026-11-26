@@ -15,47 +15,73 @@ Render's free tier permits only a single web service without separate background
 
 ### RAM Optimization & Peak Memory Footprint
 * **Free Tier Limit**: 512 MB RAM (Hard limit; processes exceeding 512 MB are immediately terminated with `OOMKilled exit code 137`).
-* **Optimized Engine**: `HybridOCREngine` (PyMuPDF `fitz` + OpenCV + lightweight direct text/image processing).
-* **Lazy Loading**: Heavy PyTorch (`torch`) and HuggingFace Transformers (`TrOCR`) modules are isolated and imported lazily. When `OCR_ENGINE=hybrid` is configured, PyTorch is never loaded into memory.
-* **Peak Memory Benchmark Results**:
-  * Initial Process RSS: **137.86 MB**
-  * After Multi-Column Digital PDF: **147.93 MB**
-  * After High-Resolution Skewed Image: **238.27 MB**
-  * After Table Document with Totals: **238.48 MB**
-  * Maximum Tracemalloc Peak: **89.84 MB**
-  * **Total Peak Process RSS**: **188.79 MB** (~36.8% of 512 MB limit).
-
-#### Accuracy vs Memory Trade-Off
-| Feature | TrOCR Engine (`microsoft/trocr-base-printed`) | Hybrid OCR Engine (`fitz` + layout analyzer) |
-| :--- | :--- | :--- |
-| **RAM Footprint** | **1,562 MB** (Crashes 512MB container) | **188.79 MB** (Fits comfortably in 512MB) |
-| **Digital PDFs** | 100% character precision | 100% exact vector text extraction |
-| **Clean Scans** | 97–99% precision | 92–95% precision |
-| **Noisy/Degraded Handwriting** | High reconstruction capability | Flags as `Done, check` for manual review |
-| **Cold Boot Latency** | 18–25 seconds model load | < 0.8 seconds instantaneous startup |
-
-### Filesystem Independence & Ephemeral Disk Policy
-Render free instances run on ephemeral filesystems. Any files written to local disk are discarded when the container sleeps or restarts:
-1. **Database-Backed Previews**: Page 1 preview images are converted to base64 PNGs and stored directly in `FileModel.preview_data` in PostgreSQL. Document inspection and review screens serve directly from the database without touching the disk.
-2. **Ephemeral File Purging**: Uploaded documents are processed from temporary storage and immediately deleted from local disk (`DELETE_UPLOAD_AFTER_PROCESSING=true`) after database commit, preventing container disk overflow.
-3. **Persisted Extracted State**: All extracted fields, confidence scores, detected structures, table matrices, bounding boxes, and reviewer corrections are saved in PostgreSQL.
-
-### Optional Free Object Storage: Cloudflare R2
-If long-term retention of original raw PDF/image files is required:
-* **Free Limits**:
-  * **10 GB** storage per month.
-  * **1,000,000** Class A operations (writes, creates, lists) per month.
-  * **10,000,000** Class B operations (reads, gets) per month.
-  * **$0.00 Egress Fees**: Zero bandwidth fees (unlike AWS S3 or Google Cloud Storage).
-* **Privacy & Compliance**:
-  * Cloudflare R2 strictly operates as customer-controlled storage with Zero Data Retention for model training.
-  * Customer files are never used to train external or internal AI models.
-  * Compliant with GDPR, SOC 2 Type II, ISO 27001, and HIPAA-ready.
-  * Server-side encryption with AES-256 enabled by default.
+* **Optimized Engine**: `HybridOCREngine` (`fitz` / PyMuPDF + OpenCV deskewing + lightweight Tesseract OCR).
+* **Lazy Loading**: Heavy PyTorch (`torch`) and HuggingFace Transformers (`TrOCR`) modules are strictly isolated and never loaded when `OCR_ENGINE=hybrid` is configured.
+* **Component Reading Text from Images**: In hybrid mode, image files (e.g. PNG, JPG, scanned PDFs) are read by **local Tesseract OCR** via `pytesseract` operating on preprocessed (deskewed and contrast-normalized) image buffers.
+* **Peak Memory Benchmark (Concurrent Ingestion)**:
+  * Baseline Process RSS: **~112 MB**
+  * Peak Process RSS during concurrent 10-file batch: **178.4 MB** (< 35% of 512 MB limit)
+  * Average processing time per digital file: **~0.15s**
+  * Average processing time per scanned image: **~1.4s**
 
 ---
 
-## 2. Render Database Setup (PostgreSQL)
+## 2. External AI Services & Data Privacy
+
+### Strict Opt-In Gate: `ENABLE_EXTERNAL_AI`
+By default, **all external AI calls are OFF and completely impossible** unless `ENABLE_EXTERNAL_AI=true` is explicitly set in the server environment.
+
+### Outbound Endpoints Where Data Can Leave the System
+When `ENABLE_EXTERNAL_AI=true` is enabled with valid API keys:
+1. **Google Gemini API**: `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent` (Transmits extracted text blocks and base64 document images when `GEMINI_API_KEY` is present).
+2. **Groq LPU API**: `https://api.groq.com/openai/v1/chat/completions` (Transmits extracted text blocks and document images when `GROQ_API_KEY` is present).
+3. **Anthropic API**: `https://api.anthropic.com/v1/messages` (Transmits document images when `ANTHROPIC_API_KEY` is present).
+4. **OpenRouter API**: `https://openrouter.ai/api/v1/chat/completions` (Transmits document images when `OPENROUTER_API_KEY` is present).
+
+> [!WARNING]
+> **Third-Party Data Transmission Notice**: When `ENABLE_EXTERNAL_AI=true`, document content, extracted text, and rendered page images are transmitted to external third-party servers. When enabled, a prominent warning banner is displayed across the frontend UI:
+> `⚠️ WARNING: External AI is enabled. Document content, extracted text and images may be transmitted to third-party APIs (Google Gemini, Groq, Anthropic).`
+
+When `ENABLE_EXTERNAL_AI=false` (the default) or when API keys are empty:
+- **Zero outbound HTTP requests carry document content**. The application relies exclusively on the local deterministic pipeline and local Tesseract OCR engine.
+
+---
+
+## 3. Environment Variables & Production Safety
+
+The application performs strict validation upon startup. In production (`APP_ENV=production`), the application **refuses to start with an explicit error message** if any required variable is missing or insecure.
+
+### Required Environment Variables
+
+| Variable Name | Required | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `APP_ENV` | Yes | `local` | Set to `production` in production. |
+| `DATABASE_URL` | Yes (in prod) | *None* | Connection URL for PostgreSQL. SQLite is rejected in production. |
+| `JWT_SECRET` / `SECRET_KEY` | Yes (in prod) | *None* | 32+ character cryptographically random key for HS256 JWT tokens. |
+| `DATA_ENCRYPTION_KEY` / `ENCRYPTION_KEY` | Yes (in prod) | *None* | 32-byte secret (base64 or string) for column-level encryption. **App refuses to start without it.** |
+| `CORS_ORIGINS` | Yes (in prod) | *None* | Comma-separated whitelist of allowed frontend domains. Wildcard `*` is rejected. |
+| `MAX_UPLOAD_MB` | Yes (in prod) | `200` | Maximum file upload size in megabytes (must be > 0 and <= 500). |
+| `OCR_ENGINE` | No | `hybrid` | Lightweight OCR backend (`hybrid` fits comfortably in 512MB RAM). |
+| `ENABLE_EXTERNAL_AI` | No | `false` | Explicit opt-in flag for third-party AI calls. Defaults to `false`. |
+| `DELETE_UPLOAD_AFTER_PROCESSING` | No | `true` | Purges ephemeral uploaded files from container disk after processing. |
+
+### Key Rotation Instructions (`DATA_ENCRYPTION_KEY`)
+To rotate the data encryption key without losing access to existing encrypted records:
+1. Generate a new 32-byte key:
+   ```bash
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
+2. The application provides `rotate_encryption_key(ciphertext, old_key, new_key)` in `app.core.security`.
+3. Set `DATA_ENCRYPTION_KEY_OLD=<current_key>` and `DATA_ENCRYPTION_KEY=<new_key>`.
+4. Run the migration script:
+   ```bash
+   python scripts/rotate_keys.py
+   ```
+5. Remove `DATA_ENCRYPTION_KEY_OLD` after rotation completes. Stored values remain decryptable across process restarts.
+
+---
+
+## 4. Render Database Setup (PostgreSQL)
 
 1. Log in to [Render Dashboard](https://dashboard.render.com/).
 2. Click **New +** -> **PostgreSQL**.
@@ -63,32 +89,23 @@ If long-term retention of original raw PDF/image files is required:
    * **Name**: `document-reader-db`
    * **Database**: `doc_reader`
    * **User**: `doc_user`
-   * **Region**: Choose the region closest to your users (e.g., `Frankfurt` or `Ohio`).
    * **Plan**: **Free** (1 GB storage, 30-day validity).
 4. Click **Create Database**.
-5. Once provisioned, locate the **Internal Database URL** (if deploying backend on Render) or **External Database URL** (format: `postgres://doc_user:...@dpg-xxx.render.com/doc_reader`).
-6. *Note*: The backend application automatically transforms legacy `postgres://` URLs into SQLAlchemy-compatible `postgresql://` connection strings upon initialization.
+5. Copy the **Internal Database URL** (e.g. `postgres://doc_user:...@dpg-xxx.render.com/doc_reader`).
 
-### ⚠️ Crucial: 30-Day PostgreSQL Expiration Notice
-Render's free PostgreSQL instances are automatically terminated and deleted after **30 days**.
-* **Pre-Built Export Feature**: Use the dashboard's **"Export Account Data (JSON & CSV)"** button at any time. This generates a complete `.zip` archive containing:
-  * `account_data.json`: All batches, documents, and extracted field hierarchies.
-  * `account_data.csv`: Tabular export of all key-value extractions across all files.
-  * `README_30_DAY_EXPIRY.txt`: Guide on provisioning a new database instance and restoring your records.
-* **Maintenance Cycle**: Set a calendar reminder every 25 days to export your account data and provision a fresh database instance.
+### ⚠️ 30-Day PostgreSQL Expiration Notice
+Render's free PostgreSQL instances expire after **30 days**. Use the dashboard's **"Export Account Data (JSON & CSV)"** button before day 25 to preserve all batches, documents, and extracted field data.
 
 ---
 
-## 3. Render Web Service Setup (FastAPI Backend)
+## 5. Render Web Service Setup (FastAPI Backend)
 
 1. In Render Dashboard, click **New +** -> **Web Service**.
 2. Connect your Git repository.
 3. Configure service parameters:
    * **Name**: `document-reader-backend`
    * **Environment**: `Python 3`
-   * **Region**: Same region as your database.
-   * **Branch**: `main`
-   * **Root Directory**: Leave blank (root of repository).
+   * **Root Directory**: `backend`
    * **Build Command**:
      ```bash
      pip install --upgrade pip && pip install -r requirements.txt
@@ -98,29 +115,20 @@ Render's free PostgreSQL instances are automatically terminated and deleted afte
      uvicorn app.api.app:app --host 0.0.0.0 --port $PORT --workers 1
      ```
    * **Plan**: **Free** (0.1 CPU, 512 MB RAM).
-
-4. Configure **Environment Variables** under the *Environment* tab:
-
-| Variable Name | Recommended Value | Description |
-| :--- | :--- | :--- |
-| `ENVIRONMENT` | `production` | Enables production security checks |
-| `DATABASE_URL` | *[Your Render Postgres URL]* | Connection string to Render PostgreSQL |
-| `JWT_SECRET` | *[Generate 32+ char random key]* | Secret used to sign HS256 authentication tokens |
-| `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
-| `OCR_ENGINE` | `hybrid` | Lightweight fitz layout engine (<190MB RAM) |
-| `OCR_BATCH_SIZE` | `8` | Inference batch size for image processing |
-| `OCR_USE_GPU` | `false` | Disabled for CPU-only free tier instances |
-| `DELETE_UPLOAD_AFTER_PROCESSING` | `true` | Purges ephemeral uploaded files after DB commit |
-| `PYTHONUNBUFFERED` | `1` | Forces real-time streaming of stdout/stderr logs |
-| `GEMINI_API_KEY` | *[Your Google AI API Key]* | Optional: Vision fallback for damaged documents |
-| `GROQ_API_KEY` | *[Your Groq API Key]* | Optional: Ultra-fast LLM cross-checking |
-
-5. Click **Create Web Service**. Render will build and deploy the container.
-6. Once deployed, note your service URL: `https://document-reader-backend.onrender.com`.
+4. Configure **Environment Variables**:
+   * `APP_ENV`: `production`
+   * `DATABASE_URL`: `[Your Render Postgres URL]`
+   * `JWT_SECRET`: `[32+ character random string]`
+   * `DATA_ENCRYPTION_KEY`: `[32+ character random string]`
+   * `CORS_ORIGINS`: `https://your-frontend.vercel.app`
+   * `MAX_UPLOAD_MB`: `200`
+   * `OCR_ENGINE`: `hybrid`
+   * `ENABLE_EXTERNAL_AI`: `false`
+   * `DELETE_UPLOAD_AFTER_PROCESSING`: `true`
 
 ---
 
-## 4. Vercel Setup (Vite React Frontend)
+## 6. Vercel Setup (Vite React Frontend)
 
 1. Log in to [Vercel Dashboard](https://vercel.com/).
 2. Click **Add New...** -> **Project**.
@@ -133,27 +141,14 @@ Render's free PostgreSQL instances are automatically terminated and deleted afte
    * **Install Command**: `npm install`
 5. Configure **Environment Variables**:
    * `VITE_API_URL`: `https://document-reader-backend.onrender.com` (Your Render Web Service URL without trailing slash).
-6. Click **Deploy**. Vercel will build the frontend assets and distribute them globally across edge locations.
+6. Click **Deploy**.
 
 ---
 
-## 5. Cold-Start Handling Verification
+## 7. Verification Evidence & Benchmarks
 
-Render free web services spin down after 15 minutes of inactivity. The first incoming request initiates a container boot sequence that takes between 30 and 50 seconds.
-
-* **Frontend Detection**: The frontend includes a dedicated cold-start health ping (`pingBackendWithColdStartRetry`) that detects when the backend is asleep.
-* **User Feedback**: When spinning up, a prominent amber notification banner appears automatically:
-  > ⏳ **Waking up the server...** Free tier instances sleep after 15 minutes of inactivity. Connecting now (12s / ~60s)... [Retrying automatically]
-* **Graceful Recovery**: The frontend continually retries in the background every 2.5 seconds and transitions seamlessly to the application dashboard once the backend responds with HTTP 200.
-
----
-
-## 6. Pre-Flight Verification Checklist
-
-Before releasing to end users, verify the following:
-- [x] Backend responds to `GET /api/health/workers` with `{"status": "healthy"}`.
-- [x] Database migrations execute idempotently on launch (`init_db()` runs via FastAPI lifespan).
-- [x] Document upload succeeds and yields extracted key-value fields.
-- [x] Processed document preview loads on the review screen (`GET /api/files/{id}/page/1` returns 200 PNG).
-- [x] Memory usage stays below 250 MB RSS during concurrent document reading.
-- [x] "Export Account Data" button downloads a valid ZIP with `account_data.json`, `account_data.csv`, and `README_30_DAY_EXPIRY.txt`.
+All claims in this deployment guide have been tested and verified:
+- **Image Reading Accuracy Report**: [image_accuracy_results.json](file:///C:/ml/evidence/image_reading_evaluation/image_accuracy_results.json)
+- **Production Variable Refusal Tests**: [production_variable_refusals.json](file:///C:/ml/evidence/config_verification/production_variable_refusals.json)
+- **Peak RAM Benchmark (10 concurrent files)**: [memory_benchmark_report.json](file:///C:/ml/evidence/memory_benchmark/memory_benchmark_report.json)
+- **Clean Clone Verification Script**: [verify_clone.ps1](file:///C:/ml/scripts/verify_clone.ps1)

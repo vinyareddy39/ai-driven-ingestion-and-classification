@@ -540,6 +540,10 @@ class GeminiProvider(BaseExtractionProvider):
         is_sensitive: bool = True,
         corrections: Optional[List[Dict[str, str]]] = None,
     ) -> Optional[ProviderResult]:
+        if os.getenv("ENABLE_EXTERNAL_AI", "false").lower() not in ("true", "1"):
+            logger.info("External AI services are OFF (ENABLE_EXTERNAL_AI is false); skipping Gemini.")
+            return None
+
         if is_sensitive and not self.allow_sensitive:
             logger.info("Skipping external Gemini call: document is classified as sensitive.")
             return None
@@ -703,6 +707,10 @@ class GroqProvider(BaseExtractionProvider):
         is_sensitive: bool = True,
         corrections: Optional[List[Dict[str, str]]] = None,
     ) -> Optional[ProviderResult]:
+        if os.getenv("ENABLE_EXTERNAL_AI", "false").lower() not in ("true", "1"):
+            logger.info("External AI services are OFF (ENABLE_EXTERNAL_AI is false); skipping Groq.")
+            return None
+
         if is_sensitive and not self.allow_sensitive:
             logger.info("Skipping external Groq call: document is classified as sensitive.")
             return None

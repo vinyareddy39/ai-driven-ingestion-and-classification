@@ -39,6 +39,27 @@ def detect_orientation_angle(img_bgr: np.ndarray) -> int:
     
     try:
         import pytesseract
+
+        # Ensure tesseract executable and tessdata are discovered
+        for possible_cmd in [
+            os.getenv("TESSERACT_CMD"),
+            "C:/ml/tools/tesseract/tesseract.exe",
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "tools", "tesseract", "tesseract.exe")),
+            "tesseract",
+        ]:
+            if possible_cmd and (os.path.exists(possible_cmd) or possible_cmd == "tesseract"):
+                pytesseract.pytesseract.tesseract_cmd = possible_cmd
+                break
+
+        for possible_tessdata in [
+            os.getenv("TESSDATA_PREFIX"),
+            "C:/ml/tools/tesseract/tessdata",
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "tools", "tesseract", "tessdata")),
+        ]:
+            if possible_tessdata and os.path.exists(possible_tessdata):
+                os.environ["TESSDATA_PREFIX"] = possible_tessdata
+                break
+
         osd = pytesseract.image_to_osd(gray, output_type=pytesseract.Output.DICT)
         rot = int(osd.get("rotate", 0))
         if rot in (90, 180, 270):
