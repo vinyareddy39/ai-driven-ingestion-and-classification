@@ -133,7 +133,7 @@ class AppSettings(BaseSettings):
     OCR_USE_GPU: bool = Field(default=False, description="Whether to utilize CUDA acceleration for OCR")
     OCR_MODEL: str = Field(default="microsoft/trocr-base-printed", description="HuggingFace model id for TrOCR if enabled")
     OCR_DPI: int = Field(default=200, description="DPI resolution for PDF page rendering")
-    OCR_CACHE_ENABLED: bool = Field(default=True, description="Whether to cache OCR results by file sha256 hash")
+    OCR_CACHE_ENABLED: bool = Field(default=False, description="Whether to cache OCR results by file sha256 hash")
     CONFIG_PATH: str = Field(default="./config/pipeline_config.yaml")
     SCANNER_WATCH_DIR: str = Field(default="./data/scanner_watch")
     MODEL_ARTIFACTS_DIR: str = Field(default="./data/models")

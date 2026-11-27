@@ -1,0 +1,679 @@
+{
+  "TESSERACT_CMD": [
+    {
+      "file": "backend/app/adapters/ocr.py",
+      "line": 560,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/core/preprocessing.py",
+      "line": 45,
+      "kind": "os.getenv"
+    }
+  ],
+  "TESSDATA_PREFIX": [
+    {
+      "file": "backend/app/adapters/ocr.py",
+      "line": 571,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/adapters/ocr.py",
+      "line": 577,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/app/core/preprocessing.py",
+      "line": 56,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/core/preprocessing.py",
+      "line": 62,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/scripts/experiment_ocr_suite.py",
+      "line": 17,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/scripts/test_psm_deskew.py",
+      "line": 15,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "OCR_ENGINE": [
+    {
+      "file": "backend/app/adapters/ocr.py",
+      "line": 630,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/adapters/ocr.py",
+      "line": 573,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/scripts/benchmark_concurrent_memory.py",
+      "line": 12,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/scripts/capture_outbound_traffic.py",
+      "line": 18,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/scripts/evaluate_image_accuracy.py",
+      "line": 17,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "CORS_ORIGINS": [
+    {
+      "file": "backend/app/api/app.py",
+      "line": 44,
+      "kind": "os.getenv"
+    }
+  ],
+  "APP_ENV": [
+    {
+      "file": "backend/app/api/app.py",
+      "line": 56,
+      "kind": "os.getenv"
+    }
+  ],
+  "MAX_UPLOAD_MB": [
+    {
+      "file": "backend/app/api/routes_documents.py",
+      "line": 509,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/api/routes_documents.py",
+      "line": 621,
+      "kind": "os.getenv"
+    }
+  ],
+  "ENABLE_EXTERNAL_AI": [
+    {
+      "file": "backend/app/api/routes_documents.py",
+      "line": 1082,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 543,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 710,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/async_provider_pool.py",
+      "line": 93,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/async_provider_pool.py",
+      "line": 159,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/async_provider_pool.py",
+      "line": 293,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/async_provider_pool.py",
+      "line": 362,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 86,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 707,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/scripts/benchmark_concurrent_memory.py",
+      "line": 13,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/scripts/capture_outbound_traffic.py",
+      "line": 17,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/scripts/evaluate_image_accuracy.py",
+      "line": 16,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "CONFIG_DIR": [
+    {
+      "file": "backend/app/core/config_loader.py",
+      "line": 19,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/core/config_loader.py",
+      "line": 20,
+      "kind": "os.getenv"
+    }
+  ],
+  "JWT_SECRET": [
+    {
+      "file": "backend/app/core/jwt_auth.py",
+      "line": 16,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/core/settings.py",
+      "line": 163,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/core/auth.py",
+      "line": 160,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/core/jwt_auth.py",
+      "line": 48,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/core/jwt_auth.py",
+      "line": 52,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "DAILY_RESET_COOLDOWN_SECONDS": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 55,
+      "kind": "os.getenv"
+    }
+  ],
+  "DEFAULT_RETRY_DELAY_SECONDS": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 56,
+      "kind": "os.getenv"
+    }
+  ],
+  "GROQ_MODEL": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 80,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 690,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 348,
+      "kind": "os.getenv"
+    }
+  ],
+  "GEMINI_MODEL": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 84,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 523,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 609,
+      "kind": "os.getenv"
+    }
+  ],
+  "OLLAMA_BASE_URL": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 452,
+      "kind": "os.getenv"
+    }
+  ],
+  "OLLAMA_MODEL": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 453,
+      "kind": "os.getenv"
+    }
+  ],
+  "OLLAMA_RPM": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 454,
+      "kind": "os.getenv"
+    }
+  ],
+  "OLLAMA_CONCURRENCY": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 455,
+      "kind": "os.getenv"
+    }
+  ],
+  "GEMINI_RPM": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 524,
+      "kind": "os.getenv"
+    }
+  ],
+  "GEMINI_CONCURRENCY": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 525,
+      "kind": "os.getenv"
+    }
+  ],
+  "GEMINI_ALLOW_SENSITIVE": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 526,
+      "kind": "os.getenv"
+    }
+  ],
+  "GEMINI_API_KEY": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 551,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/async_provider_pool.py",
+      "line": 161,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/async_provider_pool.py",
+      "line": 364,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 145,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 605,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 711,
+      "kind": "os.getenv"
+    }
+  ],
+  "GROQ_RPM": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 691,
+      "kind": "os.getenv"
+    }
+  ],
+  "GROQ_CONCURRENCY": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 692,
+      "kind": "os.getenv"
+    }
+  ],
+  "GROQ_ALLOW_SENSITIVE": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 693,
+      "kind": "os.getenv"
+    }
+  ],
+  "GROQ_API_KEY": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 721,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/async_provider_pool.py",
+      "line": 95,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/async_provider_pool.py",
+      "line": 295,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 89,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 344,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 709,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/scratch/benchmark_fast_lane.py",
+      "line": 4,
+      "kind": "os.getenv"
+    }
+  ],
+  "USE_LOCAL_LLM": [
+    {
+      "file": "backend/app/core/providers.py",
+      "line": 902,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/scratch/test_forced_failures.py",
+      "line": 9,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "DATA_ENCRYPTION_KEY": [
+    {
+      "file": "backend/app/core/security.py",
+      "line": 92,
+      "kind": "os.environ.get"
+    },
+    {
+      "file": "backend/app/core/settings.py",
+      "line": 172,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/models/db.py",
+      "line": 57,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/models/db.py",
+      "line": 39,
+      "kind": "os.getenv"
+    }
+  ],
+  "SECRET_KEY": [
+    {
+      "file": "backend/app/core/settings.py",
+      "line": 163,
+      "kind": "os.getenv"
+    }
+  ],
+  "ENCRYPTION_KEY": [
+    {
+      "file": "backend/app/core/settings.py",
+      "line": 172,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/models/db.py",
+      "line": 57,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/models/db.py",
+      "line": 61,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/models/db.py",
+      "line": 39,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/models/db.py",
+      "line": 43,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "ENABLE_DEMO_TOKENS": [
+    {
+      "file": "backend/app/core/settings.py",
+      "line": 193,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/core/settings.py",
+      "line": 171,
+      "kind": "os.getenv"
+    }
+  ],
+  "DATABASE_URL": [
+    {
+      "file": "backend/app/models/db.py",
+      "line": 380,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/alembic/env.py",
+      "line": 30,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/models/db.py",
+      "line": 371,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/scratch/diag.py",
+      "line": 4,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/migrations/env.py",
+      "line": 30,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/tests/conftest.py",
+      "line": 23,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "LOCAL_LLM_URL": [
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 435,
+      "kind": "os.getenv"
+    }
+  ],
+  "LOCAL_LLM_MODEL": [
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 436,
+      "kind": "os.getenv"
+    }
+  ],
+  "OPENROUTER_API_KEY": [
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 531,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 710,
+      "kind": "os.getenv"
+    }
+  ],
+  "OPENROUTER_MODEL": [
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 535,
+      "kind": "os.getenv"
+    }
+  ],
+  "ANTHROPIC_API_KEY": [
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 712,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 771,
+      "kind": "os.getenv"
+    }
+  ],
+  "MODEL_NAME": [
+    {
+      "file": "backend/app/workers/vision_pipeline.py",
+      "line": 775,
+      "kind": "os.getenv"
+    }
+  ],
+  "DISABLE_LIFESPAN_WORKER": [
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/api/app.py",
+      "line": 51,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/scripts/trace_run.py",
+      "line": 10,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/tests/conftest.py",
+      "line": 24,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "ENVIRONMENT": [
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/core/auth.py",
+      "line": 128,
+      "kind": "os.getenv"
+    }
+  ],
+  "AUTH_ALLOW_ROLE_HEADER": [
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/core/auth.py",
+      "line": 133,
+      "kind": "os.getenv"
+    },
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/core/auth.py",
+      "line": 131,
+      "kind": "os.environ[...]"
+    },
+    {
+      "file": "backend/tests/test_api_v1.py",
+      "line": 195,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "AUTH_TOKENS": [
+    {
+      "file": "backend/docs/unsorted/backups/backup_pre_upgrade/app/core/auth.py",
+      "line": 139,
+      "kind": "os.getenv"
+    }
+  ],
+  "PYTHONPATH": [
+    {
+      "file": "backend/docs/unsorted/scratch/run_debug_server.py",
+      "line": 3,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "OMP_NUM_THREADS": [
+    {
+      "file": "backend/scripts/bench_ocr.py",
+      "line": 19,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "MKL_NUM_THREADS": [
+    {
+      "file": "backend/scripts/bench_ocr.py",
+      "line": 20,
+      "kind": "os.environ[...]"
+    }
+  ],
+  "X": [
+    {
+      "file": "backend/scripts/discover_env_vars.py",
+      "line": 11,
+      "kind": "process.env.X"
+    },
+    {
+      "file": "backend/scripts/discover_env_vars.py",
+      "line": 12,
+      "kind": "process.env['X']"
+    },
+    {
+      "file": "backend/scripts/discover_env_vars.py",
+      "line": 13,
+      "kind": "import.meta.env.X"
+    }
+  ],
+  "EVAL_SPLIT": [
+    {
+      "file": "backend/scripts/evaluation_runner.py",
+      "line": 35,
+      "kind": "os.getenv"
+    }
+  ],
+  "USER_PASSWORD": [
+    {
+      "file": "backend/scripts/manage_users.py",
+      "line": 25,
+      "kind": "os.getenv"
+    }
+  ],
+  "DEFAULT_USER_PASSWORD": [
+    {
+      "file": "backend/scripts/manage_users.py",
+      "line": 26,
+      "kind": "os.getenv"
+    }
+  ],
+  "ADMIN_PASSWORD": [
+    {
+      "file": "backend/scripts/manage_users.py",
+      "line": 88,
+      "kind": "os.getenv"
+    }
+  ],
+  "REVIEWER_PASSWORD": [
+    {
+      "file": "backend/scripts/manage_users.py",
+      "line": 89,
+      "kind": "os.getenv"
+    }
+  ],
+  "UPLOADER_PASSWORD": [
+    {
+      "file": "backend/scripts/manage_users.py",
+      "line": 90,
+      "kind": "os.getenv"
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 /** API client for frontend. */
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL
-  ? `${(import.meta as any).env.VITE_API_URL}/api`
+const rawApiUrl = (import.meta as any).env?.VITE_API_URL || (import.meta as any).env?.VITE_API_BASE_URL;
+const API_BASE = rawApiUrl
+  ? (rawApiUrl.endsWith('/api') ? rawApiUrl : `${rawApiUrl}/api`)
   : '/api';
 
 function getAuthHeader(): Record<string, string> {
@@ -41,6 +42,7 @@ export interface FieldItem {
   bbox?: number[] | null;
   is_sensitive?: boolean;
   detector_tag?: string | null;
+  masked_value?: string;
   is_unlabelled?: boolean;
   is_edited?: boolean;
 }
@@ -89,6 +91,7 @@ export interface FileItem {
   check_reasons?: string | null;
   document_summary?: string;
   tags?: string[];
+  raw_text?: string;
   raw_text_by_page?: Record<string, string>;
   layout_blocks?: any[];
   fields: FieldItem[];

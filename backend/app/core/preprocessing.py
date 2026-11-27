@@ -31,20 +31,19 @@ logger = logging.getLogger("core.preprocessing")
 # 1. Orientation Detection (0, 90, 180, 270 degrees)
 # ---------------------------------------------------------------------------
 def detect_orientation_angle(img_bgr: np.ndarray) -> int:
-    """Detect image orientation angle (0, 90, 180, 270) to correct upside-down or sideways scans.
+    """Detect image orientation angle (0, 90, 180, 270) by running fast reading at each angle.
     
-    Uses horizontal vs vertical projection variance and morphological text line analysis.
+    Chooses the orientation with the best reading score (readable word count & confidence).
     """
-    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY) if len(img_bgr.shape) == 3 else img_bgr
-    
     try:
         import pytesseract
 
         # Ensure tesseract executable and tessdata are discovered
         for possible_cmd in [
             os.getenv("TESSERACT_CMD"),
+            "C:/ml/backend/tools/tesseract/tesseract.exe",
             "C:/ml/tools/tesseract/tesseract.exe",
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "tools", "tesseract", "tesseract.exe")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "tools", "tesseract", "tesseract.exe")),
             "tesseract",
         ]:
             if possible_cmd and (os.path.exists(possible_cmd) or possible_cmd == "tesseract"):
@@ -53,46 +52,58 @@ def detect_orientation_angle(img_bgr: np.ndarray) -> int:
 
         for possible_tessdata in [
             os.getenv("TESSDATA_PREFIX"),
+            "C:/ml/backend/tools/tesseract/tessdata",
             "C:/ml/tools/tesseract/tessdata",
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "tools", "tesseract", "tessdata")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "tools", "tesseract", "tessdata")),
         ]:
             if possible_tessdata and os.path.exists(possible_tessdata):
                 os.environ["TESSDATA_PREFIX"] = possible_tessdata
                 break
 
-        osd = pytesseract.image_to_osd(gray, output_type=pytesseract.Output.DICT)
-        rot = int(osd.get("rotate", 0))
-        if rot in (90, 180, 270):
-            return rot
-    except Exception:
-        pass
+        scores: Dict[int, float] = {}
+        for ang in [0, 90, 180, 270]:
+            if ang == 0:
+                t_img = img_bgr
+            elif ang == 90:
+                t_img = cv2.rotate(img_bgr, cv2.ROTATE_90_CLOCKWISE)
+            elif ang == 180:
+                t_img = cv2.rotate(img_bgr, cv2.ROTATE_180)
+            elif ang == 270:
+                t_img = cv2.rotate(img_bgr, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
-    # Variance-based aspect and text line orientation check
-    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    
-    proj_h = np.sum(thresh, axis=1)
-    proj_v = np.sum(thresh, axis=0)
-    var_h = float(np.var(proj_h))
-    var_v = float(np.var(proj_v))
+            g = cv2.cvtColor(t_img, cv2.COLOR_BGR2GRAY) if len(t_img.shape) == 3 else t_img
+            h, w = g.shape[:2]
+            scale = min(1.0, 700.0 / max(h, w))
+            if scale < 1.0:
+                sg = cv2.resize(g, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+            else:
+                sg = g
 
-    # If vertical variance is significantly higher than horizontal variance, text is likely rotated 90 or 270
-    if var_v > var_h * 1.4:
-        # Check ink density in left vs right half to distinguish 90 vs 270
-        w = thresh.shape[1]
-        left_ink = np.sum(thresh[:, : w // 3])
-        right_ink = np.sum(thresh[:, 2 * w // 3 :])
-        if right_ink > left_ink * 1.5:
-            return 270
-        return 90
+            # Fast reading pass with PSM 6
+            d = pytesseract.image_to_data(sg, config="--psm 6", output_type=pytesseract.Output.DICT)
+            words = []
+            confs = []
+            for i in range(len(d["text"])):
+                txt = d["text"][i].strip()
+                c_val = int(d["conf"][i]) if i < len(d["conf"]) else -1
+                if c_val >= 20 and len(txt) >= 2 and any(ch.isalnum() for ch in txt):
+                    words.append(txt)
+                    confs.append(c_val)
 
-    # Upside-down check (180 degrees)
-    # 1. Document title/header ink concentration is typically in the top 25% of upright documents
-    h, w = thresh.shape
-    top_quarter = np.sum(thresh[: h // 4, :])
-    bot_quarter = np.sum(thresh[3 * h // 4 :, :])
-    
-    if bot_quarter > top_quarter * 2.8 and top_quarter > 0:
-        return 180
+            cnt = len(words)
+            avg_c = (sum(confs) / cnt) if cnt > 0 else 0.0
+            # Higher score for more readable words with higher confidence
+            scores[ang] = float(cnt) * (avg_c / 100.0)
+
+            # Optimization: If angle 0 has very strong reading (>= 25 clear words, avg_conf >= 85), page is upright
+            if ang == 0 and cnt >= 25 and avg_c >= 85.0:
+                return 0
+
+        best_ang = max(scores, key=lambda k: scores[k])
+        if scores[best_ang] > 0.0:
+            return best_ang
+    except Exception as e:
+        logger.debug(f"Orientation scoring failed: {e}")
 
     return 0
 
@@ -154,14 +165,21 @@ def detect_skew_angle(img_bgr: np.ndarray) -> float:
 
 
 def deskew_and_rescale(img_bgr: np.ndarray, skew_angle: float, max_dim: int = 1400) -> np.ndarray:
-    """Deskew image if angle >= 0.5 degrees and downscale longest edge to max_dim."""
+    """Deskew image if angle >= 0.5 degrees with bounding box expansion, and downscale longest edge to max_dim."""
     h, w = img_bgr.shape[:2]
     result = img_bgr
 
     if 0.5 <= abs(skew_angle) <= 45.0:
         center = (w // 2, h // 2)
         m = cv2.getRotationMatrix2D(center, skew_angle, 1.0)
-        result = cv2.warpAffine(result, m, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+        # Full bounding expansion so corners and text are NEVER clipped
+        cos_val = np.abs(m[0, 0])
+        sin_val = np.abs(m[0, 1])
+        new_w = int((h * sin_val) + (w * cos_val))
+        new_h = int((h * cos_val) + (w * sin_val))
+        m[0, 2] += (new_w / 2.0) - center[0]
+        m[1, 2] += (new_h / 2.0) - center[1]
+        result = cv2.warpAffine(result, m, (new_w, new_h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT, borderValue=(255, 255, 255))
 
     cur_max = max(result.shape[:2])
     if cur_max > max_dim:
@@ -177,25 +195,28 @@ def deskew_and_rescale(img_bgr: np.ndarray, skew_angle: float, max_dim: int = 14
 # 3. Comprehensive Quality Assessment and Pre-processing
 # ---------------------------------------------------------------------------
 def assess_page_quality(img_bgr: np.ndarray) -> Dict[str, Any]:
-    """Measure blur, noise, contrast, orientation, and skew to evaluate page quality."""
-    gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY) if len(img_bgr.shape) == 3 else img_bgr
+    """Measure orientation, then upright skew, blur, noise, and contrast to evaluate page quality."""
+    # 1. Orientation first across 0°, 90°, 180°, 270°
+    orientation = detect_orientation_angle(img_bgr)
+    upright = auto_rotate_image(img_bgr, orientation)
+
+    gray = cv2.cvtColor(upright, cv2.COLOR_BGR2GRAY) if len(upright.shape) == 3 else upright
     
-    # 1. Blur score via Laplacian variance
+    # 2. Blur score via Laplacian variance
     blur_score = float(cv2.Laplacian(gray, cv2.CV_64F).var())
     is_blurred = blur_score < 70.0
 
-    # 2. Speckle noise count in mid-tones
+    # 3. Speckle noise count in mid-tones
     hist = np.histogram(gray, bins=10)[0]
     mid_noise = int(sum(hist[1:5]))
     is_noisy = mid_noise > 22000
 
-    # 3. Contrast check
+    # 4. Contrast check
     contrast_std = float(np.std(gray))
     is_low_contrast = contrast_std < 40.0
 
-    # 4. Orientation & Skew
-    orientation = detect_orientation_angle(img_bgr)
-    skew = detect_skew_angle(img_bgr)
+    # 5. Skew detection on the upright page
+    skew = detect_skew_angle(upright)
     is_skewed = abs(skew) >= 1.0
 
     # Determine condition text label
@@ -249,15 +270,38 @@ def preprocess_image(img_bgr: np.ndarray) -> Tuple[np.ndarray, Dict[str, Any]]:
     was_denoised = False
     was_normalized = False
 
-    # 3. Denoising if noisy
+    # 3. Small image / text height scaling (ensure text is at least ~30px tall)
+    try:
+        gray_tmp = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY) if len(result.shape) == 3 else result
+        _, thresh_tmp = cv2.threshold(gray_tmp, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(thresh_tmp, connectivity=8)
+        char_heights = [
+            stats[i, cv2.CC_STAT_HEIGHT]
+            for i in range(1, num_labels)
+            if 4 <= stats[i, cv2.CC_STAT_HEIGHT] <= 250 and 3 <= stats[i, cv2.CC_STAT_WIDTH] <= 300
+        ]
+        if char_heights:
+            med_char_h = float(np.median(char_heights))
+            if med_char_h < 28.0:
+                scale_up = min(3.5, 30.0 / max(6.0, med_char_h))
+                if scale_up > 1.1:
+                    new_w = int(result.shape[1] * scale_up)
+                    new_h = int(result.shape[0] * scale_up)
+                    result = cv2.resize(result, (new_w, new_h), interpolation=cv2.INTER_CUBIC)
+    except Exception:
+        pass
+
+    # 4. Denoising: gentle bilateral filter to reduce speckle noise without destroying thin character strokes
+    was_denoised = False
     if quality["is_noisy"]:
         if len(result.shape) == 3:
-            result = cv2.bilateralFilter(result, 5, 40, 40)
+            result = cv2.bilateralFilter(result, 5, 35, 35)
         else:
-            result = cv2.medianBlur(result, 3)
+            result = cv2.bilateralFilter(result, 5, 35, 35)
         was_denoised = True
 
-    # 4. Contrast normalization if low contrast
+    # 5. Contrast normalization if low contrast
+    was_normalized = False
     if quality["is_low_contrast"]:
         if len(result.shape) == 3:
             lab = cv2.cvtColor(result, cv2.COLOR_BGR2LAB)
@@ -271,6 +315,9 @@ def preprocess_image(img_bgr: np.ndarray) -> Tuple[np.ndarray, Dict[str, Any]]:
             result = clahe.apply(result)
         was_normalized = True
 
+    pad = 0
+    # Do not inject artificial borders that degrade OCR page segmentation
+
     metadata = {
         "condition": quality["condition"],
         "orientation_degrees": rot_angle,
@@ -281,6 +328,7 @@ def preprocess_image(img_bgr: np.ndarray) -> Tuple[np.ndarray, Dict[str, Any]]:
         "contrast_normalized": was_normalized,
         "confidence_penalty": quality["confidence_penalty"],
         "dimensions": (result.shape[1], result.shape[0]),
+        "pad": pad,
     }
     return result, metadata
 

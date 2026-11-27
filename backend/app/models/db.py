@@ -366,6 +366,9 @@ _SessionFactory = None
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
     """Enable SQLite WAL mode, normal synchronous, and 30s busy timeout for high concurrency."""
+    # Only execute SQLite pragmas on SQLite connections
+    if "sqlite" not in type(dbapi_connection).__module__.lower():
+        return
     try:
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA journal_mode=WAL")
@@ -377,7 +380,22 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 
 
 def get_db_url() -> str:
-    url = os.getenv("DATABASE_URL", "sqlite:///./data/ecm_pipeline.db")
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        try:
+            from app.core.settings import get_app_settings
+            url = get_app_settings().DATABASE_URL
+        except Exception:
+            pass
+    if not url:
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+            url = os.getenv("DATABASE_URL")
+        except Exception:
+            pass
+    if not url:
+        url = "sqlite:///./data/ecm_pipeline.db"
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
     return url
@@ -385,11 +403,15 @@ def get_db_url() -> str:
 
 def init_db(db_url: str = None):
     global _engine, _SessionFactory
-    if db_url is None and _engine is not None:
-        return _engine
+    target_url = db_url or get_db_url()
+    if _engine is not None:
+        try:
+            if str(_engine.url) == target_url:
+                return _engine
+        except Exception:
+            pass
 
-    if db_url is None:
-        db_url = get_db_url()
+    db_url = target_url
 
     if db_url.startswith("sqlite:///"):
         path = db_url.replace("sqlite:///", "")

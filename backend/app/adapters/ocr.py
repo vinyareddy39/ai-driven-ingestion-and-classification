@@ -437,55 +437,7 @@ class TrOCREngine(OCREngine):
         )
 
     def extract_text(self, file_bytes: bytes, file_type: str, file_name: Optional[str] = None) -> OCRResult:
-        cached = self._get_cached_result(file_bytes)
-        if cached is not None:
-            return cached
-
-        # Check if val_v3 disk cache has precomputed OCR result
-        stem = Path(file_name).stem if file_name else None
-        if stem:
-            cache_file = Path("data/ocr_cache_val_v3.json")
-            if cache_file.exists():
-                try:
-                    if not hasattr(self, "_disk_val_cache"):
-                        with open(cache_file, "r", encoding="utf-8") as f:
-                            self._disk_val_cache = json.load(f)
-                    if stem in self._disk_val_cache:
-                        c_text = self._disk_val_cache[stem]["full_text"]
-                        bboxes = []
-                        y_pos = 50.0
-                        for line in c_text.splitlines():
-                            line_str = line.strip()
-                            if not line_str:
-                                continue
-                            x_pos = 40.0
-                            for w in line_str.split():
-                                w_w = max(20.0, len(w) * 8.0)
-                                bboxes.append(BoundingBox(
-                                    text=w,
-                                    x0=x_pos,
-                                    y0=y_pos,
-                                    x1=x_pos + w_w,
-                                    y1=y_pos + 16.0,
-                                    page=1,
-                                    confidence=0.96
-                                ))
-                                x_pos += w_w + 6.0
-                            y_pos += 24.0
-                        res = OCRResult(
-                            full_text=c_text,
-                            pages_count=1,
-                            bounding_boxes=bboxes,
-                            searchable_pdf_bytes=file_bytes,
-                            engine_name="OCR",
-                            engine_version=self.engine_version,
-                            page_methods=["ocr"],
-                        )
-                        self._save_cached_result(file_bytes, res)
-                        return res
-                except Exception:
-                    pass
-
+        # Rule 6: No stored answers. Every upload is read again from scratch.
         file_type = file_type.lower().replace(".", "")
         if file_type == "pdf":
             res = self._parse_pdf(file_bytes)
@@ -509,7 +461,6 @@ class TrOCREngine(OCREngine):
                     page_methods=["fallback"],
                 )
 
-        self._save_cached_result(file_bytes, res)
         return res
 
     def extract_bounding_boxes(self, file_bytes: bytes, file_type: str) -> List[BoundingBox]:
@@ -558,8 +509,9 @@ class HybridOCREngine(OCREngine):
                     # Auto-detect local tesseract binary
                     for possible_cmd in [
                         os.getenv("TESSERACT_CMD"),
+                        "C:/ml/backend/tools/tesseract/tesseract.exe",
                         "C:/ml/tools/tesseract/tesseract.exe",
-                        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "tools", "tesseract", "tesseract.exe")),
+                        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "tools", "tesseract", "tesseract.exe")),
                         "tesseract",
                     ]:
                         if possible_cmd and (os.path.exists(possible_cmd) or possible_cmd == "tesseract"):
@@ -568,8 +520,9 @@ class HybridOCREngine(OCREngine):
 
                     for possible_tessdata in [
                         os.getenv("TESSDATA_PREFIX"),
+                        "C:/ml/backend/tools/tesseract/tessdata",
                         "C:/ml/tools/tesseract/tessdata",
-                        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "tools", "tesseract", "tessdata")),
+                        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "tools", "tesseract", "tessdata")),
                     ]:
                         if possible_tessdata and os.path.exists(possible_tessdata):
                             os.environ["TESSDATA_PREFIX"] = possible_tessdata
@@ -577,16 +530,34 @@ class HybridOCREngine(OCREngine):
 
                     pix = page.get_pixmap()
                     img = Image.open(io.BytesIO(pix.tobytes("png")))
-                    ocr_text = pytesseract.image_to_string(img).strip()
-                    data = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
-                    for j in range(len(data['text'])):
-                        word = data['text'][j].strip()
+                    
+                    # Pass 1: Primary extraction with PSM 6 (uniform block of text)
+                    data1 = pytesseract.image_to_data(img, config="--psm 6", output_type=pytesseract.Output.DICT)
+                    
+                    # Pass 2: Secondary extraction with PSM 4 (single column variable sizes) for two-pass validation
+                    try:
+                        data2 = pytesseract.image_to_data(img, config="--psm 4", output_type=pytesseract.Output.DICT)
+                        pass2_words = [data2['text'][k].strip() for k in range(len(data2['text'])) if data2['text'][k].strip()]
+                        pass2_text = " ".join(pass2_words)
+                    except Exception:
+                        pass2_text = ""
+
+                    ocr_words = []
+                    for j in range(len(data1['text'])):
+                        word = data1['text'][j].strip()
                         if word:
-                            bx = float(data['left'][j])
-                            by = float(data['top'][j])
-                            bw = float(data['width'][j])
-                            bh = float(data['height'][j])
-                            bboxes.append(BoundingBox(text=word, x0=bx, y0=by, x1=bx+bw, y1=by+bh, page=i + 1))
+                            bx = float(data1['left'][j])
+                            by = float(data1['top'][j])
+                            bw = float(data1['width'][j])
+                            bh = float(data1['height'][j])
+                            raw_conf = data1.get('conf', [])[j] if 'conf' in data1 else -1
+                            try:
+                                conf_val = max(0.20, min(1.0, float(raw_conf) / 100.0)) if float(raw_conf) >= 0 else 0.90
+                            except Exception:
+                                conf_val = 0.90
+                            bboxes.append(BoundingBox(text=word, x0=bx, y0=by, x1=bx+bw, y1=by+bh, page=i + 1, confidence=conf_val))
+                            ocr_words.append(word)
+                    ocr_text = " ".join(ocr_words)
                     methods.append("tesseract")
                 except Exception:
                     # When Tesseract is unavailable and external AI is not allowed, avoid heavy TrOCR if restricted

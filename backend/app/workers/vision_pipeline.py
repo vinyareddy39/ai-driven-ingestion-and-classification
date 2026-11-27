@@ -254,6 +254,15 @@ def render_page_to_png_bytes(file_path: str, page_num: int = 1, dpi: int = 150) 
         doc.close()
         return png_bytes
     else:
+        try:
+            img_bgr = cv2.imread(file_path)
+            if img_bgr is not None:
+                from app.core.preprocessing import preprocess_image
+                prep_img, _ = preprocess_image(img_bgr)
+                _, png_buf = cv2.imencode(".png", prep_img)
+                return png_buf.tobytes()
+        except Exception:
+            pass
         with open(file_path, "rb") as f:
             return f.read()
 

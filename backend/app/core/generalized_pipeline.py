@@ -40,6 +40,48 @@ class GeneralizedDocumentPipeline:
         # 1. Layout-Aware Text & Field Extraction
         extraction = self.layout_extractor.extract_from_file(file_path)
 
+        total_words = len(extraction.full_text.split())
+        valid_fields = [f for f in extraction.fields if f.get("label", "").strip()]
+        has_noise_level = bool(extraction.page_conditions and any(c.get("noise_level", 0) > 40000 for c in extraction.page_conditions))
+
+        # Rule 4 & 5: Empty reading after trying every orientation & contrast attempt
+        # Blank page or unreadable noise page with no valid labelled fields
+        if total_words == 0 or (len(valid_fields) == 0 and (total_words < 15 or has_noise_level)):
+            page_qual = "clean"
+            if extraction.page_conditions:
+                conds = [c.get("condition", "clean") for c in extraction.page_conditions]
+                page_qual = conds[0] if len(set(conds)) == 1 else ", ".join(conds)
+            return {
+                "failed": True,
+                "status": "Failed",
+                "error": "no readable text found (tried 0°, 90°, 180°, 270° and contrast normalization)",
+                "review_reasons": ["no readable text found (tried 0°, 90°, 180°, 270° and contrast normalization)"],
+                "needs_review": True,
+                "type": "Could not read",
+                "type_confidence": 0.0,
+                "fields": [],
+                "table_rows": [],
+                "tables": [],
+                "regions": extraction.regions,
+                "page_quality": page_qual,
+                "summary": "Document processing failed: no readable text found.",
+                "tags": ["unreadable", "manual-triage"],
+                "routing": {
+                    "destination": "MANUAL_TRIAGE_QUEUE",
+                    "is_restricted": False,
+                    "review_queue": "MANUAL_HUMAN_REVIEW_QUEUE",
+                    "sla_hours": 24,
+                },
+                "sensitive_status": "not scanned: no text",
+                "sensitive_findings": [],
+                "detectors_run": [],
+                "preview_bytes": extraction.preview_bytes,
+                "page_count": extraction.page_count,
+                "page_conditions": extraction.page_conditions,
+                "pipeline_version": pipeline_version,
+                "registry_version": registry_version,
+            }
+
         # 2. Arithmetic & Format Sanity Checks
         checked_fields, sanity_reasons = run_sanity_checks(
             fields=extraction.fields,
@@ -185,15 +227,24 @@ class GeneralizedDocumentPipeline:
         # 8. Document Summary, Tags, Quality, and Language
         title_txt = extraction.title_block.get("text") if extraction.title_block else ""
         date_txt = extraction.dates[0]["date"] if extraction.dates else ""
+        summary_parts = []
         if doc_type != "unknown":
-            summary = f"{doc_type.replace('_', ' ').title()} document"
-            if title_txt:
-                summary += f" issued by {title_txt}"
-            if date_txt:
-                summary += f" on {date_txt}"
-            summary += "."
+            summary_parts.append(f"{doc_type.replace('_', ' ').title()} document")
         else:
-            summary = "Unclassified business document requiring manual reviewer assignment."
+            summary_parts.append("Business document")
+
+        # Never leak identifiers in summary
+        if title_txt and len(title_txt.split()) <= 5:
+            if not any(s.get("raw_value") in title_txt for s in sensitive_findings if s.get("raw_value")):
+                summary_parts.append(f"titled '{title_txt}'")
+        if date_txt:
+            summary_parts.append(f"dated {date_txt}")
+
+        summary = " ".join(summary_parts) + "."
+        for s in sensitive_findings:
+            raw_s = str(s.get("raw_value", ""))
+            if raw_s and raw_s in summary:
+                summary = summary.replace(raw_s, s.get("masked_value", "[RESTRICTED]"))
 
         tags = [doc_type.replace("_", " ")]
         if extraction.is_digital_text:
@@ -217,6 +268,22 @@ class GeneralizedDocumentPipeline:
             lbl_conf = f.get("label_confidence")
             if lbl_conf is not None:
                 lbl_conf = round(float(lbl_conf), 4)
+
+            # Check if this field holds sensitive data
+            f_val = str(f.get("value", "")).strip()
+            f_lbl = str(f.get("label", "")).strip().lower()
+            is_sens = False
+            sens_tag = None
+            masked_val = None
+            for s in sensitive_findings:
+                raw_s = str(s.get("raw_value", "")).strip()
+                s_lbl = str(s.get("location", {}).get("label", "")).strip().lower()
+                if raw_s and (raw_s in f_val or (s_lbl and s_lbl == f_lbl)):
+                    is_sens = True
+                    sens_tag = s.get("type", "SENSITIVE")
+                    masked_val = s.get("masked_value")
+                    break
+
             clean_fields.append({
                 "label": f["label"],
                 "original_label": f.get("original_label", f["label"]),
@@ -232,6 +299,9 @@ class GeneralizedDocumentPipeline:
                 "source": f.get("source", "document"),
                 "page": f["page"],
                 "bbox": f.get("bbox"),
+                "is_sensitive": is_sens,
+                "detector_tag": sens_tag,
+                "masked_value": masked_val,
                 "needs_review": f.get("needs_review", False),
                 "reason": f.get("reason", ""),
                 "suggested_label": f.get("suggested_label", ""),
@@ -285,6 +355,7 @@ class GeneralizedDocumentPipeline:
             "codes": extraction.codes,
             "sensitive_findings": clean_sensitive,
             "detectors_run": detectors_run,
+            "sensitive_status": "not scanned: no text" if not extraction.full_text.strip() else f"{len(detectors_run) if isinstance(detectors_run, list) else detectors_run} detectors run, {len(sensitive_findings)} findings",
             "routing": routing_output,
             "needs_review": needs_review,
             "review_reasons": list(dict.fromkeys(review_reasons)),
@@ -294,4 +365,5 @@ class GeneralizedDocumentPipeline:
             "layout_blocks": extraction.layout_blocks,
             "title_block": extraction.title_block.get("text") if extraction.title_block else None,
             "dates": [d["date"] for d in extraction.dates],
+            "preview_bytes": extraction.preview_bytes,
         }

@@ -94,6 +94,7 @@ class ExtractionOutput:
     pages_text: Dict[int, str] = field(default_factory=dict)
     key_details: List[Dict[str, Any]] = field(default_factory=list)
     more_details: List[Dict[str, Any]] = field(default_factory=list)
+    preview_bytes: Optional[bytes] = None
 
 
 DATE_REGEX = re.compile(
@@ -303,7 +304,9 @@ class LayoutAwareExtractor:
             doc_page=None,
             page_img=prep_img,
         )
-        return self._build_extraction_output(page_blocks, False, 1, [page_condition], page_dims, img_regions)
+        out = self._build_extraction_output(page_blocks, False, 1, [page_condition], page_dims, img_regions)
+        out.preview_bytes = png_buf.tobytes()
+        return out
 
     def _extract_from_text_file(self, txt_path: str) -> ExtractionOutput:
         try:
@@ -363,168 +366,184 @@ class LayoutAwareExtractor:
     # Layout Block Construction & Role Classification
     # -------------------------------------------------------------------------
     def _parse_digital_pdf_blocks(self, raw_blocks: List[Dict[str, Any]], page_num: int, page_height: float) -> List[LayoutBlock]:
+        """Convert digital PDF text into LayoutBlocks using median word height baseline clustering."""
+        all_spans_data = []
+        for b in raw_blocks:
+            if b.get("type") != 0:
+                continue
+            for rl in b.get("lines", []):
+                for s in rl.get("spans", []):
+                    text = s.get("text", "")
+                    if text.strip():
+                        all_spans_data.append(s)
+
+        if not all_spans_data:
+            return []
+
+        # Step 3: Two words belong to the same line when vertical centres are within half median word height
+        heights = [max(1.0, float(s.get("bbox", (0, 0, 0, 0))[3]) - float(s.get("bbox", (0, 0, 0, 0))[1])) for s in all_spans_data]
+        med_h = float(np.median(heights)) if heights else 12.0
+        vert_tol = 0.5 * med_h
+
+        spans_sorted = sorted(
+            all_spans_data,
+            key=lambda s: ((float(s.get("bbox", (0, 0, 0, 0))[1]) + float(s.get("bbox", (0, 0, 0, 0))[3])) / 2.0, float(s.get("bbox", (0, 0, 0, 0))[0]))
+        )
+
+        clusters: List[Dict[str, Any]] = []
+        for s in spans_sorted:
+            sb = s.get("bbox", (0, 0, 0, 0))
+            sy = (float(sb[1]) + float(sb[3])) / 2.0
+            best_c = None
+            best_dist = 999999.0
+            for c in clusters:
+                dist = abs(sy - c["y_center"])
+                if dist <= vert_tol and dist < best_dist:
+                    best_dist = dist
+                    best_c = c
+            if best_c is not None:
+                best_c["spans"].append(s)
+                best_c["y_center"] = sum((float(item.get("bbox", (0, 0, 0, 0))[1]) + float(item.get("bbox", (0, 0, 0, 0))[3])) / 2.0 for item in best_c["spans"]) / len(best_c["spans"])
+            else:
+                clusters.append({"y_center": sy, "spans": [s]})
+
+        clusters.sort(key=lambda c: c["y_center"])
+
+        layout_lines: List[LayoutLine] = []
+        for c in clusters:
+            c["spans"].sort(key=lambda s: float(s.get("bbox", (0, 0, 0, 0))[0]))
+            spans: List[LayoutSpan] = []
+            for s in c["spans"]:
+                flags = s.get("flags", 0)
+                is_bold = bool(flags & 2 ** 4) or "bold" in s.get("font", "").lower()
+                is_italic = bool(flags & 2 ** 1) or "italic" in s.get("font", "").lower()
+                spans.append(LayoutSpan(
+                    text=s.get("text", "").strip(),
+                    bbox=tuple(float(v) for v in s.get("bbox", (0, 0, 0, 0))),
+                    font_size=float(s.get("size", 10.0)),
+                    is_bold=is_bold,
+                    is_italic=is_italic,
+                    font_name=s.get("font", "Unknown"),
+                    confidence=self.embedded_conf,
+                    page=page_num,
+                ))
+
+            parts = []
+            for s_idx, sp in enumerate(spans):
+                if s_idx > 0 and sp.bbox[0] - spans[s_idx - 1].bbox[2] >= 3.0:
+                    parts.append(" ")
+                parts.append(sp.text)
+            line_text = "".join(parts).strip()
+            if not line_text:
+                continue
+
+            x0 = min(sp.bbox[0] for sp in spans)
+            y0 = min(sp.bbox[1] for sp in spans)
+            x1 = max(sp.bbox[2] for sp in spans)
+            y1 = max(sp.bbox[3] for sp in spans)
+            max_size = max(sp.font_size for sp in spans)
+            min_conf = min(sp.confidence for sp in spans)
+
+            layout_lines.append(LayoutLine(
+                spans=spans,
+                text=line_text,
+                bbox=(x0, y0, x1, y1),
+                font_size=max_size,
+                confidence=min_conf,
+                page=page_num,
+                y_center=(y0 + y1) / 2.0,
+            ))
+
         blocks: List[LayoutBlock] = []
         reading_order = 1
-
-        for b in raw_blocks:
-            if b.get("type") != 0:  # Not a text block
-                continue
-
-            # Group raw lines that share the same horizontal baseline into a single visual line
-            raw_lines = b.get("lines", [])
-            line_groups: List[List[Dict[str, Any]]] = []
-            for rl in raw_lines:
-                ry0 = rl.get("bbox", (0, 0, 0, 0))[1]
-                matched_grp = None
-                for grp in line_groups:
-                    gy0 = grp[0].get("bbox", (0, 0, 0, 0))[1]
-                    if abs(ry0 - gy0) <= 3.5:
-                        matched_grp = grp
-                        break
-                if matched_grp is not None:
-                    matched_grp.append(rl)
-                else:
-                    line_groups.append([rl])
-
-            lines: List[LayoutLine] = []
-            for grp in line_groups:
-                spans: List[LayoutSpan] = []
-                for rl in grp:
-                    for s in rl.get("spans", []):
-                        text = s.get("text", "")
-                        if not text.strip():
-                            continue
-                        flags = s.get("flags", 0)
-                        is_bold = bool(flags & 2 ** 4) or "bold" in s.get("font", "").lower()
-                        is_italic = bool(flags & 2 ** 1) or "italic" in s.get("font", "").lower()
-                        spans.append(LayoutSpan(
-                            text=text,
-                            bbox=tuple(float(c) for c in s.get("bbox", (0, 0, 0, 0))),
-                            font_size=float(s.get("size", 10.0)),
-                            is_bold=is_bold,
-                            is_italic=is_italic,
-                            font_name=s.get("font", "Unknown"),
-                            confidence=self.embedded_conf,
-                            page=page_num,
-                        ))
-
-                if spans:
-                    spans.sort(key=lambda sp: sp.bbox[0])
-                    parts = []
-                    for s_idx, sp in enumerate(spans):
-                        if s_idx > 0 and sp.bbox[0] - spans[s_idx - 1].bbox[2] >= 3.0:
-                            parts.append(" ")
-                        parts.append(sp.text)
-                    line_text = "".join(parts).strip()
-                    x0 = min(s.bbox[0] for s in spans)
-                    y0 = min(s.bbox[1] for s in spans)
-                    x1 = max(s.bbox[2] for s in spans)
-                    y1 = max(s.bbox[3] for s in spans)
-                    avg_size = sum(s.font_size for s in spans) / len(spans)
-                    lines.append(LayoutLine(
-                        spans=spans,
-                        text=line_text,
-                        bbox=(x0, y0, x1, y1),
-                        font_size=avg_size,
-                        confidence=self.embedded_conf,
-                        page=page_num,
-                        y_center=(y0 + y1) / 2.0,
-                    ))
-
-            if not lines:
-                continue
-
-            block_text = "\n".join(l.text for l in lines)
-            bx0 = min(l.bbox[0] for l in lines)
-            by0 = min(l.bbox[1] for l in lines)
-            bx1 = max(l.bbox[2] for l in lines)
-            by1 = max(l.bbox[3] for l in lines)
-            max_size = max(l.font_size for l in lines)
-            is_bold_block = any(s.is_bold for l in lines for s in l.spans)
-            style = "bold" if is_bold_block else ("heading" if max_size >= 14.0 else "regular")
-
-            # Determine block role
-            role = self._classify_block_role(lines, (bx0, by0, bx1, by1), max_size, is_bold_block, page_height)
-
+        for line in layout_lines:
+            is_bold_line = any(s.is_bold for s in line.spans)
+            style = "bold" if is_bold_line else ("heading" if line.font_size >= 14.0 else "regular")
+            role = self._classify_block_role([line], line.bbox, line.font_size, is_bold_line, page_height)
             blocks.append(LayoutBlock(
-                lines=lines,
-                text=block_text,
-                bbox=(bx0, by0, bx1, by1),
-                font_size=max_size,
+                lines=[line],
+                text=line.text,
+                bbox=line.bbox,
+                font_size=line.font_size,
                 style=style,
                 reading_order=reading_order,
                 block_role=role,
                 page=page_num,
-                confidence=self.embedded_conf,
+                confidence=line.confidence,
             ))
             reading_order += 1
 
         return blocks
 
     def _parse_ocr_into_blocks(self, ocr_res: Any, page_num: int, page_height: float, penalty: float) -> List[LayoutBlock]:
-        """Convert OCR bounding boxes into identical LayoutBlock structure."""
+        """Convert OCR bounding boxes into LayoutBlocks using median word height baseline clustering."""
         if not ocr_res.bounding_boxes:
             return []
 
-        # Sort boxes by y0 then x0
-        sorted_boxes = sorted(ocr_res.bounding_boxes, key=lambda b: (b.y0, b.x0))
-        lines_words: List[List[Any]] = []
-        curr_line: List[Any] = []
-        curr_y = -1.0
+        boxes = list(ocr_res.bounding_boxes)
+        heights = [max(1.0, float(b.y1 - b.y0)) for b in boxes]
+        med_h = float(np.median(heights)) if heights else 12.0
+        vert_tol = 0.5 * med_h
 
-        for b in sorted_boxes:
-            b_y = (b.y0 + b.y1) / 2.0
-            h = max(1.0, b.y1 - b.y0)
-            if not curr_line:
-                curr_line.append(b)
-                curr_y = b_y
+        # Sort words primarily by vertical center
+        boxes_sorted = sorted(boxes, key=lambda b: (float(b.y0 + b.y1) / 2.0, float(b.x0)))
+
+        clusters: List[Dict[str, Any]] = []
+        for b in boxes_sorted:
+            by = (float(b.y0) + float(b.y1)) / 2.0
+            best_c = None
+            best_dist = 999999.0
+            for c in clusters:
+                dist = abs(by - c["y_center"])
+                if dist <= vert_tol and dist < best_dist:
+                    best_dist = dist
+                    best_c = c
+            if best_c is not None:
+                best_c["words"].append(b)
+                best_c["y_center"] = sum((float(item.y0) + float(item.y1)) / 2.0 for item in best_c["words"]) / len(best_c["words"])
             else:
-                if abs(b_y - curr_y) <= (h * 0.5):
-                    curr_line.append(b)
-                    curr_y = sum((item.y0 + item.y1) / 2.0 for item in curr_line) / len(curr_line)
-                else:
-                    lines_words.append(curr_line)
-                    curr_line = [b]
-                    curr_y = b_y
-        if curr_line:
-            lines_words.append(curr_line)
+                clusters.append({"y_center": by, "words": [b]})
+
+        clusters.sort(key=lambda c: c["y_center"])
 
         layout_lines: List[LayoutLine] = []
-        for l_boxes in lines_words:
-            l_boxes.sort(key=lambda b: b.x0)
+        for c in clusters:
+            c["words"].sort(key=lambda b: float(b.x0))
             spans = []
-            for b in l_boxes:
-                conf = max(0.20, float(b.confidence) - penalty)
+            for b in c["words"]:
+                raw_c = getattr(b, "confidence", 1.0)
+                conf = max(0.20, float(raw_c) - penalty)
                 spans.append(LayoutSpan(
                     text=b.text,
-                    bbox=(b.x0, b.y0, b.x1, b.y1),
-                    font_size=max(8.0, b.y1 - b.y0),
+                    bbox=(float(b.x0), float(b.y0), float(b.x1), float(b.y1)),
+                    font_size=max(8.0, float(b.y1 - b.y0)),
                     is_bold=False,
                     is_italic=False,
                     font_name="OCR",
                     confidence=conf,
                     page=page_num,
                 ))
-            line_text = " ".join(s.text for s in spans)
+            line_text = " ".join(s.text for s in spans).strip()
+            if not line_text:
+                continue
             x0 = min(s.bbox[0] for s in spans)
             y0 = min(s.bbox[1] for s in spans)
             x1 = max(s.bbox[2] for s in spans)
             y1 = max(s.bbox[3] for s in spans)
-            conf = sum(s.confidence for s in spans) / len(spans)
+            lowest_conf = min(s.confidence for s in spans)
             layout_lines.append(LayoutLine(
                 spans=spans,
                 text=line_text,
                 bbox=(x0, y0, x1, y1),
                 font_size=max(s.font_size for s in spans),
-                confidence=conf,
+                confidence=lowest_conf,
                 page=page_num,
                 y_center=(y0 + y1) / 2.0,
             ))
 
-        # Group lines into blocks
         blocks: List[LayoutBlock] = []
         reading_order = 1
-        for idx, line in enumerate(layout_lines):
+        for line in layout_lines:
             role = self._classify_block_role([line], line.bbox, line.font_size, False, page_height)
             blocks.append(LayoutBlock(
                 lines=[line],
@@ -798,7 +817,8 @@ class LayoutAwareExtractor:
                         else:
                             break
 
-                    if len(candidate_table_lines) >= 2:
+                    # Table logic only when at least three consecutive data rows with consistent column positions and a header row (>= 4 lines)
+                    if len(candidate_table_lines) >= 4:
                         hdr_line, hdr_cells = candidate_table_lines[0]
                         data_lines = candidate_table_lines[1:]
 
@@ -913,9 +933,9 @@ class LayoutAwareExtractor:
         if not text:
             return None
 
-        # 1. Standard punctuation separators: ": ", " = ", " - ", "\t"
+        # 1. Standard punctuation separators: ":", "=", "-", em-dash, en-dash, tab, dot leader
         match = None
-        for pattern in [r":\s+", r"\s+=\s+", r"\s+-\s+", r"\t+"]:
+        for pattern in [r":\s*", r"\s+=\s*", r"\s+-\s+", r"\s+[—–]\s+", r"\s*\.{2,}\s*", r"\t+"]:
             m = re.search(pattern, text)
             if m:
                 if ":" in m.group(0):
@@ -928,35 +948,48 @@ class LayoutAwareExtractor:
                 match = m
                 break
 
-        if match:
-            lbl = text[:match.start()].strip()
-            val = text[match.end():].strip()
-            if lbl and val and len(lbl.split()) <= 6:
-                norm_lbl = self.registry.normalize_label(lbl)
-                bbox = self._normalize_bbox(line.bbox, pw, ph)
-                return (norm_lbl, val, 0.98, bbox, text)
+        lowest_conf = min(s.confidence for s in line.spans) if line.spans else getattr(line, 'confidence', 0.95)
 
-        # 2. Aligned gap or multi-space separation: Description on left, amount/number on right
-        gap_match = re.match(r"^([A-Za-z0-9#&()./'-]+(?:\s+[A-Za-z0-9#&()./'-]+){0,5})\s{2,}(\$?-?\d[\d,.]*(?:%|\b)?|[A-Z0-9-]{3,}.*)$", text)
+        if match:
+            lbl = text[:match.start()].strip().rstrip(":")
+            val = text[match.end():].strip()
+            if lbl and val and len(lbl.split()) <= 10:
+                bbox = self._normalize_bbox(line.bbox, pw, ph)
+                return (lbl, val, lowest_conf, bbox, text)
+
+        # 2. Line ending with a figure after a gap: label is description before it, value is figure
+        fig_gap_match = re.match(r"^(.*?)\s{2,}([$€£¥₹]?\s*-?\d[\d,.]*\s*[$€£¥₹%]?)$", text)
+        if fig_gap_match:
+            lbl = fig_gap_match.group(1).strip().rstrip(":")
+            val = fig_gap_match.group(2).strip()
+            if lbl and val:
+                bbox = self._normalize_bbox(line.bbox, pw, ph)
+                return (lbl, val, lowest_conf, bbox, text)
+
+        # 3. Aligned gap or multi-space separation: Description on left, value on right
+        gap_match = re.match(r"^([A-Za-z0-9#&()./'-]+(?:\s+[A-Za-z0-9#&()./'-]+){0,8})\s{2,}(.+)$", text)
         if gap_match:
-            lbl = gap_match.group(1).strip()
+            lbl = gap_match.group(1).strip().rstrip(":")
             val = gap_match.group(2).strip()
             if lbl and val:
-                norm_lbl = self.registry.normalize_label(lbl)
                 bbox = self._normalize_bbox(line.bbox, pw, ph)
-                return (norm_lbl, val, 0.96, bbox, text)
+                return (lbl, val, lowest_conf, bbox, text)
 
-        # 3. Two spans separated by horizontal gap >= 18 pt
+        # 4. Spans separated by horizontal gap >= 15 pt (preserve entire right side value)
         if len(line.spans) >= 2:
-            s0 = line.spans[0]
-            s1 = line.spans[-1]
-            if s1.bbox[0] - s0.bbox[2] >= 18.0:
-                left_txt = " ".join(s.text for s in line.spans[:-1]).strip()
-                right_txt = s1.text.strip()
-                if left_txt and right_txt and len(left_txt.split()) <= 6:
-                    norm_lbl = self.registry.normalize_label(left_txt)
+            max_gap = 0.0
+            split_idx = -1
+            for sp_i in range(len(line.spans) - 1):
+                gap = line.spans[sp_i + 1].bbox[0] - line.spans[sp_i].bbox[2]
+                if gap > max_gap:
+                    max_gap = gap
+                    split_idx = sp_i
+            if max_gap >= 15.0 and split_idx >= 0:
+                left_txt = " ".join(s.text for s in line.spans[:split_idx + 1]).strip().rstrip(":")
+                right_txt = " ".join(s.text for s in line.spans[split_idx + 1:]).strip()
+                if left_txt and right_txt and len(left_txt.split()) <= 10:
                     bbox = self._normalize_bbox(line.bbox, pw, ph)
-                    return (norm_lbl, right_txt, 0.95, bbox, text)
+                    return (left_txt, right_txt, lowest_conf, bbox, text)
 
         return None
 
@@ -1160,33 +1193,14 @@ class LayoutAwareExtractor:
                 ))
                 extracted_groundings.add(c_val)
 
-        # F. Logos, photos, charts, diagrams
-        for r in page_regions:
-            if r.structure_type in ["image_logo", "chart_diagram"]:
-                c_desc = r.metadata.get("description", r.text)
-                c_lbl = "Chart / Diagram" if r.structure_type == "chart_diagram" else "Logo / Image"
-                fields.append(self._create_detail_dict(
-                    label=c_lbl,
-                    value=c_desc,
-                    value_confidence=r.confidence,
-                    label_confidence=0.95,
-                    page=r.page,
-                    bbox=r.bbox,
-                    source="document",
-                    reason=f"{c_lbl} visual component",
-                    structure_type=r.structure_type,
-                    structure_group="images_and_charts",
-                    structure_confidence=0.95,
-                    region_id=r.id,
-                    grounding_text=r.text,
-                ))
-                extracted_groundings.add(r.text.strip())
+        # F. Logos, photos, charts, diagrams: listed strictly in regions/images_and_charts, NEVER create text fields
+        # (Rule 2 & 3: Do not create placeholder fields for images or charts)
 
         # G. Document Title from primary heading on Page 1
         for r in page_regions:
             if r.structure_type == "heading" and r.metadata.get("is_document_title"):
                 fields.append(self._create_detail_dict(
-                    label="Document Title",
+                    label="",
                     value=r.text.strip(),
                     value_confidence=r.confidence,
                     label_confidence=0.98,
@@ -1203,35 +1217,10 @@ class LayoutAwareExtractor:
                 extracted_groundings.add(r.text.strip())
                 break
 
-        # 4a. Top Issuing Party Block check (generate label 'Issuer Name' if none printed)
-        issuer_extracted = False
-        for b in blocks:
-            if b.page == 1 and b.bbox[1] < (ph1 * 0.25):
-                clean_t = b.text.strip()
-                if clean_t and clean_t not in extracted_groundings and clean_t not in table_lines_text:
-                    upper_t = clean_t.upper()
-                    if not any(k in upper_t for k in ["INVOICE", "RECEIPT", "STATEMENT", "PURCHASE ORDER", "ESTIMATE", "BILL TO", "SHIP TO"]):
-                        if 1 <= len(clean_t.split()) <= 8 and not re.search(r"^\d+$", clean_t):
-                            fields.append(self._create_detail_dict(
-                                label="Issuer Name",
-                                value=clean_t,
-                                value_confidence=b.confidence,
-                                label_confidence=0.94,
-                                page=1,
-                                bbox=self._normalize_bbox(b.bbox, pw1, ph1),
-                                source="generated",
-                                reason="Issuing organization identified at top of document",
-                                suggested_label="Issuer Name",
-                                grounding_text=clean_t,
-                                structure_type="form_row",
-                                structure_group="fields",
-                                structure_confidence=0.95,
-                            ))
-                            extracted_groundings.add(clean_t)
-                            issuer_extracted = True
-                            break
-
-        # 4b. Extract candidate pairs from non-table lines
+        # 4. Extract every printed line: 1:1 line to field extraction
+        # Printed lines with separators become label: value pairs (using raw printed label).
+        # Printed lines without separators (headings/statements) become fields with label="".
+        # Total printed lines outside tables equal extracted fields. Never invent labels.
         for b in blocks:
             if b.block_role in ["decoration", "footer"]:
                 continue
@@ -1239,121 +1228,58 @@ class LayoutAwareExtractor:
 
             for line in b.lines:
                 line_clean = line.text.strip()
-                if line_clean in table_lines_text or any(line_clean in t_txt for t_txt in table_lines_text) or line_clean in extracted_groundings:
+                if not line_clean:
+                    continue
+                if line_clean in table_lines_text or any(line_clean in t_txt for t_txt in table_lines_text):
+                    continue
+                if line_clean in extracted_groundings:
                     continue
 
                 pair = self._extract_same_line_pair(line, pw, ph)
                 if pair:
                     fields.extend(self._process_candidate_pair(pair, line.page, "document", extracted_groundings, pw, ph))
-
-        # 4c. Check vertically stacked pairs (e.g. label line above value line)
-        for idx in range(len(blocks) - 1):
-            b1 = blocks[idx]
-            b2 = blocks[idx + 1]
-            if b1.text.strip() in extracted_groundings or b2.text.strip() in extracted_groundings:
-                continue
-            if b1.text.strip() in table_lines_text or b2.text.strip() in table_lines_text:
-                continue
-            if b1.page == b2.page and b1.block_role in ["headline", "paragraph", "heading"] and len(b1.text.split()) <= 4:
-                pw, ph = page_dims.get(b1.page, (595.0, 842.0))
-                stacked = self._check_stacked_blocks(b1, b2, pw, ph)
-                if stacked:
-                    fields.extend(self._process_candidate_pair(stacked, b1.page, "document", extracted_groundings, pw, ph))
-
-        # 4d. Prominent Text Check: bold or large text not yet extracted as a detail
-        for b in blocks:
-            pw, ph = page_dims.get(b.page, (595.0, 842.0))
-            if b.page == 1 and (b.font_size >= 14.0 or b.style == "bold" or b.bbox[1] < 120):
-                text_clean = b.text.strip()
-                if text_clean in table_lines_text or text_clean in extracted_groundings:
-                    continue
-                if len(text_clean.split()) <= 8 and not any(sep in text_clean for sep in [":", " = "]):
-                    gen_meta = self.registry.generate_label_for_detail(
-                        value=text_clean,
-                        position_style={"font_size": b.font_size, "is_bold": True, "y": b.bbox[1]},
-                        doc_summary=title_block["text"] if title_block else "",
-                    )
-                    gen_conf = gen_meta.get("label_confidence", 0.85)
-                    sug_lbl = gen_meta.get("suggested_label", "")
+                else:
+                    bbox = self._normalize_bbox(line.bbox, pw, ph)
+                    is_head = (line.font_size >= 13.0 or b.style == "bold" or b.block_role == "headline")
                     fields.append(self._create_detail_dict(
-                        label=sug_lbl if gen_conf >= 0.70 else "",
-                        value=text_clean,
-                        value_confidence=b.confidence,
-                        label_confidence=gen_conf if gen_conf >= 0.70 else None,
-                        page=b.page,
-                        bbox=self._normalize_bbox(b.bbox, pw, ph),
-                        source="generated" if gen_conf >= 0.70 else "unlabelled",
-                        reason=gen_meta.get("reason", ""),
-                        suggested_label=sug_lbl,
-                        alternatives=gen_meta.get("alternatives", []),
-                        grounding_text=text_clean,
-                        hint="suggested" if sug_lbl and gen_conf >= 0.70 else "needs label",
-                        structure_type="heading" if b.font_size >= 14.0 else "label_value_pair",
+                        label="",
+                        value=line_clean,
+                        value_confidence=line.confidence,
+                        label_confidence=None,
+                        page=line.page,
+                        bbox=bbox,
+                        source="document",
+                        reason="",
+                        suggested_label="",
+                        alternatives=[],
+                        grounding_text=line_clean,
+                        hint="" if is_head else "needs label",
+                        structure_type="heading" if is_head else "form_row",
                         structure_group="fields",
                         structure_confidence=0.95,
                     ))
-                    extracted_groundings.add(text_clean)
+                    extracted_groundings.add(line_clean)
 
-        # 4e. Mixed Value Check: Unextracted blocks containing both date and amount
-        for b in blocks:
-            pw, ph = page_dims.get(b.page, (595.0, 842.0))
-            text_clean = b.text.strip()
-            if text_clean in extracted_groundings or text_clean in table_lines_text:
+        # 5. Filter out placeholders and fields where label is identical to value
+        clean_fields = []
+        for f in fields:
+            if not f:
                 continue
-            amt_match = re.search(r"\$?\d{1,3}(?:,\d{3})*(?:\.\d{2})", text_clean)
-            date_match = DATE_REGEX.search(text_clean)
-            if amt_match and date_match and abs(amt_match.start() - date_match.start()) >= 5:
-                gen_meta = self.registry.generate_label_for_detail(
-                    value=text_clean,
-                    position_style={"font_size": b.font_size, "is_bold": b.style == "bold", "y": b.bbox[1]},
-                    doc_summary=title_block["text"] if title_block else "",
-                )
-                fields.append(self._create_detail_dict(
-                    label=gen_meta.get("suggested_label", "Payment Detail"),
-                    value=text_clean,
-                    value_confidence=b.confidence,
-                    label_confidence=0.88,
-                    page=b.page,
-                    bbox=self._normalize_bbox(b.bbox, pw, ph),
-                    source="generated",
-                    reason="Mixed detail combining transaction and timestamp",
-                    suggested_label=gen_meta.get("suggested_label", "Payment Detail"),
-                    alternatives=gen_meta.get("alternatives", []),
-                    grounding_text=text_clean,
-                    hint="suggested",
-                    structure_type="form_row",
-                    structure_group="fields",
-                    structure_confidence=0.95,
-                ))
-                extracted_groundings.add(text_clean)
-
-        # 4f. Single Main Paragraph Promotion (if document has minimal fields and a dominant statement)
-        if len(fields) <= 3:
-            for b in blocks:
-                if b.page == 1 and b.block_role == "paragraph" and len(b.text.split()) >= 15:
-                    if b.text.strip() not in extracted_groundings:
-                        fields.append(self._create_detail_dict(
-                            label="Notice Statement",
-                            value=b.text.strip(),
-                            value_confidence=b.confidence,
-                            label_confidence=0.92,
-                            page=1,
-                            bbox=self._normalize_bbox(b.bbox, pw1, ph1),
-                            source="document",
-                            reason="Promoted central announcement/statement of document",
-                            structure_type="paragraph",
-                            structure_group="fields",
-                            structure_confidence=0.95,
-                            grounding_text=b.text.strip(),
-                        ))
-                        extracted_groundings.add(b.text.strip())
-                        break
-
-        # 5. Split and Complete
-        final_fields: List[Dict[str, Any]] = []
-        for fld in fields:
-            splits = self._check_and_split_mixed_value(fld)
-            final_fields.extend(splits)
+            lbl = (f.get("label") or "").strip()
+            val = (f.get("value") or "").strip()
+            if not val and not lbl:
+                continue
+            # Rule 2: A field whose value is identical to its own label is rejected
+            if lbl and lbl.lower() == val.lower():
+                continue
+            # Rule 2: Remove placeholder fields such as generic picture or chart fields
+            if lbl in ["Chart / Diagram", "Logo / Image", "Embedded Image", "Document Logo"]:
+                continue
+            # Rule 7: Remove suggested labels and suggestions
+            f["suggested_label"] = ""
+            f["alternatives"] = []
+            clean_fields.append(f)
+        final_fields = clean_fields
 
         # 6. Partition into Key Details and More Details
         key_details = final_fields[:self.max_key_details]
@@ -1441,7 +1367,7 @@ class LayoutAwareExtractor:
                     b_bot.bbox[3],
                 ), pw, ph)
                 conf = (b_top.confidence + b_bot.confidence) / 2.0
-                norm_lbl = self.registry.normalize_label(top_t)
+                norm_lbl = top_t.rstrip(":").strip()
                 grounding = f"{top_t}\n{bot_t}"
                 return (norm_lbl, bot_t, conf, bbox, grounding)
         return None
@@ -1456,9 +1382,9 @@ class LayoutAwareExtractor:
         ph: float,
     ) -> List[Dict[str, Any]]:
         lbl, val, conf, bbox, grounding = pair
-        if val in extracted_groundings:
+        if grounding in extracted_groundings:
             return []
-        extracted_groundings.add(val)
+        extracted_groundings.add(grounding)
 
         return [self._create_detail_dict(
             label=lbl,

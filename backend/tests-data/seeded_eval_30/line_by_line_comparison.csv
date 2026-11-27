@@ -1,0 +1,301 @@
+Document,Line Number,Printed Text,Extracted Label,Extracted Value,Verdict
+eval_01_form.pdf,1,Patient Registration Form,,Patient Registration Form,exact match
+eval_01_form.pdf,2,Applicant Name: Person_1 Alexander Smith,Applicant Name,Person_1 Alexander Smith,exact match
+eval_01_form.pdf,3,Reference ID: APP-2024000,Reference ID,APP-2024000,exact match
+eval_01_form.pdf,4,Submission Date: 2024-001-15,Submission Date,2024-001-15,exact match
+eval_01_form.pdf,5,Social Security Number: 991-24-1409,Social Security Number,991-24-1409,exact match
+eval_01_form.pdf,6,Contact Email: applicant1@examplecorp.org,Contact Email,applicant1@examplecorp.org,exact match
+eval_01_form.pdf,7,"Annual Income: $45,000.00",Annual Income,"$45,000.00",exact match
+eval_01_form.pdf,8,Residential Address: 100 North Elm Boulevard Suite 1,Residential Address,100 North Elm Boulevard Suite 1,exact match
+eval_01_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_01_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_02_form.pdf,1,Employee Onboarding Form,,Employee Onboarding Form,exact match
+eval_02_form.pdf,2,Applicant Name: Person_2 Alexander Smith,Applicant Name,Person_2 Alexander Smith,exact match
+eval_02_form.pdf,3,Reference ID: APP-2024013,Reference ID,APP-2024013,exact match
+eval_02_form.pdf,4,Submission Date: 2024-002-15,Submission Date,2024-002-15,exact match
+eval_02_form.pdf,5,Social Security Number: 945-41-4657,Social Security Number,945-41-4657,exact match
+eval_02_form.pdf,6,Contact Email: applicant2@examplecorp.org,Contact Email,applicant2@examplecorp.org,exact match
+eval_02_form.pdf,7,"Annual Income: $49,200.00",Annual Income,"$49,200.00",exact match
+eval_02_form.pdf,8,Residential Address: 125 North Elm Boulevard Suite 2,Residential Address,125 North Elm Boulevard Suite 2,exact match
+eval_02_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_02_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_03_form.pdf,1,Credit Card Application,,Credit Card Application,exact match
+eval_03_form.pdf,2,Applicant Name: Person_3 Alexander Smith,Applicant Name,Person_3 Alexander Smith,exact match
+eval_03_form.pdf,3,Reference ID: APP-2024026,Reference ID,APP-2024026,exact match
+eval_03_form.pdf,4,Submission Date: 2024-003-15,Submission Date,2024-003-15,exact match
+eval_03_form.pdf,5,Social Security Number: 927-23-9935,Social Security Number,927-23-9935,exact match
+eval_03_form.pdf,6,Contact Email: applicant3@examplecorp.org,Contact Email,applicant3@examplecorp.org,exact match
+eval_03_form.pdf,7,"Annual Income: $53,400.00",Annual Income,"$53,400.00",exact match
+eval_03_form.pdf,8,Residential Address: 150 North Elm Boulevard Suite 3,Residential Address,150 North Elm Boulevard Suite 3,exact match
+eval_03_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_03_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_04_form.pdf,1,KYC Identity Verification,,KYC Identity Verification,exact match
+eval_04_form.pdf,2,Applicant Name: Person_4 Alexander Smith,Applicant Name,Person_4 Alexander Smith,exact match
+eval_04_form.pdf,3,Reference ID: APP-2024039,Reference ID,APP-2024039,exact match
+eval_04_form.pdf,4,Submission Date: 2024-004-15,Submission Date,2024-004-15,exact match
+eval_04_form.pdf,5,Social Security Number: 921-85-7912,Social Security Number,921-85-7912,exact match
+eval_04_form.pdf,6,Contact Email: applicant4@examplecorp.org,Contact Email,applicant4@examplecorp.org,exact match
+eval_04_form.pdf,7,"Annual Income: $57,600.00",Annual Income,"$57,600.00",exact match
+eval_04_form.pdf,8,Residential Address: 175 North Elm Boulevard Suite 4,Residential Address,175 North Elm Boulevard Suite 4,exact match
+eval_04_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_04_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_05_form.pdf,1,Commercial Loan Request,,Commercial Loan Request,exact match
+eval_05_form.pdf,2,Applicant Name: Person_5 Alexander Smith,Applicant Name,Person_5 Alexander Smith,exact match
+eval_05_form.pdf,3,Reference ID: APP-2024052,Reference ID,APP-2024052,exact match
+eval_05_form.pdf,4,Submission Date: 2024-005-15,Submission Date,2024-005-15,exact match
+eval_05_form.pdf,5,Social Security Number: 914-13-2535,Social Security Number,914-13-2535,exact match
+eval_05_form.pdf,6,Contact Email: applicant5@examplecorp.org,Contact Email,applicant5@examplecorp.org,exact match
+eval_05_form.pdf,7,"Annual Income: $61,800.00",Annual Income,"$61,800.00",exact match
+eval_05_form.pdf,8,Residential Address: 200 North Elm Boulevard Suite 5,Residential Address,200 North Elm Boulevard Suite 5,exact match
+eval_05_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_05_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_06_form.pdf,1,Health Insurance Claim,,Health Insurance Claim,exact match
+eval_06_form.pdf,2,Applicant Name: Person_6 Alexander Smith,Applicant Name,Person_6 Alexander Smith,exact match
+eval_06_form.pdf,3,Reference ID: APP-2024065,Reference ID,APP-2024065,exact match
+eval_06_form.pdf,4,Submission Date: 2024-006-15,Submission Date,2024-006-15,exact match
+eval_06_form.pdf,5,Social Security Number: 937-39-9279,Social Security Number,937-39-9279,exact match
+eval_06_form.pdf,6,Contact Email: applicant6@examplecorp.org,Contact Email,applicant6@examplecorp.org,exact match
+eval_06_form.pdf,7,"Annual Income: $66,000.00",Annual Income,"$66,000.00",exact match
+eval_06_form.pdf,8,Residential Address: 225 North Elm Boulevard Suite 6,Residential Address,225 North Elm Boulevard Suite 6,exact match
+eval_06_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_06_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_07_form.pdf,1,Membership Enrollment,,Membership Enrollment,exact match
+eval_07_form.pdf,2,Applicant Name: Person_7 Alexander Smith,Applicant Name,Person_7 Alexander Smith,exact match
+eval_07_form.pdf,3,Reference ID: APP-2024078,Reference ID,APP-2024078,exact match
+eval_07_form.pdf,4,Submission Date: 2024-007-15,Submission Date,2024-007-15,exact match
+eval_07_form.pdf,5,Social Security Number: 987-13-4257,Social Security Number,987-13-4257,exact match
+eval_07_form.pdf,6,Contact Email: applicant7@examplecorp.org,Contact Email,applicant7@examplecorp.org,exact match
+eval_07_form.pdf,7,"Annual Income: $70,200.00",Annual Income,"$70,200.00",exact match
+eval_07_form.pdf,8,Residential Address: 250 North Elm Boulevard Suite 7,Residential Address,250 North Elm Boulevard Suite 7,exact match
+eval_07_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_07_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_08_form.pdf,1,Student Admission Record,,Student Admission Record,exact match
+eval_08_form.pdf,2,Applicant Name: Person_8 Alexander Smith,Applicant Name,Person_8 Alexander Smith,exact match
+eval_08_form.pdf,3,Reference ID: APP-2024091,Reference ID,APP-2024091,exact match
+eval_08_form.pdf,4,Submission Date: 2024-008-15,Submission Date,2024-008-15,exact match
+eval_08_form.pdf,5,Social Security Number: 993-99-9928,Social Security Number,993-99-9928,exact match
+eval_08_form.pdf,6,Contact Email: applicant8@examplecorp.org,Contact Email,applicant8@examplecorp.org,exact match
+eval_08_form.pdf,7,"Annual Income: $74,400.00",Annual Income,"$74,400.00",exact match
+eval_08_form.pdf,8,Residential Address: 275 North Elm Boulevard Suite 8,Residential Address,275 North Elm Boulevard Suite 8,exact match
+eval_08_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_08_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_09_form.pdf,1,Equipment Permit Application,,Equipment Permit Application,exact match
+eval_09_form.pdf,2,Applicant Name: Person_9 Alexander Smith,Applicant Name,Person_9 Alexander Smith,exact match
+eval_09_form.pdf,3,Reference ID: APP-2024104,Reference ID,APP-2024104,exact match
+eval_09_form.pdf,4,Submission Date: 2024-009-15,Submission Date,2024-009-15,exact match
+eval_09_form.pdf,5,Social Security Number: 963-38-8359,Social Security Number,963-38-8359,exact match
+eval_09_form.pdf,6,Contact Email: applicant9@examplecorp.org,Contact Email,applicant9@examplecorp.org,exact match
+eval_09_form.pdf,7,"Annual Income: $78,600.00",Annual Income,"$78,600.00",exact match
+eval_09_form.pdf,8,Residential Address: 300 North Elm Boulevard Suite 9,Residential Address,300 North Elm Boulevard Suite 9,exact match
+eval_09_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_09_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_10_form.pdf,1,Vendor Vendor Compliance Form,,Vendor Vendor Compliance Form,exact match
+eval_10_form.pdf,2,Applicant Name: Person_10 Alexander Smith,Applicant Name,Person_10 Alexander Smith,exact match
+eval_10_form.pdf,3,Reference ID: APP-2024117,Reference ID,APP-2024117,exact match
+eval_10_form.pdf,4,Submission Date: 2024-001-15,Submission Date,2024-001-15,exact match
+eval_10_form.pdf,5,Social Security Number: 985-45-1106,Social Security Number,985-45-1106,exact match
+eval_10_form.pdf,6,Contact Email: applicant10@examplecorp.org,Contact Email,applicant10@examplecorp.org,exact match
+eval_10_form.pdf,7,"Annual Income: $82,800.00",Annual Income,"$82,800.00",exact match
+eval_10_form.pdf,8,Residential Address: 325 North Elm Boulevard Suite 10,Residential Address,325 North Elm Boulevard Suite 10,exact match
+eval_10_form.pdf,9,Authorization and Agreement Terms,,Authorization and Agreement Terms,exact match
+eval_10_form.pdf,10,Agreement Status: Accepted and Signed in Full,Agreement Status,Accepted and Signed in Full,exact match
+eval_11_invoice.pdf,1,Enterprise Consulting Invoice,,Enterprise Consulting Invoice,exact match
+eval_11_invoice.pdf,2,Invoice Number: INV-88000,Invoice Number,INV-88000,exact match
+eval_11_invoice.pdf,3,Invoice Date: 2024-10-10,Invoice Date,2024-10-10,exact match
+eval_11_invoice.pdf,4,Client Organization: Global Enterprise Partners 1 LLC,Client Organization,Global Enterprise Partners 1 LLC,exact match
+eval_11_invoice.pdf,5,Billing Contact: billing.director1@globalpartners.net,Billing Contact,billing.director1@globalpartners.net,exact match
+eval_11_invoice.pdf,6,Payment Card: 4111 1111 1111 1000,Payment Card,4111 1111 1111 1000,exact match
+eval_11_invoice.pdf,7,"Subtotal Due: $12,500.00",Subtotal Due,"$12,500.00",exact match
+eval_11_invoice.pdf,8,Tax Surcharge: $850.00,Tax Surcharge,$850.00,exact match
+eval_11_invoice.pdf,9,"Total Amount Due: $13,350.00",Total Amount Due,"$13,350.00",exact match
+eval_11_invoice.pdf,10,Payment Remittance Instructions,,Payment Remittance Instructions,exact match
+eval_11_invoice.pdf,11,Bank Account Number: ACCT-990000,Bank Account Number,ACCT-990000,exact match
+eval_12_invoice.pdf,1,Hardware Lease Invoice,,Hardware Lease Invoice,exact match
+eval_12_invoice.pdf,2,Invoice Number: INV-88019,Invoice Number,INV-88019,exact match
+eval_12_invoice.pdf,3,Invoice Date: 2024-11-10,Invoice Date,2024-11-10,exact match
+eval_12_invoice.pdf,4,Client Organization: Global Enterprise Partners 2 LLC,Client Organization,Global Enterprise Partners 2 LLC,exact match
+eval_12_invoice.pdf,5,Billing Contact: billing.director2@globalpartners.net,Billing Contact,billing.director2@globalpartners.net,exact match
+eval_12_invoice.pdf,6,Payment Card: 4111 1111 1111 1111,Payment Card,4111 1111 1111 1111,exact match
+eval_12_invoice.pdf,7,"Subtotal Due: $13,850.00",Subtotal Due,"$13,850.00",exact match
+eval_12_invoice.pdf,8,Tax Surcharge: $945.00,Tax Surcharge,$945.00,exact match
+eval_12_invoice.pdf,9,"Total Amount Due: $14,795.00",Total Amount Due,"$14,795.00",exact match
+eval_12_invoice.pdf,10,Payment Remittance Instructions,,Payment Remittance Instructions,exact match
+eval_12_invoice.pdf,11,Bank Account Number: ACCT-990031,Bank Account Number,ACCT-990031,exact match
+eval_13_invoice.pdf,1,Legal Advisory Remittance,,Legal Advisory Remittance,exact match
+eval_13_invoice.pdf,2,Invoice Number: INV-88038,Invoice Number,INV-88038,exact match
+eval_13_invoice.pdf,3,Invoice Date: 2024-12-10,Invoice Date,2024-12-10,exact match
+eval_13_invoice.pdf,4,Client Organization: Global Enterprise Partners 3 LLC,Client Organization,Global Enterprise Partners 3 LLC,exact match
+eval_13_invoice.pdf,5,Billing Contact: billing.director3@globalpartners.net,Billing Contact,billing.director3@globalpartners.net,exact match
+eval_13_invoice.pdf,6,Payment Card: 4111 1111 1111 1222,Payment Card,4111 1111 1111 1222,exact match
+eval_13_invoice.pdf,7,"Subtotal Due: $15,200.00",Subtotal Due,"$15,200.00",exact match
+eval_13_invoice.pdf,8,"Tax Surcharge: $1,040.00",Tax Surcharge,"$1,040.00",exact match
+eval_13_invoice.pdf,9,"Total Amount Due: $16,240.00",Total Amount Due,"$16,240.00",exact match
+eval_13_invoice.pdf,10,Payment Remittance Instructions,,Payment Remittance Instructions,exact match
+eval_13_invoice.pdf,11,Bank Account Number: ACCT-990062,Bank Account Number,ACCT-990062,exact match
+eval_14_invoice.pdf,1,Freight Shipping Billing,,Freight Shipping Billing,exact match
+eval_14_invoice.pdf,2,Invoice Number: INV-88057,Invoice Number,INV-88057,exact match
+eval_14_invoice.pdf,3,Invoice Date: 2024-10-10,Invoice Date,2024-10-10,exact match
+eval_14_invoice.pdf,4,Client Organization: Global Enterprise Partners 4 LLC,Client Organization,Global Enterprise Partners 4 LLC,exact match
+eval_14_invoice.pdf,5,Billing Contact: billing.director4@globalpartners.net,Billing Contact,billing.director4@globalpartners.net,exact match
+eval_14_invoice.pdf,6,Payment Card: 4111 1111 1111 1333,Payment Card,4111 1111 1111 1333,exact match
+eval_14_invoice.pdf,7,"Subtotal Due: $16,550.00",Subtotal Due,"$16,550.00",exact match
+eval_14_invoice.pdf,8,"Tax Surcharge: $1,135.00",Tax Surcharge,"$1,135.00",exact match
+eval_14_invoice.pdf,9,"Total Amount Due: $17,685.00",Total Amount Due,"$17,685.00",exact match
+eval_14_invoice.pdf,10,Payment Remittance Instructions,,Payment Remittance Instructions,exact match
+eval_14_invoice.pdf,11,Bank Account Number: ACCT-990093,Bank Account Number,ACCT-990093,exact match
+eval_15_invoice.pdf,1,Cloud Infrastructure Bill,,Cloud Infrastructure Bill,exact match
+eval_15_invoice.pdf,2,Invoice Number: INV-88076,Invoice Number,INV-88076,exact match
+eval_15_invoice.pdf,3,Invoice Date: 2024-11-10,Invoice Date,2024-11-10,exact match
+eval_15_invoice.pdf,4,Client Organization: Global Enterprise Partners 5 LLC,Client Organization,Global Enterprise Partners 5 LLC,exact match
+eval_15_invoice.pdf,5,Billing Contact: billing.director5@globalpartners.net,Billing Contact,billing.director5@globalpartners.net,exact match
+eval_15_invoice.pdf,6,Payment Card: 4111 1111 1111 1444,Payment Card,4111 1111 1111 1444,exact match
+eval_15_invoice.pdf,7,"Subtotal Due: $17,900.00",Subtotal Due,"$17,900.00",exact match
+eval_15_invoice.pdf,8,"Tax Surcharge: $1,230.00",Tax Surcharge,"$1,230.00",exact match
+eval_15_invoice.pdf,9,"Total Amount Due: $19,130.00",Total Amount Due,"$19,130.00",exact match
+eval_15_invoice.pdf,10,Payment Remittance Instructions,,Payment Remittance Instructions,exact match
+eval_15_invoice.pdf,11,Bank Account Number: ACCT-990124,Bank Account Number,ACCT-990124,exact match
+eval_16_invoice_scan.png,1,Facility Maintenance Invoice,,Facility Maintenance Invoice,exact match
+eval_16_invoice_scan.png,2,Invoice Number: INV-88095,Invoice Number,INV-88095,exact match
+eval_16_invoice_scan.png,3,Invoice Date: 2024-12-10,Invoice Date,2024-12-10,exact match
+eval_16_invoice_scan.png,4,Client Organization: Global Enterprise Partners 6 LLC,Client Organization,Global Enterprise Partners 6 LLC,exact match
+eval_16_invoice_scan.png,5,Billing Contact: billing.director6@globalpartners.net,Billing Contact,billing.director6é@globalpartners.net,wrong value
+eval_16_invoice_scan.png,6,Payment Card: 4111 1111 1111 1555,Payment Card,4111 1111 1111 1555,exact match
+eval_16_invoice_scan.png,7,"Subtotal Due: $19,250.00",Subtotal Due,"$19,250.00",exact match
+eval_16_invoice_scan.png,8,"Tax Surcharge: $1,325.00",Tax Surcharge,"$1,325.00",exact match
+eval_16_invoice_scan.png,9,"Total Amount Due: $20,575.00",Total Amount Due,"$20,575.00",exact match
+eval_16_invoice_scan.png,10,Payment Remittance Instructions,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_16_invoice_scan.png,11,Bank Account Number: ACCT-990155,Bank Account Number,ACCT-990155,exact match
+eval_17_invoice_scan.png,1,Office Supplies Remittance,,Office Supplies Remittance,exact match
+eval_17_invoice_scan.png,2,Invoice Number: INV-88114,Invoice Number,INV-88114,exact match
+eval_17_invoice_scan.png,3,Invoice Date: 2024-10-10,Invoice Date,2024-10-10,exact match
+eval_17_invoice_scan.png,4,Client Organization: Global Enterprise Partners 7 LLC,Client Organization,Global Enterprise Partners 7 LLC,exact match
+eval_17_invoice_scan.png,5,Billing Contact: billing.director7@globalpartners.net,Billing Contact,billing.director7@globalpartners.net,exact match
+eval_17_invoice_scan.png,6,Payment Card: 4111 1111 1111 1666,Payment Card,4111 1111 1111 1666,exact match
+eval_17_invoice_scan.png,7,"Subtotal Due: $20,600.00",Subtotal Due,"$20,600.00",exact match
+eval_17_invoice_scan.png,8,"Tax Surcharge: $1,420.00",Tax Surcharge,"$1,420.00",exact match
+eval_17_invoice_scan.png,9,"Total Amount Due: $22,020.00",Total Amount Due,"$22,020.00",exact match
+eval_17_invoice_scan.png,10,Payment Remittance Instructions,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_17_invoice_scan.png,11,Bank Account Number: ACCT-990186,Bank Account Number,ACCT-990186,exact match
+eval_18_invoice_scan.png,1,Software License Invoice,,Software License Invoice,exact match
+eval_18_invoice_scan.png,2,Invoice Number: INV-88133,Invoice Number,INV-88133,exact match
+eval_18_invoice_scan.png,3,Invoice Date: 2024-11-10,Invoice Date,2024-11-10,exact match
+eval_18_invoice_scan.png,4,Client Organization: Global Enterprise Partners 8 LLC,Client Organization,Global Enterprise Partners 8 LLC,exact match
+eval_18_invoice_scan.png,5,Billing Contact: billing.director8@globalpartners.net,Billing Contact,billing.director8@globalpartners.net,exact match
+eval_18_invoice_scan.png,6,Payment Card: 4111 1111 1111 1777,Payment Card,4111 1111 1111 1777,exact match
+eval_18_invoice_scan.png,7,"Subtotal Due: $21,950.00",Subtotal Due,"$21,950.00",exact match
+eval_18_invoice_scan.png,8,"Tax Surcharge: $1,515.00",Tax Surcharge,"$1,515.00",exact match
+eval_18_invoice_scan.png,9,"Total Amount Due: $23,465.00",Total Amount Due,"$23,465.00",exact match
+eval_18_invoice_scan.png,10,Payment Remittance Instructions,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_18_invoice_scan.png,11,Bank Account Number: ACCT-990217,Bank Account Number,ACCT-990217,exact match
+eval_19_invoice_scan.png,1,Marketing Services Invoice,,Marketing Services Invoice,exact match
+eval_19_invoice_scan.png,2,Invoice Number: INV-88152,Invoice Number,INV-88152,exact match
+eval_19_invoice_scan.png,3,Invoice Date: 2024-12-10,Invoice Date,2024-12-10,exact match
+eval_19_invoice_scan.png,4,Client Organization: Global Enterprise Partners 9 LLC,Client Organization,Global Enterprise Partners 9 LLC,exact match
+eval_19_invoice_scan.png,5,Billing Contact: billing.director9@globalpartners.net,Billing Contact,billing.director9@globalpartners.net,exact match
+eval_19_invoice_scan.png,6,Payment Card: 4111 1111 1111 1888,Payment Card,4111 1111 1111 1888,exact match
+eval_19_invoice_scan.png,7,"Subtotal Due: $23,300.00",Subtotal Due,"$23,300.00",exact match
+eval_19_invoice_scan.png,8,"Tax Surcharge: $1,610.00",Tax Surcharge,"$1,610.00",exact match
+eval_19_invoice_scan.png,9,"Total Amount Due: $24,910.00",Total Amount Due,"$24,910.00",exact match
+eval_19_invoice_scan.png,10,Payment Remittance Instructions,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_19_invoice_scan.png,11,Bank Account Number: ACCT-990248,Bank Account Number,ACCT-990248,exact match
+eval_20_invoice_scan.png,1,Security Audit Billing,,Security Audit Billing,exact match
+eval_20_invoice_scan.png,2,Invoice Number: INV-88171,Invoice Number,INV-88171,exact match
+eval_20_invoice_scan.png,3,Invoice Date: 2024-10-10,Invoice Date,2024-10-10,exact match
+eval_20_invoice_scan.png,4,Client Organization: Global Enterprise Partners 10 LLC,Client Organization,Global Enterprise Partners 10 LLC,exact match
+eval_20_invoice_scan.png,5,Billing Contact: billing.director10@globalpartners.net,Billing Contact,billing.director1 O@globalpartners.net,wrong value
+eval_20_invoice_scan.png,6,Payment Card: 4111 1111 1111 1999,Payment Card,4111 1111 1111 1999,exact match
+eval_20_invoice_scan.png,7,"Subtotal Due: $24,650.00",Subtotal Due,"$24,650.00",exact match
+eval_20_invoice_scan.png,8,"Tax Surcharge: $1,705.00",Tax Surcharge,"$1,705.00",exact match
+eval_20_invoice_scan.png,9,"Total Amount Due: $26,355.00",Total Amount Due,"$26,355.00",exact match
+eval_20_invoice_scan.png,10,Payment Remittance Instructions,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_20_invoice_scan.png,11,Bank Account Number: ACCT-990279,Bank Account Number,ACCT-990279,exact match
+eval_21_letter_rot90.png,1,Formal Employment Verification,,Formal Employment Verification,exact match
+eval_21_letter_rot90.png,2,Sender Organization: Apex Advisory Group 1,Sender Organization,Apex Advisory Group 1,exact match
+eval_21_letter_rot90.png,3,Dispatch Date: 2024-05-10,Dispatch Date,2024-05-10,exact match
+eval_21_letter_rot90.png,4,Recipient Name: Dr. Jordan Taylor 1,Recipient Name,Dr. Jordan Taylor 1,exact match
+eval_21_letter_rot90.png,5,Official Subject: Official Notice Regarding Contract Review 1,Official Subject,Official Notice Regarding Contract Review 1,exact match
+eval_21_letter_rot90.png,6,Taxpayer ID: 930-99-7924,Taxpayer ID,930-99-7924,exact match
+eval_21_letter_rot90.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_21_letter_rot90.png,8,Authorized Signature: Chief Legal Counsel Officer 1,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_21_letter_rot90.png,9,Confirmation Code: AUTH-SEC-55000,Confirmation Code,AUTH-SEC-55000,exact match
+eval_22_letter_rot180.png,1,Commercial Inquiry Letter,,Commercial Inquiry Letter,exact match
+eval_22_letter_rot180.png,2,Sender Organization: Apex Advisory Group 2,Sender Organization,Apex Advisory Group 2,exact match
+eval_22_letter_rot180.png,3,Dispatch Date: 2024-05-11,Dispatch Date,2024-05-11,exact match
+eval_22_letter_rot180.png,4,Recipient Name: Dr. Jordan Taylor 2,Recipient Name,Dr. Jordan Taylor 2,exact match
+eval_22_letter_rot180.png,5,Official Subject: Official Notice Regarding Contract Review 2,Official Subject,Official Notice Regarding Contract Review 2,exact match
+eval_22_letter_rot180.png,6,Taxpayer ID: 953-45-3547,Taxpayer ID,953-45-3547,exact match
+eval_22_letter_rot180.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_22_letter_rot180.png,8,Authorized Signature: Chief Legal Counsel Officer 2,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_22_letter_rot180.png,9,Confirmation Code: AUTH-SEC-55047,Confirmation Code,AUTH-SEC-55047,exact match
+eval_23_letter_rot270.png,1,Legal Settlement Notice,,Legal Settlement Notice,exact match
+eval_23_letter_rot270.png,2,Sender Organization: Apex Advisory Group 3,Sender Organization,Apex Advisory Group 3,exact match
+eval_23_letter_rot270.png,3,Dispatch Date: 2024-05-12,Dispatch Date,2024-05-12,exact match
+eval_23_letter_rot270.png,4,Recipient Name: Dr. Jordan Taylor 3,Recipient Name,Dr. Jordan Taylor 3,exact match
+eval_23_letter_rot270.png,5,Official Subject: Official Notice Regarding Contract Review 3,Official Subject,Official Notice Regarding Contract Review 3,exact match
+eval_23_letter_rot270.png,6,Taxpayer ID: 937-53-2674,Taxpayer ID,937-53-2674,exact match
+eval_23_letter_rot270.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_23_letter_rot270.png,8,Authorized Signature: Chief Legal Counsel Officer 3,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_23_letter_rot270.png,9,Confirmation Code: AUTH-SEC-55094,Confirmation Code,AUTH-SEC-55094,exact match
+eval_24_letter_rot90.png,1,Strategic Partnership Memo,,Strategic Partnership Memo,exact match
+eval_24_letter_rot90.png,2,Sender Organization: Apex Advisory Group 4,Sender Organization,Apex Advisory Group 4,exact match
+eval_24_letter_rot90.png,3,Dispatch Date: 2024-05-13,Dispatch Date,2024-05-13,exact match
+eval_24_letter_rot90.png,4,Recipient Name: Dr. Jordan Taylor 4,Recipient Name,Dr. Jordan Taylor 4,exact match
+eval_24_letter_rot90.png,5,Official Subject: Official Notice Regarding Contract Review 4,Official Subject,Official Notice Regarding Contract Review 4,exact match
+eval_24_letter_rot90.png,6,Taxpayer ID: 921-58-2584,Taxpayer ID,921-58-2584,exact match
+eval_24_letter_rot90.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_24_letter_rot90.png,8,Authorized Signature: Chief Legal Counsel Officer 4,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_24_letter_rot90.png,9,Confirmation Code: AUTH-SEC-55141,Confirmation Code,AUTH-SEC-55141,exact match
+eval_25_letter_rot270.png,1,Employment Termination Notice,,Employment Termination Notice,exact match
+eval_25_letter_rot270.png,2,Sender Organization: Apex Advisory Group 5,Sender Organization,Apex Advisory Group 5,exact match
+eval_25_letter_rot270.png,3,Dispatch Date: 2024-05-14,Dispatch Date,2024-05-14,exact match
+eval_25_letter_rot270.png,4,Recipient Name: Dr. Jordan Taylor 5,Recipient Name,Dr. Jordan Taylor 5,exact match
+eval_25_letter_rot270.png,5,Official Subject: Official Notice Regarding Contract Review 5,Official Subject,Official Notice Regarding Contract Review 5,exact match
+eval_25_letter_rot270.png,6,Taxpayer ID: 955-54-5333,Taxpayer ID,955-54-5333,exact match
+eval_25_letter_rot270.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_25_letter_rot270.png,8,Authorized Signature: Chief Legal Counsel Officer 5,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_25_letter_rot270.png,9,Confirmation Code: AUTH-SEC-55188,Confirmation Code,AUTH-SEC-55188,exact match
+eval_26_letter_photo.png,1,Executive Resignation Letter,,Executive Resignation Letter,exact match
+eval_26_letter_photo.png,2,Sender Organization: Apex Advisory Group 6,Sender Organization,Apex Advisory Group 6,exact match
+eval_26_letter_photo.png,3,Dispatch Date: 2024-05-15,Dispatch Date,2024-05-15,exact match
+eval_26_letter_photo.png,4,Recipient Name: Dr. Jordan Taylor 6,Recipient Name,Dr. Jordan Taylor 6,exact match
+eval_26_letter_photo.png,5,Official Subject: Official Notice Regarding Contract Review 6,Official Subject,Official Notice Regarding Contract Review 6,exact match
+eval_26_letter_photo.png,6,Taxpayer ID: 915-68-9785,Taxpayer ID,915-68-9785,exact match
+eval_26_letter_photo.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_26_letter_photo.png,8,Authorized Signature: Chief Legal Counsel Officer 6,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_26_letter_photo.png,9,Confirmation Code: AUTH-SEC-55235,Confirmation Code,AUTH-SEC-55235,exact match
+eval_27_letter_photo.png,1,Academic Recommendation Letter,,Academic Recommendation Letter,exact match
+eval_27_letter_photo.png,2,Sender Organization: Apex Advisory Group 7,Sender Organization,Apex Advisory Group 7,exact match
+eval_27_letter_photo.png,3,Dispatch Date: 2024-05-16,Dispatch Date,2024-05-16,exact match
+eval_27_letter_photo.png,4,Recipient Name: Dr. Jordan Taylor 7,Recipient Name,Dr. Jordan Taylor 7,exact match
+eval_27_letter_photo.png,5,Official Subject: Official Notice Regarding Contract Review 7,Official Subject,Official Notice Regarding Contract Review 7,exact match
+eval_27_letter_photo.png,6,Taxpayer ID: 925-58-2291,Taxpayer ID,925-58-2291,exact match
+eval_27_letter_photo.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_27_letter_photo.png,8,Authorized Signature: Chief Legal Counsel Officer 7,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_27_letter_photo.png,9,Confirmation Code: AUTH-SEC-55282,Confirmation Code,AUTH-SEC-55282,exact match
+eval_28_letter_photo.png,1,Annual Audit Confirmation,,Annual Audit Confirmation,exact match
+eval_28_letter_photo.png,2,Sender Organization: Apex Advisory Group 8,Sender Organization,Apex Advisory Group 8,exact match
+eval_28_letter_photo.png,3,Dispatch Date: 2024-05-17,Dispatch Date,2024-05-17,exact match
+eval_28_letter_photo.png,4,Recipient Name: Dr. Jordan Taylor 8,Recipient Name,Dr. Jordan Taylor 8,exact match
+eval_28_letter_photo.png,5,Official Subject: Official Notice Regarding Contract Review 8,Official Subject,Official Notice Regarding Contract Review 8,exact match
+eval_28_letter_photo.png,6,Taxpayer ID: 980-47-6925,Taxpayer ID,980-47-6925,exact match
+eval_28_letter_photo.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_28_letter_photo.png,8,Authorized Signature: Chief Legal Counsel Officer 8,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_28_letter_photo.png,9,Confirmation Code: AUTH-SEC-55329,Confirmation Code,AUTH-SEC-55329,exact match
+eval_29_letter_photo.png,1,Account Closure Notification,,Account Closure Notification,exact match
+eval_29_letter_photo.png,2,Sender Organization: Apex Advisory Group 9,Sender Organization,Apex Advisory Group 9,exact match
+eval_29_letter_photo.png,3,Dispatch Date: 2024-05-18,Dispatch Date,2024-05-18,exact match
+eval_29_letter_photo.png,4,Recipient Name: Dr. Jordan Taylor 9,Recipient Name,Dr. Jordan Taylor 9,exact match
+eval_29_letter_photo.png,5,Official Subject: Official Notice Regarding Contract Review 9,Official Subject,Official Notice Regarding Contract Review 9,exact match
+eval_29_letter_photo.png,6,Taxpayer ID: 983-34-2139,Taxpayer ID,983-34-2139,exact match
+eval_29_letter_photo.png,7,Detailed Statement and Formal Terms,,Detailed Statement and Formal Terms,exact match
+eval_29_letter_photo.png,8,Authorized Signature: Chief Legal Counsel Officer 9,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_29_letter_photo.png,9,Confirmation Code: AUTH-SEC-55376,Confirmation Code,AUTH-SEC-55376,exact match
+eval_30_letter_photo.png,1,Research Grant Award Letter,,Research Grant Award Letter,exact match
+eval_30_letter_photo.png,2,Sender Organization: Apex Advisory Group 10,Sender Organization,Apex Advisory Group 10,exact match
+eval_30_letter_photo.png,3,Dispatch Date: 2024-05-19,Dispatch Date,2024-05-19,exact match
+eval_30_letter_photo.png,4,Recipient Name: Dr. Jordan Taylor 10,Recipient Name,Dr. Jordan Taylor 10,exact match
+eval_30_letter_photo.png,5,Official Subject: Official Notice Regarding Contract Review 10,Official Subject,Official Notice Regarding Contract Review 10,exact match
+eval_30_letter_photo.png,6,Taxpayer ID: 915-94-4733,Taxpayer ID,915-94-4733,exact match
+eval_30_letter_photo.png,7,Detailed Statement and Formal Terms,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_30_letter_photo.png,8,Authorized Signature: Chief Legal Counsel Officer 10,[NOT_FOUND],[NOT_FOUND],wrong value
+eval_30_letter_photo.png,9,Confirmation Code: AUTH-SEC-55423,Confirmation Code,AUTH-SEC-55423,exact match

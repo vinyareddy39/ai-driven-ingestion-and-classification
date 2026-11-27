@@ -199,6 +199,11 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
         f.cache_key = cache_key
         hash_ms = round((time.perf_counter() - t_h) * 1000, 2)
 
+        # Skip if already completed to prevent concurrent clobbering
+        if f.status in ["Done", "Done, check"] and f.finished_at is not None:
+            logger.info(f"File {f.original_name} already completed, skipping double execution.")
+            return
+
         # Point 6: Every upload is read again from scratch. Nothing is skipped by cache or filename.
         # If identical content (SHA-256), mark "Same content as <earlier file>" note, but still read again.
         if user_id:
@@ -210,7 +215,6 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
                     BatchModel.user_id == user_id,
                     FileModel.id != f.id,
                     FileModel.created_at < f.created_at,
-                    FileModel.original_name != f.original_name,
                 )
                 .order_by(FileModel.created_at.asc())
                 .first()
@@ -218,8 +222,6 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
             if earlier_dup:
                 f.duplicate_of = earlier_dup.original_name
                 logger.info(f"Identical content detected for {f.original_name} (same content as {earlier_dup.original_name}). Reading again from scratch.")
-            elif f.duplicate_of == f.original_name:
-                f.duplicate_of = None
 
         queue_wait_ms = 0.0
         if f.created_at:
@@ -278,8 +280,8 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
                         safe_commit(db)
                     time.sleep(0.3)
 
-        if pipe_res is None:
-            clean_reason = "text could not be read from the image"
+        if pipe_res is None or pipe_res.get("failed") or (len(pipe_res.get("fields", [])) == 0 and not pipe_res.get("full_text", "").strip()):
+            clean_reason = pipe_res.get("error", "no readable text found (tried 0°, 90°, 180°, 270° and contrast normalization)") if pipe_res else "text could not be read from the image"
             if error_category == "password":
                 clean_reason = "password protected file"
             elif error_category == "empty":
@@ -338,6 +340,7 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
                 "split_suggestion": d.get("split_suggestion"),
                 "in_more_details": d.get("in_more_details", False),
                 "is_promoted": d.get("is_promoted", True),
+                "masked_value": d.get("masked_value"),
             }
             new_fields.append(FieldModel(
                 file_id=f.id,
@@ -364,14 +367,17 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
 
         # Generate page 1 PNG preview bytes and store in Postgres preview_data
         try:
-            if not f.preview_data and os.path.exists(f.stored_path):
-                import base64
+            import base64
+            if pipe_res.get("preview_bytes"):
+                f.preview_data = base64.b64encode(pipe_res["preview_bytes"]).decode('ascii')
+            elif not f.preview_data and os.path.exists(f.stored_path):
                 p_bytes = render_page_to_png_bytes(f.stored_path, page_num=1, dpi=120)
                 if p_bytes:
                     f.preview_data = base64.b64encode(p_bytes).decode('ascii')
         except Exception as pe:
             logger.warning(f"Could not generate preview_data for {f.original_name}: {pe}")
 
+        sens_count = sum(1 for x in new_fields if getattr(x, 'is_sensitive', False))
         with _sqlite_write_lock:
             db.query(FieldModel).filter(FieldModel.file_id == f.id).delete()
             db.add_all(new_fields)
@@ -385,7 +391,7 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
                 "total_ms": total_ms,
                 "provider": "generalized_pipeline",
                 "details_count": len(new_fields),
-                "sensitive_count": sum(1 for x in new_fields if x.is_sensitive),
+                "sensitive_count": sens_count,
             })
             safe_commit(db)
 
@@ -400,7 +406,6 @@ def process_file_background(file_id: str, db_url: Optional[str] = None, force_fr
                 except Exception as de:
                     logger.debug(f"Could not remove temporary uploaded file {f.stored_path}: {de}")
 
-        sens_count = sum(1 for x in new_fields if x.is_sensitive)
         logger.info(f"File {f.original_name} completed in {total_ms}ms: {len(new_fields)} details ({sens_count} sensitive).")
 
     except Exception as e:
@@ -526,7 +531,6 @@ def create_batch(
                     .filter(
                         FileModel.sha256 == sha256,
                         BatchModel.user_id == user.id,
-                        FileModel.original_name != clean_original_name,
                     )
                     .order_by(FileModel.created_at.asc())
                     .first()
@@ -638,7 +642,6 @@ def append_files_to_batch(
                     .filter(
                         FileModel.sha256 == sha256,
                         BatchModel.user_id == user.id,
-                        FileModel.original_name != clean_original_name,
                     )
                     .order_by(FileModel.created_at.asc())
                     .first()
@@ -798,6 +801,7 @@ def get_batch(
                 "bbox": json.loads(fld.bbox) if fld.bbox else None,
                 "is_sensitive": bool(fld.is_sensitive),
                 "detector_tag": getattr(fld, "detector_tag", None),
+                "masked_value": meta.get("masked_value"),
                 "is_unlabelled": not bool(fld.label and fld.label.strip()),
                 "is_edited": bool(getattr(fld, "is_edited", False) or fld.source == "edited"),
                 "reason": meta.get("reason", ""),
@@ -1085,7 +1089,7 @@ def get_workers_health(db: Session = Depends(get_db)):
         },
         "database": {
             "status": "connected",
-            "type": "sqlite",
+            "type": "postgresql" if "postgres" in str(db.bind.url).lower() else "sqlite",
         }
     }
 

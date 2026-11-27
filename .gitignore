@@ -48,6 +48,9 @@ build/
 *.log
 backend.log
 frontend.log
+eval_60_dataset/
+scratch/
+
 cloudflared.log
 tunnel.log
 debug.log
@@ -59,6 +62,7 @@ data/storage/
 downloads/
 tools/
 scratch/
+evidence/
 docs/unsorted/scratch/
 
 # Operating System Files
@@ -72,3 +76,4 @@ desktop.ini
 *.so
 *.dylib
 cloudflared.exe
+.neon

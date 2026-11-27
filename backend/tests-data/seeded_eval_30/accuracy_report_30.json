@@ -1,0 +1,3436 @@
+{
+  "sha256_before": "d1052984033a6cb4ebc3f04b0310376a7819e3205e6007544b65e941d21fafad",
+  "sha256_after": "d1052984033a6cb4ebc3f04b0310376a7819e3205e6007544b65e941d21fafad",
+  "sha_unmodified": true,
+  "total_documents": 30,
+  "total_expected_fields": 300,
+  "total_matched_fields": 274,
+  "overall_accuracy_pct": 91.33,
+  "total_sensitive_expected": 30,
+  "total_sensitive_masked": 20,
+  "summary_plaintext_leaks": 0,
+  "format_breakdown": {
+    "digital_pdf": {
+      "docs": 15,
+      "expected": 155,
+      "matched": 155
+    },
+    "clean_scan_image": {
+      "docs": 5,
+      "expected": 55,
+      "matched": 48
+    },
+    "rotated_90": {
+      "docs": 2,
+      "expected": 18,
+      "matched": 14
+    },
+    "rotated_180": {
+      "docs": 1,
+      "expected": 9,
+      "matched": 7
+    },
+    "rotated_270": {
+      "docs": 2,
+      "expected": 18,
+      "matched": 14
+    },
+    "tilted_photo": {
+      "docs": 5,
+      "expected": 45,
+      "matched": 36
+    }
+  },
+  "documents": [
+    {
+      "filename": "eval_01_form.pdf",
+      "doc_id": "eval_01_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Patient Registration Form'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Patient Registration Form",
+          "extracted_value": "Patient Registration Form",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_1 Alexander Smith",
+          "extracted_value": "Person_1 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024000",
+          "extracted_value": "APP-2024000",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-001-15",
+          "extracted_value": "2024-001-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "991-24-1409",
+          "extracted_value": "991-24-1409",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-1409"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant1@examplecorp.org",
+          "extracted_value": "applicant1@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$45,000.00",
+          "extracted_value": "$45,000.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "100 North Elm Boulevard Suite 1",
+          "extracted_value": "100 North Elm Boulevard Suite 1",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_02_form.pdf",
+      "doc_id": "eval_02_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Employee Onboarding Form'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Employee Onboarding Form",
+          "extracted_value": "Employee Onboarding Form",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_2 Alexander Smith",
+          "extracted_value": "Person_2 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024013",
+          "extracted_value": "APP-2024013",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-002-15",
+          "extracted_value": "2024-002-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "945-41-4657",
+          "extracted_value": "945-41-4657",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-4657"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant2@examplecorp.org",
+          "extracted_value": "applicant2@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$49,200.00",
+          "extracted_value": "$49,200.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "125 North Elm Boulevard Suite 2",
+          "extracted_value": "125 North Elm Boulevard Suite 2",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_03_form.pdf",
+      "doc_id": "eval_03_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Credit Card Application'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Credit Card Application",
+          "extracted_value": "Credit Card Application",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_3 Alexander Smith",
+          "extracted_value": "Person_3 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024026",
+          "extracted_value": "APP-2024026",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-003-15",
+          "extracted_value": "2024-003-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "927-23-9935",
+          "extracted_value": "927-23-9935",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-9935"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant3@examplecorp.org",
+          "extracted_value": "applicant3@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$53,400.00",
+          "extracted_value": "$53,400.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "150 North Elm Boulevard Suite 3",
+          "extracted_value": "150 North Elm Boulevard Suite 3",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_04_form.pdf",
+      "doc_id": "eval_04_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Kyc Form document titled 'KYC Identity Verification'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "KYC Identity Verification",
+          "extracted_value": "KYC Identity Verification",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_4 Alexander Smith",
+          "extracted_value": "Person_4 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024039",
+          "extracted_value": "APP-2024039",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-004-15",
+          "extracted_value": "2024-004-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "921-85-7912",
+          "extracted_value": "921-85-7912",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-7912"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant4@examplecorp.org",
+          "extracted_value": "applicant4@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$57,600.00",
+          "extracted_value": "$57,600.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "175 North Elm Boulevard Suite 4",
+          "extracted_value": "175 North Elm Boulevard Suite 4",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_05_form.pdf",
+      "doc_id": "eval_05_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Commercial Loan Request'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Commercial Loan Request",
+          "extracted_value": "Commercial Loan Request",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_5 Alexander Smith",
+          "extracted_value": "Person_5 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024052",
+          "extracted_value": "APP-2024052",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-005-15",
+          "extracted_value": "2024-005-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "914-13-2535",
+          "extracted_value": "914-13-2535",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-2535"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant5@examplecorp.org",
+          "extracted_value": "applicant5@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$61,800.00",
+          "extracted_value": "$61,800.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "200 North Elm Boulevard Suite 5",
+          "extracted_value": "200 North Elm Boulevard Suite 5",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_06_form.pdf",
+      "doc_id": "eval_06_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Health Insurance Claim'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Health Insurance Claim",
+          "extracted_value": "Health Insurance Claim",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_6 Alexander Smith",
+          "extracted_value": "Person_6 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024065",
+          "extracted_value": "APP-2024065",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-006-15",
+          "extracted_value": "2024-006-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "937-39-9279",
+          "extracted_value": "937-39-9279",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-9279"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant6@examplecorp.org",
+          "extracted_value": "applicant6@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$66,000.00",
+          "extracted_value": "$66,000.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "225 North Elm Boulevard Suite 6",
+          "extracted_value": "225 North Elm Boulevard Suite 6",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_07_form.pdf",
+      "doc_id": "eval_07_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Membership Enrollment'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Membership Enrollment",
+          "extracted_value": "Membership Enrollment",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_7 Alexander Smith",
+          "extracted_value": "Person_7 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024078",
+          "extracted_value": "APP-2024078",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-007-15",
+          "extracted_value": "2024-007-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "987-13-4257",
+          "extracted_value": "987-13-4257",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-4257"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant7@examplecorp.org",
+          "extracted_value": "applicant7@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$70,200.00",
+          "extracted_value": "$70,200.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "250 North Elm Boulevard Suite 7",
+          "extracted_value": "250 North Elm Boulevard Suite 7",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_08_form.pdf",
+      "doc_id": "eval_08_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Student Admission Record'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Student Admission Record",
+          "extracted_value": "Student Admission Record",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_8 Alexander Smith",
+          "extracted_value": "Person_8 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024091",
+          "extracted_value": "APP-2024091",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-008-15",
+          "extracted_value": "2024-008-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "993-99-9928",
+          "extracted_value": "993-99-9928",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-9928"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant8@examplecorp.org",
+          "extracted_value": "applicant8@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$74,400.00",
+          "extracted_value": "$74,400.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "275 North Elm Boulevard Suite 8",
+          "extracted_value": "275 North Elm Boulevard Suite 8",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_09_form.pdf",
+      "doc_id": "eval_09_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Equipment Permit Application'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Equipment Permit Application",
+          "extracted_value": "Equipment Permit Application",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_9 Alexander Smith",
+          "extracted_value": "Person_9 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024104",
+          "extracted_value": "APP-2024104",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-009-15",
+          "extracted_value": "2024-009-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "963-38-8359",
+          "extracted_value": "963-38-8359",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-8359"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant9@examplecorp.org",
+          "extracted_value": "applicant9@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$78,600.00",
+          "extracted_value": "$78,600.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "300 North Elm Boulevard Suite 9",
+          "extracted_value": "300 North Elm Boulevard Suite 9",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_10_form.pdf",
+      "doc_id": "eval_10_form",
+      "category": "form",
+      "format": "digital_pdf",
+      "expected_lines": 10,
+      "extracted_fields": 10,
+      "matched_fields": 10,
+      "accuracy_pct": 100.0,
+      "summary": "Business document titled 'Vendor Vendor Compliance Form'.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Vendor Vendor Compliance Form",
+          "extracted_value": "Vendor Vendor Compliance Form",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Applicant Name",
+          "extracted_label": "Applicant Name",
+          "expected_value": "Person_10 Alexander Smith",
+          "extracted_value": "Person_10 Alexander Smith",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Reference ID",
+          "extracted_label": "Reference ID",
+          "expected_value": "APP-2024117",
+          "extracted_value": "APP-2024117",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Submission Date",
+          "extracted_label": "Submission Date",
+          "expected_value": "2024-001-15",
+          "extracted_value": "2024-001-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Social Security Number",
+          "extracted_label": "Social Security Number",
+          "expected_value": "985-45-1106",
+          "extracted_value": "985-45-1106",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-1106"
+        },
+        {
+          "expected_label": "Contact Email",
+          "extracted_label": "Contact Email",
+          "expected_value": "applicant10@examplecorp.org",
+          "extracted_value": "applicant10@examplecorp.org",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "a***@examplecorp.org"
+        },
+        {
+          "expected_label": "Annual Income",
+          "extracted_label": "Annual Income",
+          "expected_value": "$82,800.00",
+          "extracted_value": "$82,800.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Residential Address",
+          "extracted_label": "Residential Address",
+          "expected_value": "325 North Elm Boulevard Suite 10",
+          "extracted_value": "325 North Elm Boulevard Suite 10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "[RESTRICTED ADDRESS]"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Authorization and Agreement Terms",
+          "extracted_value": "Authorization and Agreement Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Agreement Status",
+          "extracted_label": "Agreement Status",
+          "expected_value": "Accepted and Signed in Full",
+          "extracted_value": "Accepted and Signed in Full",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_11_invoice.pdf",
+      "doc_id": "eval_11_invoice",
+      "category": "invoice",
+      "format": "digital_pdf",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 11,
+      "accuracy_pct": 100.0,
+      "summary": "Invoice document titled 'Enterprise Consulting Invoice' dated 2024-10-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Enterprise Consulting Invoice",
+          "extracted_value": "Enterprise Consulting Invoice",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88000",
+          "extracted_value": "INV-88000",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-10-10",
+          "extracted_value": "2024-10-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 1 LLC",
+          "extracted_value": "Global Enterprise Partners 1 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director1@globalpartners.net",
+          "extracted_value": "billing.director1@globalpartners.net",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "b***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1000",
+          "extracted_value": "4111 1111 1111 1000",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$12,500.00",
+          "extracted_value": "$12,500.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$850.00",
+          "extracted_value": "$850.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$13,350.00",
+          "extracted_value": "$13,350.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "Payment Remittance Instructions",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990000",
+          "extracted_value": "ACCT-990000",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_12_invoice.pdf",
+      "doc_id": "eval_12_invoice",
+      "category": "invoice",
+      "format": "digital_pdf",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 11,
+      "accuracy_pct": 100.0,
+      "summary": "Invoice document titled 'Hardware Lease Invoice' dated 2024-11-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Hardware Lease Invoice",
+          "extracted_value": "Hardware Lease Invoice",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88019",
+          "extracted_value": "INV-88019",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-11-10",
+          "extracted_value": "2024-11-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 2 LLC",
+          "extracted_value": "Global Enterprise Partners 2 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director2@globalpartners.net",
+          "extracted_value": "billing.director2@globalpartners.net",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "b***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1111",
+          "extracted_value": "4111 1111 1111 1111",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$13,850.00",
+          "extracted_value": "$13,850.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$945.00",
+          "extracted_value": "$945.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$14,795.00",
+          "extracted_value": "$14,795.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "Payment Remittance Instructions",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990031",
+          "extracted_value": "ACCT-990031",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_13_invoice.pdf",
+      "doc_id": "eval_13_invoice",
+      "category": "invoice",
+      "format": "digital_pdf",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 11,
+      "accuracy_pct": 100.0,
+      "summary": "Invoice document titled 'Legal Advisory Remittance' dated 2024-12-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Legal Advisory Remittance",
+          "extracted_value": "Legal Advisory Remittance",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88038",
+          "extracted_value": "INV-88038",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-12-10",
+          "extracted_value": "2024-12-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 3 LLC",
+          "extracted_value": "Global Enterprise Partners 3 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director3@globalpartners.net",
+          "extracted_value": "billing.director3@globalpartners.net",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "b***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1222",
+          "extracted_value": "4111 1111 1111 1222",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$15,200.00",
+          "extracted_value": "$15,200.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$1,040.00",
+          "extracted_value": "$1,040.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$16,240.00",
+          "extracted_value": "$16,240.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "Payment Remittance Instructions",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990062",
+          "extracted_value": "ACCT-990062",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_14_invoice.pdf",
+      "doc_id": "eval_14_invoice",
+      "category": "invoice",
+      "format": "digital_pdf",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 11,
+      "accuracy_pct": 100.0,
+      "summary": "Invoice document titled 'Freight Shipping Billing' dated 2024-10-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Freight Shipping Billing",
+          "extracted_value": "Freight Shipping Billing",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88057",
+          "extracted_value": "INV-88057",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-10-10",
+          "extracted_value": "2024-10-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 4 LLC",
+          "extracted_value": "Global Enterprise Partners 4 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director4@globalpartners.net",
+          "extracted_value": "billing.director4@globalpartners.net",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "b***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1333",
+          "extracted_value": "4111 1111 1111 1333",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$16,550.00",
+          "extracted_value": "$16,550.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$1,135.00",
+          "extracted_value": "$1,135.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$17,685.00",
+          "extracted_value": "$17,685.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "Payment Remittance Instructions",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990093",
+          "extracted_value": "ACCT-990093",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_15_invoice.pdf",
+      "doc_id": "eval_15_invoice",
+      "category": "invoice",
+      "format": "digital_pdf",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 11,
+      "accuracy_pct": 100.0,
+      "summary": "Invoice document titled 'Cloud Infrastructure Bill' dated 2024-11-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Cloud Infrastructure Bill",
+          "extracted_value": "Cloud Infrastructure Bill",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88076",
+          "extracted_value": "INV-88076",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-11-10",
+          "extracted_value": "2024-11-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 5 LLC",
+          "extracted_value": "Global Enterprise Partners 5 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director5@globalpartners.net",
+          "extracted_value": "billing.director5@globalpartners.net",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "b***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1444",
+          "extracted_value": "4111 1111 1111 1444",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$17,900.00",
+          "extracted_value": "$17,900.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$1,230.00",
+          "extracted_value": "$1,230.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$19,130.00",
+          "extracted_value": "$19,130.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "Payment Remittance Instructions",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990124",
+          "extracted_value": "ACCT-990124",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_16_invoice_scan.png",
+      "doc_id": "eval_16_invoice",
+      "category": "invoice",
+      "format": "clean_scan_image",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 9,
+      "accuracy_pct": 81.8,
+      "summary": "Invoice document titled 'Facility Maintenance Invoice' dated 2024-12-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Facility Maintenance Invoice",
+          "extracted_value": "Facility Maintenance Invoice",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88095",
+          "extracted_value": "INV-88095",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-12-10",
+          "extracted_value": "2024-12-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 6 LLC",
+          "extracted_value": "Global Enterprise Partners 6 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director6@globalpartners.net",
+          "extracted_value": "billing.director6\u00e9@globalpartners.net",
+          "label_matched": true,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1555",
+          "extracted_value": "4111 1111 1111 1555",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$19,250.00",
+          "extracted_value": "$19,250.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$1,325.00",
+          "extracted_value": "$1,325.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$20,575.00",
+          "extracted_value": "$20,575.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990155",
+          "extracted_value": "ACCT-990155",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_17_invoice_scan.png",
+      "doc_id": "eval_17_invoice",
+      "category": "invoice",
+      "format": "clean_scan_image",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 10,
+      "accuracy_pct": 90.9,
+      "summary": "Invoice document titled 'Office Supplies Remittance' dated 2024-10-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Office Supplies Remittance",
+          "extracted_value": "Office Supplies Remittance",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88114",
+          "extracted_value": "INV-88114",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-10-10",
+          "extracted_value": "2024-10-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 7 LLC",
+          "extracted_value": "Global Enterprise Partners 7 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director7@globalpartners.net",
+          "extracted_value": "billing.director7@globalpartners.net",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "b***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1666",
+          "extracted_value": "4111 1111 1111 1666",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$20,600.00",
+          "extracted_value": "$20,600.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$1,420.00",
+          "extracted_value": "$1,420.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$22,020.00",
+          "extracted_value": "$22,020.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990186",
+          "extracted_value": "ACCT-990186",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_18_invoice_scan.png",
+      "doc_id": "eval_18_invoice",
+      "category": "invoice",
+      "format": "clean_scan_image",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 10,
+      "accuracy_pct": 90.9,
+      "summary": "Invoice document titled 'Software License Invoice' dated 2024-11-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Software License Invoice",
+          "extracted_value": "Software License Invoice",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88133",
+          "extracted_value": "INV-88133",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-11-10",
+          "extracted_value": "2024-11-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 8 LLC",
+          "extracted_value": "Global Enterprise Partners 8 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director8@globalpartners.net",
+          "extracted_value": "billing.director8@globalpartners.net",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "b***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1777",
+          "extracted_value": "4111 1111 1111 1777",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$21,950.00",
+          "extracted_value": "$21,950.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$1,515.00",
+          "extracted_value": "$1,515.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$23,465.00",
+          "extracted_value": "$23,465.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990217",
+          "extracted_value": "ACCT-990217",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_19_invoice_scan.png",
+      "doc_id": "eval_19_invoice",
+      "category": "invoice",
+      "format": "clean_scan_image",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 10,
+      "accuracy_pct": 90.9,
+      "summary": "Invoice document titled 'Marketing Services Invoice' dated 2024-12-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Marketing Services Invoice",
+          "extracted_value": "Marketing Services Invoice",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88152",
+          "extracted_value": "INV-88152",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-12-10",
+          "extracted_value": "2024-12-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 9 LLC",
+          "extracted_value": "Global Enterprise Partners 9 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director9@globalpartners.net",
+          "extracted_value": "billing.director9@globalpartners.net",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "b***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1888",
+          "extracted_value": "4111 1111 1111 1888",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$23,300.00",
+          "extracted_value": "$23,300.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$1,610.00",
+          "extracted_value": "$1,610.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$24,910.00",
+          "extracted_value": "$24,910.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990248",
+          "extracted_value": "ACCT-990248",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_20_invoice_scan.png",
+      "doc_id": "eval_20_invoice",
+      "category": "invoice",
+      "format": "clean_scan_image",
+      "expected_lines": 11,
+      "extracted_fields": 11,
+      "matched_fields": 9,
+      "accuracy_pct": 81.8,
+      "summary": "Invoice document titled 'Security Audit Billing' dated 2024-10-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Security Audit Billing",
+          "extracted_value": "Security Audit Billing",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Number",
+          "extracted_label": "Invoice Number",
+          "expected_value": "INV-88171",
+          "extracted_value": "INV-88171",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Invoice Date",
+          "extracted_label": "Invoice Date",
+          "expected_value": "2024-10-10",
+          "extracted_value": "2024-10-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Client Organization",
+          "extracted_label": "Client Organization",
+          "expected_value": "Global Enterprise Partners 10 LLC",
+          "extracted_value": "Global Enterprise Partners 10 LLC",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Billing Contact",
+          "extracted_label": "Billing Contact",
+          "expected_value": "billing.director10@globalpartners.net",
+          "extracted_value": "billing.director1 O@globalpartners.net",
+          "label_matched": true,
+          "value_matched": false,
+          "is_sensitive": true,
+          "masked_value": "O***@globalpartners.net"
+        },
+        {
+          "expected_label": "Payment Card",
+          "extracted_label": "Payment Card",
+          "expected_value": "4111 1111 1111 1999",
+          "extracted_value": "4111 1111 1111 1999",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Subtotal Due",
+          "extracted_label": "Subtotal Due",
+          "expected_value": "$24,650.00",
+          "extracted_value": "$24,650.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Tax Surcharge",
+          "extracted_label": "Tax Surcharge",
+          "expected_value": "$1,705.00",
+          "extracted_value": "$1,705.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Total Amount Due",
+          "extracted_label": "Total Amount Due",
+          "expected_value": "$26,355.00",
+          "extracted_value": "$26,355.00",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Payment Remittance Instructions",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Bank Account Number",
+          "extracted_label": "Bank Account Number",
+          "expected_value": "ACCT-990279",
+          "extracted_value": "ACCT-990279",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_21_letter_rot90.png",
+      "doc_id": "eval_21_letter",
+      "category": "letter",
+      "format": "rotated_90",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Formal Employment Verification' dated 2024-05-10.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Formal Employment Verification",
+          "extracted_value": "Formal Employment Verification",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 1",
+          "extracted_value": "Apex Advisory Group 1",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-10",
+          "extracted_value": "2024-05-10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 1",
+          "extracted_value": "Dr. Jordan Taylor 1",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 1",
+          "extracted_value": "Official Notice Regarding Contract Review 1",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "930-99-7924",
+          "extracted_value": "930-99-7924",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-7924"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 1",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55000",
+          "extracted_value": "AUTH-SEC-55000",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_22_letter_rot180.png",
+      "doc_id": "eval_22_letter",
+      "category": "letter",
+      "format": "rotated_180",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Commercial Inquiry Letter' dated 2024-05-11.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Commercial Inquiry Letter",
+          "extracted_value": "Commercial Inquiry Letter",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 2",
+          "extracted_value": "Apex Advisory Group 2",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-11",
+          "extracted_value": "2024-05-11",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 2",
+          "extracted_value": "Dr. Jordan Taylor 2",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 2",
+          "extracted_value": "Official Notice Regarding Contract Review 2",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "953-45-3547",
+          "extracted_value": "953-45-3547",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-3547"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 2",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55047",
+          "extracted_value": "AUTH-SEC-55047",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_23_letter_rot270.png",
+      "doc_id": "eval_23_letter",
+      "category": "letter",
+      "format": "rotated_270",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Legal Settlement Notice' dated 2024-05-12.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Legal Settlement Notice",
+          "extracted_value": "Legal Settlement Notice",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 3",
+          "extracted_value": "Apex Advisory Group 3",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-12",
+          "extracted_value": "2024-05-12",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 3",
+          "extracted_value": "Dr. Jordan Taylor 3",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 3",
+          "extracted_value": "Official Notice Regarding Contract Review 3",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "937-53-2674",
+          "extracted_value": "937-53-2674",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-2674"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 3",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55094",
+          "extracted_value": "AUTH-SEC-55094",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_24_letter_rot90.png",
+      "doc_id": "eval_24_letter",
+      "category": "letter",
+      "format": "rotated_90",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Strategic Partnership Memo' dated 2024-05-13.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Strategic Partnership Memo",
+          "extracted_value": "Strategic Partnership Memo",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 4",
+          "extracted_value": "Apex Advisory Group 4",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-13",
+          "extracted_value": "2024-05-13",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 4",
+          "extracted_value": "Dr. Jordan Taylor 4",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 4",
+          "extracted_value": "Official Notice Regarding Contract Review 4",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "921-58-2584",
+          "extracted_value": "921-58-2584",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-2584"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 4",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55141",
+          "extracted_value": "AUTH-SEC-55141",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_25_letter_rot270.png",
+      "doc_id": "eval_25_letter",
+      "category": "letter",
+      "format": "rotated_270",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Employment Termination Notice' dated 2024-05-14.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Employment Termination Notice",
+          "extracted_value": "Employment Termination Notice",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 5",
+          "extracted_value": "Apex Advisory Group 5",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-14",
+          "extracted_value": "2024-05-14",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 5",
+          "extracted_value": "Dr. Jordan Taylor 5",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 5",
+          "extracted_value": "Official Notice Regarding Contract Review 5",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "955-54-5333",
+          "extracted_value": "955-54-5333",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-5333"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 5",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55188",
+          "extracted_value": "AUTH-SEC-55188",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_26_letter_photo.png",
+      "doc_id": "eval_26_letter",
+      "category": "letter",
+      "format": "tilted_photo",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Executive Resignation Letter' dated 2024-05-15.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Executive Resignation Letter",
+          "extracted_value": "Executive Resignation Letter",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 6",
+          "extracted_value": "Apex Advisory Group 6",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-15",
+          "extracted_value": "2024-05-15",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 6",
+          "extracted_value": "Dr. Jordan Taylor 6",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 6",
+          "extracted_value": "Official Notice Regarding Contract Review 6",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "915-68-9785",
+          "extracted_value": "915-68-9785",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-9785"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 6",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55235",
+          "extracted_value": "AUTH-SEC-55235",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_27_letter_photo.png",
+      "doc_id": "eval_27_letter",
+      "category": "letter",
+      "format": "tilted_photo",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Academic Recommendation Letter' dated 2024-05-16.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Academic Recommendation Letter",
+          "extracted_value": "Academic Recommendation Letter",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 7",
+          "extracted_value": "Apex Advisory Group 7",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-16",
+          "extracted_value": "2024-05-16",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 7",
+          "extracted_value": "Dr. Jordan Taylor 7",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 7",
+          "extracted_value": "Official Notice Regarding Contract Review 7",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "925-58-2291",
+          "extracted_value": "925-58-2291",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-2291"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 7",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55282",
+          "extracted_value": "AUTH-SEC-55282",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_28_letter_photo.png",
+      "doc_id": "eval_28_letter",
+      "category": "letter",
+      "format": "tilted_photo",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Annual Audit Confirmation' dated 2024-05-17.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Annual Audit Confirmation",
+          "extracted_value": "Annual Audit Confirmation",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 8",
+          "extracted_value": "Apex Advisory Group 8",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-17",
+          "extracted_value": "2024-05-17",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 8",
+          "extracted_value": "Dr. Jordan Taylor 8",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 8",
+          "extracted_value": "Official Notice Regarding Contract Review 8",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "980-47-6925",
+          "extracted_value": "980-47-6925",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-6925"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 8",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55329",
+          "extracted_value": "AUTH-SEC-55329",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_29_letter_photo.png",
+      "doc_id": "eval_29_letter",
+      "category": "letter",
+      "format": "tilted_photo",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 8,
+      "accuracy_pct": 88.9,
+      "summary": "Letter document titled 'Account Closure Notification' dated 2024-05-18.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Account Closure Notification",
+          "extracted_value": "Account Closure Notification",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 9",
+          "extracted_value": "Apex Advisory Group 9",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-18",
+          "extracted_value": "2024-05-18",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 9",
+          "extracted_value": "Dr. Jordan Taylor 9",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 9",
+          "extracted_value": "Official Notice Regarding Contract Review 9",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "983-34-2139",
+          "extracted_value": "983-34-2139",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-2139"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "Detailed Statement and Formal Terms",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 9",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55376",
+          "extracted_value": "AUTH-SEC-55376",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    },
+    {
+      "filename": "eval_30_letter_photo.png",
+      "doc_id": "eval_30_letter",
+      "category": "letter",
+      "format": "tilted_photo",
+      "expected_lines": 9,
+      "extracted_fields": 9,
+      "matched_fields": 7,
+      "accuracy_pct": 77.8,
+      "summary": "Letter document titled 'Research Grant Award Letter' dated 2024-05-19.",
+      "fields": [
+        {
+          "expected_label": "",
+          "extracted_label": "",
+          "expected_value": "Research Grant Award Letter",
+          "extracted_value": "Research Grant Award Letter",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Sender Organization",
+          "extracted_label": "Sender Organization",
+          "expected_value": "Apex Advisory Group 10",
+          "extracted_value": "Apex Advisory Group 10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Dispatch Date",
+          "extracted_label": "Dispatch Date",
+          "expected_value": "2024-05-19",
+          "extracted_value": "2024-05-19",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Recipient Name",
+          "extracted_label": "Recipient Name",
+          "expected_value": "Dr. Jordan Taylor 10",
+          "extracted_value": "Dr. Jordan Taylor 10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "D*** [PERSON]"
+        },
+        {
+          "expected_label": "Official Subject",
+          "extracted_label": "Official Subject",
+          "expected_value": "Official Notice Regarding Contract Review 10",
+          "extracted_value": "Official Notice Regarding Contract Review 10",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Taxpayer ID",
+          "extracted_label": "Taxpayer ID",
+          "expected_value": "915-94-4733",
+          "extracted_value": "915-94-4733",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": true,
+          "masked_value": "***-**-4733"
+        },
+        {
+          "expected_label": "",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Detailed Statement and Formal Terms",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Authorized Signature",
+          "extracted_label": "[NOT_FOUND]",
+          "expected_value": "Chief Legal Counsel Officer 10",
+          "extracted_value": "[NOT_FOUND]",
+          "label_matched": false,
+          "value_matched": false,
+          "is_sensitive": false,
+          "masked_value": null
+        },
+        {
+          "expected_label": "Confirmation Code",
+          "extracted_label": "Confirmation Code",
+          "expected_value": "AUTH-SEC-55423",
+          "extracted_value": "AUTH-SEC-55423",
+          "label_matched": true,
+          "value_matched": true,
+          "is_sensitive": false,
+          "masked_value": null
+        }
+      ]
+    }
+  ]
+}

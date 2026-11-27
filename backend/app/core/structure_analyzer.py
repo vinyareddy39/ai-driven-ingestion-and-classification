@@ -156,27 +156,9 @@ class PageStructureAnalyzer:
         return [(0.0, pw)]
 
     def sort_blocks_by_columns(self, blocks: List[Any], pw: float) -> List[Any]:
-        """Sort blocks column-by-column (column 1 top-to-bottom, then column 2, etc.)."""
-        cols = self.detect_columns(blocks, pw)
-        if len(cols) <= 1:
-            return sorted(blocks, key=lambda b: (round(b.bbox[1] / 6.0), b.bbox[0]))
-
-        col_buckets: List[List[Any]] = [[] for _ in cols]
-        for b in blocks:
-            b_mid_x = (b.bbox[0] + b.bbox[2]) / 2.0
-            assigned_col = 0
-            for c_idx, (c_start, c_end) in enumerate(cols):
-                if c_start <= b_mid_x < c_end:
-                    assigned_col = c_idx
-                    break
-            col_buckets[assigned_col].append(b)
-
-        sorted_blocks = []
-        for c_idx, bucket in enumerate(col_buckets):
-            bucket.sort(key=lambda b: (b.bbox[1], b.bbox[0]))
-            sorted_blocks.extend(bucket)
-
-        return sorted_blocks
+        """Keep reading order strictly top-to-bottom and left-to-right along each line baseline.
+        Never split ordinary text lines or forms into vertical columns down the page."""
+        return sorted(blocks, key=lambda b: (round(b.bbox[1] / 6.0), b.bbox[0]))
 
     # -------------------------------------------------------------------------
     # 2. Structural Region Identification
@@ -216,7 +198,7 @@ class PageStructureAnalyzer:
                 regions.append(wr)
 
             # C. Detect embedded images, logos and charts
-            img_regions = self._detect_page_images_and_charts(doc_page, page_num, pw, ph)
+            img_regions = self._detect_page_images_and_charts(doc_page, page_num, pw, ph, blocks=sorted_blocks)
             for imr in img_regions:
                 imr.reading_order = reg_counter
                 reg_counter += 1
@@ -338,7 +320,7 @@ class PageStructureAnalyzer:
 
         # D. Detect embedded images, logos, charts from page graphics
         if doc_page:
-            img_regions = self._detect_page_images_and_charts(doc_page, page_num, pw, ph)
+            img_regions = self._detect_page_images_and_charts(doc_page, page_num, pw, ph, blocks=blocks)
             for ir in img_regions:
                 ir.reading_order = reg_counter
                 reg_counter += 1
@@ -638,8 +620,12 @@ class PageStructureAnalyzer:
         page_num: int,
         pw: float,
         ph: float,
+        blocks: Optional[List[Any]] = None,
     ) -> List[PageRegion]:
         regions = []
+        if not doc_page:
+            return regions
+        has_readable_text = bool(blocks and any(len(getattr(b, "text", "").strip()) >= 3 for b in blocks))
         try:
             images = doc_page.get_images()
             for idx, img_info in enumerate(images):
@@ -652,6 +638,19 @@ class PageStructureAnalyzer:
 
                     if img_w < 15.0 or img_h < 15.0:
                         continue
+
+                    # If page has readable text, whole-page or large raster scans are page canvases, not charts
+                    if has_readable_text and (img_w >= pw * 0.5 and img_h >= ph * 0.5):
+                        continue
+
+                    # If region overlaps with readable text lines, it is not an image or chart
+                    if has_readable_text and blocks:
+                        overlap_with_text = any(
+                            not (raw_bbox[2] < b.bbox[0] or raw_bbox[0] > b.bbox[2] or raw_bbox[3] < b.bbox[1] or raw_bbox[1] > b.bbox[3])
+                            for b in blocks if len(getattr(b, "text", "").strip()) >= 3
+                        )
+                        if overlap_with_text:
+                            continue
 
                     if raw_bbox[1] <= (ph * 0.25) and img_w <= (pw * 0.40):
                         st_type = "image_logo"

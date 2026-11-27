@@ -67,6 +67,9 @@ export default function App() {
   const [zoomLevel, setZoomLevel] = useState(1.0);
   const [labelSuggestions, setLabelSuggestions] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'details' | 'raw_text'>('details');
+  const [detailsViewMode, setDetailsViewMode] = useState<'row' | 'table'>('row');
+  const [unmaskedFieldIndices, setUnmaskedFieldIndices] = useState<Record<number, boolean>>({});
+  const [expandedRowMeta, setExpandedRowMeta] = useState<Record<number, boolean>>({});
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [workerStatus, setWorkerStatus] = useState<string>('Ready');
   const [externalAiWarning, setExternalAiWarning] = useState<string | null>(null);
@@ -259,8 +262,8 @@ export default function App() {
     setView('auth');
   };
 
-  // Supported File Extensions: Accept PDF, PNG, JPG and JPEG. Skip everything else.
-  const SUPPORTED_EXTS = ['.pdf', '.png', '.jpg', '.jpeg'];
+  // Supported File Extensions: Accept PDF, images, Word documents, text, spreadsheets, email.
+  const SUPPORTED_EXTS = ['.pdf', '.png', '.jpg', '.jpeg', '.docx', '.doc', '.txt', '.csv', '.xlsx', '.eml', '.tiff', '.tif', '.bmp'];
 
   // Recursive folder traversal via webkitGetAsEntry
   const traverseFileSystemEntry = async (
@@ -1953,42 +1956,99 @@ export default function App() {
                     </div>
 
                     {/* Right Panel: Review Screen with Details and Raw Text Tab */}
-                    <div className="card">
-                      {/* Section 7: Tab Navigation (Details found vs Raw text per page) */}
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--border)', paddingBottom: '8px' }}>
-                        <button
-                          type="button"
-                          className={`btn ${activeTab === 'details' ? 'pri' : ''}`}
-                          onClick={() => setActiveTab('details')}
-                        >
-                          Details found ({draftFields.length})
-                        </button>
-                        <button
-                          type="button"
-                          className={`btn ${activeTab === 'raw_text' ? 'pri' : ''}`}
-                          onClick={() => setActiveTab('raw_text')}
-                        >
-                          Raw text per page
-                        </button>
+                    <div className="card details-panel-container">
+                      {/* Top Header: "N fields" + Tab Navigation + View Toggle + Copy JSON */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>
+                          {draftFields.length} fields
+                        </h3>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <div style={{ display: 'inline-flex', borderRadius: '6px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                            <button
+                              type="button"
+                              className={`btn ${activeTab === 'details' ? 'pri' : ''}`}
+                              style={{ padding: '3px 10px', fontSize: '12px', border: 'none', borderRadius: 0 }}
+                              onClick={() => setActiveTab('details')}
+                            >
+                              Fields ({draftFields.length})
+                            </button>
+                            <button
+                              type="button"
+                              className={`btn ${activeTab === 'raw_text' ? 'pri' : ''}`}
+                              style={{ padding: '3px 10px', fontSize: '12px', border: 'none', borderRadius: 0 }}
+                              onClick={() => setActiveTab('raw_text')}
+                            >
+                              Page text
+                            </button>
+                          </div>
+
+                          {activeTab === 'details' && (
+                            <button
+                              type="button"
+                              className="btn"
+                              style={{ padding: '3px 8px', fontSize: '12px' }}
+                              onClick={() => setDetailsViewMode((m) => m === 'row' ? 'table' : 'row')}
+                              title="Switch between standard row view and compact 2-column table view"
+                            >
+                              {detailsViewMode === 'row' ? '⊞ Table view' : '☰ Row view'}
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            className="btn"
+                            style={{ padding: '3px 8px', fontSize: '12px' }}
+                            onClick={() => {
+                              const jsonOutput = {
+                                document_kind: f.type || 'Unknown',
+                                type: f.type || 'Unknown',
+                                fields: draftFields.map((d) => ({
+                                  label: d.label,
+                                  value: d.value,
+                                  confidence: d.conf ?? 1.0,
+                                  page: d.page ?? 1,
+                                })),
+                              };
+                              navigator.clipboard.writeText(JSON.stringify(jsonOutput, null, 2));
+                              setSavedToast('JSON Copied!');
+                              setTimeout(() => setSavedToast(''), 3000);
+                            }}
+                          >
+                            📋 Copy JSON
+                          </button>
+                        </div>
                       </div>
 
                       {activeTab === 'raw_text' ? (
-                        <div className="raw-text-container">
-                          <p className="sub" style={{ fontStyle: 'italic', marginBottom: '12px' }}>
-                            Full text is preserved per page as raw text. Raw text is never turned into candidate fields.
-                          </p>
+                        <div className="raw-text-container" style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '6px', padding: '14px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--muted)' }}>Exact Page Text (OCR)</span>
+                            <button
+                              type="button"
+                              className="btn"
+                              style={{ padding: '3px 10px', fontSize: '12px' }}
+                              onClick={() => {
+                                const allTxt = (f.raw_text_by_page && Object.values(f.raw_text_by_page).join('\n\n')) || f.raw_text || (f as any).full_text || '';
+                                navigator.clipboard.writeText(allTxt);
+                                setSavedToast('Copied all text to clipboard');
+                                setTimeout(() => setSavedToast(''), 3000);
+                              }}
+                            >
+                              📋 Copy all text
+                            </button>
+                          </div>
                           {f.raw_text_by_page && Object.keys(f.raw_text_by_page).length > 0 ? (
                             Object.entries(f.raw_text_by_page).map(([pg, txt]) => (
                               <div key={pg} style={{ marginBottom: '16px' }}>
-                                <h4 style={{ margin: '0 0 6px 0', color: 'var(--muted)' }}>Page {pg}</h4>
-                                <pre style={{ background: 'rgba(0,0,0,0.25)', padding: '12px', borderRadius: '6px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '12px', lineHeight: '1.4' }}>
+                                <h4 style={{ margin: '0 0 6px 0', color: 'var(--muted)', fontSize: '12px' }}>Page {pg}</h4>
+                                <pre style={{ background: 'var(--panel)', padding: '10px', borderRadius: '4px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '12px', lineHeight: '1.4' }}>
                                   {txt}
                                 </pre>
                               </div>
                             ))
                           ) : (
-                            <pre style={{ background: 'rgba(0,0,0,0.25)', padding: '12px', borderRadius: '6px', whiteSpace: 'pre-wrap', fontSize: '12px' }}>
-                              No raw text recorded for this document.
+                            <pre style={{ background: 'var(--panel)', padding: '10px', borderRadius: '4px', whiteSpace: 'pre-wrap', fontSize: '12px' }}>
+                              {f.raw_text || (f as any).full_text || 'No raw text recorded for this document.'}
                             </pre>
                           )}
                         </div>
@@ -1997,7 +2057,8 @@ export default function App() {
                           {(() => {
                             const renderFieldRow = (x: FieldItem, i: number, isMore: boolean = false) => {
                               const confPct = Math.round((x.conf ?? 1.0) * 100);
-                              const isLow = (x.conf ?? 1.0) < 0.85;
+                              const isNotFound = !x.value || !x.value.trim();
+                              const isUnsure = (x.conf ?? 1.0) < 0.85 || (x.val_conf ?? 1.0) < 0.85 || !x.label || (x.lbl_conf ?? 1.0) < 0.85 || x.hint === 'needs label';
                               const isRowEdited = Boolean(
                                 x.is_edited ||
                                 x.src === 'edited' ||
@@ -2006,37 +2067,34 @@ export default function App() {
                               );
                               const needsLabel = !x.label && (x.hint === 'needs label' || (x.lbl_conf ?? 1.0) < 0.85);
 
+                              let valueBorderStyle: React.CSSProperties = {};
+                              if (isNotFound) {
+                                valueBorderStyle = { border: '1px dashed #ef4444', background: 'rgba(239, 68, 68, 0.05)' };
+                              } else if (isUnsure) {
+                                valueBorderStyle = { border: '1px solid #f59e0b', boxShadow: '0 0 0 1px #f59e0b', background: 'rgba(245, 158, 11, 0.03)' };
+                              }
+
+                              const isRowExpanded = Boolean(expandedRowMeta[i]);
+                              const isSensitive = Boolean(x.is_sensitive);
+                              const isUnmasked = Boolean(unmaskedFieldIndices[i]);
+                              const displayValue = (isSensitive && !isUnmasked) ? (x.masked_value || '***-**-****') : x.value;
+
                               return (
                                 <div
-                                  className={`fr ${activeDetailIdx === i ? 'active-detail' : ''}`}
+                                  className={`fr-row ${activeDetailIdx === i ? 'active-detail' : ''}`}
                                   key={i}
                                   onClick={() => handleDetailClick(i, x.bbox)}
+                                  style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '2px',
+                                    marginBottom: '4px',
+                                    padding: '3px 6px',
+                                  }}
                                 >
-                                  {/* Left Column: Editable label input with suggestions & alternative picker */}
-                                  <div className="fr-label-container" style={{ width: '100%' }}>
-                                    <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                                      <select
-                                        value={x.structure_type || 'label_value_pair'}
-                                        onChange={(e) => {
-                                          e.stopPropagation();
-                                          handleReclassifyRegion(f.id, x.region_id || `region_${i}`, e.target.value, i);
-                                        }}
-                                        style={{
-                                          fontSize: '11px',
-                                          padding: '2px 4px',
-                                          borderRadius: '4px',
-                                          border: '1px solid var(--border)',
-                                          background: 'var(--card-hover)',
-                                          color: 'var(--fg)',
-                                          fontWeight: 600,
-                                        }}
-                                        title="Structure type (1-click correction)"
-                                        aria-label={`Structure type for row ${i + 1}`}
-                                      >
-                                        {STRUCTURE_TYPES.map((st) => (
-                                          <option key={st.value} value={st.value}>{st.label}</option>
-                                        ))}
-                                      </select>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+                                    {/* Left Column: Fixed-width column for label on the same baseline */}
+                                    <div className="fr-col-label" style={{ flex: '0 0 170px', width: '170px' }}>
                                       <input
                                         type="text"
                                         className="fr-label-input"
@@ -2045,160 +2103,137 @@ export default function App() {
                                         onChange={(e) => updateDraft(i, 'label', e.target.value)}
                                         placeholder={needsLabel ? 'needs label' : 'Add label'}
                                         aria-label={`Label for row ${i + 1}`}
-                                        style={{ flex: 1, minWidth: '120px' }}
+                                        style={{ width: '100%', fontSize: '12px', fontWeight: 500, padding: '3px 6px' }}
                                       />
-                                      {!x.label && x.suggested_label && (
+                                    </div>
+
+                                    {/* Right Column: Value box on the same baseline, auto-growing, no scrollbars */}
+                                    <div className="fr-col-value" style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <textarea
+                                        className="fr-value-area"
+                                        rows={Math.max(1, Math.ceil((displayValue || '').length / 60))}
+                                        value={displayValue}
+                                        readOnly={isSensitive && !isUnmasked}
+                                        onChange={(e) => updateDraft(i, 'value', e.target.value)}
+                                        placeholder="Value"
+                                        aria-label={`Value for ${x.label || 'detail'}`}
+                                        style={{
+                                          ...valueBorderStyle,
+                                          width: '100%',
+                                          fontSize: '12px',
+                                          lineHeight: '1.35',
+                                          padding: '3px 6px',
+                                          minHeight: '26px',
+                                          height: 'auto',
+                                          overflow: 'hidden',
+                                          resize: 'none',
+                                          fontFamily: isSensitive && !isUnmasked ? 'monospace' : 'inherit',
+                                        }}
+                                      />
+
+                                      {/* Sensitive unmask toggle */}
+                                      {isSensitive && (
                                         <button
                                           type="button"
                                           className="btn"
-                                          style={{ fontSize: '11px', padding: '2px 8px', background: '#0284c7', color: '#fff', border: 'none', borderRadius: '4px' }}
+                                          style={{ fontSize: '11px', padding: '2px 6px', flexShrink: 0 }}
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            handleAcceptSuggestion(i);
+                                            setUnmaskedFieldIndices(prev => ({ ...prev, [i]: !prev[i] }));
                                           }}
-                                          title="Accept suggested label"
+                                          title={isUnmasked ? 'Mask sensitive data' : 'Unmask sensitive data'}
                                         >
-                                          Suggested: "{x.suggested_label}" ✓
+                                          {isUnmasked ? 'Hide' : 'Show'}
                                         </button>
                                       )}
-                                      {x.label && (x.suggested_label || x.src === 'generated') && x.src !== 'verified' && (
-                                        <span
-                                          className="pill"
-                                          title={x.reason || 'Learned suggestion (click or press Enter to accept)'}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAcceptSuggestion(i);
-                                          }}
-                                          style={{ cursor: 'pointer', background: '#0284c7', color: '#ffffff', fontWeight: 600, fontSize: '11px' }}
-                                        >
-                                          suggested ✓
-                                        </span>
-                                      )}
-                                      {x.src === 'verified' && (
-                                        <span className="pill" style={{ background: '#166534', color: '#bbf7d0', fontSize: '11px', fontWeight: 600 }}>
-                                          verified by reviewer
-                                        </span>
-                                      )}
-                                      {x.alternatives && x.alternatives.length > 0 && (
-                                        <select
-                                          style={{ fontSize: '11px', padding: '2px 4px', background: 'var(--card)', color: 'var(--fg)', border: '1px solid var(--border)', borderRadius: '4px' }}
-                                          value=""
-                                          onChange={(e) => {
-                                            e.stopPropagation();
-                                            handleSelectAlternative(i, e.target.value);
-                                          }}
-                                          title="Choose alternative learned label"
-                                        >
-                                          <option value="" disabled>Alternatives...</option>
-                                          {x.alternatives.map((alt, aidx) => (
-                                            <option key={aidx} value={alt}>{alt}</option>
-                                          ))}
-                                        </select>
-                                      )}
-                                      {isMore && (
-                                        <button
-                                          type="button"
-                                          className="btn"
-                                          style={{ fontSize: '11px', padding: '2px 8px' }}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handlePromoteDetail(f.id, x.id, i);
-                                          }}
-                                          title="Promote this candidate to key details"
-                                        >
-                                          ⬆ Promote
-                                        </button>
-                                      )}
+
+                                      {/* Row metadata toggle */}
+                                      <button
+                                        type="button"
+                                        className="btn"
+                                        style={{ fontSize: '10px', padding: '2px 5px', color: 'var(--muted)', flexShrink: 0 }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setExpandedRowMeta(prev => ({ ...prev, [i]: !prev[i] }));
+                                        }}
+                                        title={isRowExpanded ? 'Hide details' : 'More details'}
+                                      >
+                                        {isRowExpanded ? '▲' : 'ℹ️'}
+                                      </button>
+
+                                      {/* Delete row */}
+                                      <button
+                                        type="button"
+                                        className="btn-not-field"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          removeDraftRow(i);
+                                        }}
+                                        title="Mark as not a field (remove noise)"
+                                        aria-label={`Mark as not a field: ${x.label || 'row'}`}
+                                        style={{ flexShrink: 0 }}
+                                      >
+                                        ✕
+                                      </button>
                                     </div>
                                   </div>
 
-                                  {/* Right Column: Editable wrapping value */}
-                                  <div style={{ width: '100%' }}>
-                                    <textarea
-                                      className="fr-value-area"
-                                      rows={Math.max(1, Math.ceil(x.value.length / 55))}
-                                      value={x.value}
-                                      onChange={(e) =>
-                                        updateDraft(i, 'value', e.target.value)
-                                      }
-                                      placeholder="Value"
-                                      aria-label={`Value for ${x.label || 'detail'}`}
-                                    />
-                                    {/* Split suggestion banner */}
-                                    {x.split_suggestion && Array.isArray(x.split_suggestion) && x.split_suggestion.length > 0 && (
-                                      <div style={{ marginTop: '6px', padding: '6px 10px', background: 'rgba(56, 189, 248, 0.1)', border: '1px dashed #38bdf8', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '12px' }}>
-                                          💡 Suggested split: {x.split_suggestion.map((s: any) => `${s.label}: "${s.value}"`).join(' & ')}
-                                        </span>
-                                        <div style={{ display: 'flex', gap: '6px' }}>
-                                          <button
-                                            type="button"
-                                            className="btn"
-                                            style={{ fontSize: '11px', padding: '2px 8px' }}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleAcceptSplit(f.id, x.id, i);
-                                            }}
-                                          >
-                                            Accept split
-                                          </button>
-                                          <button
-                                            type="button"
-                                            className="btn"
-                                            style={{ fontSize: '11px', padding: '2px 8px' }}
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleDismissSplit(i);
-                                            }}
-                                          >
-                                            Dismiss
-                                          </button>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Option to mark as not a field (remove noise line) */}
-                                  <div style={{ display: 'flex', alignItems: 'center' }}>
-                                    <button
-                                      type="button"
-                                      className="btn-not-field"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        removeDraftRow(i);
+                                  {/* Collapsed metadata shown ONLY when toggled open */}
+                                  {isRowExpanded && (
+                                    <div
+                                      className="fr-meta-under"
+                                      style={{
+                                        marginLeft: '178px',
+                                        padding: '4px 8px',
+                                        background: 'var(--card-hover)',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        gap: '8px',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                        fontSize: '11px',
+                                        color: 'var(--muted)',
                                       }}
-                                      title="Mark as not a field (remove noise)"
-                                      aria-label={`Mark as not a field: ${x.label || 'row'}`}
                                     >
-                                      ✕ Not a field
-                                    </button>
-                                  </div>
-
-                                  <div className="meta">
-                                    <span>
-                                      Val: {Math.round((x.val_conf ?? x.conf ?? 0.985) * 100)}% · Lbl: {x.label && x.label.trim() && x.lbl_conf !== undefined && x.lbl_conf !== null ? `${Math.round(x.lbl_conf * 100)}%` : '-'} · Struct: {Math.round((x.structure_confidence ?? 1.0) * 100)}%
-                                    </span>
-                                    <span className="pill" style={{ fontSize: '10px', background: 'rgba(255,255,255,0.06)' }}>
-                                      {x.structure_type || 'label_value_pair'}
-                                    </span>
-                                    {isLow && (
-                                      <span className="pill warn">check this</span>
-                                    )}
-                                    {isRowEdited && (
-                                      <span className="pill warn" style={{ background: '#fef08a', color: '#854d0e', fontWeight: 600 }}>
-                                        edited
+                                      <span className="fr-meta-type-tag">
+                                        {STRUCTURE_TYPES.find(st => st.value === x.structure_type)?.label || x.structure_type || 'Label-Value'}
                                       </span>
-                                    )}
-                                    {x.src === 'added' && (
-                                      <span className="pill warn">added</span>
-                                    )}
-                                    {x.page && (
-                                      <span>Page {x.page}</span>
-                                    )}
-                                    {x.grounding_span && (
-                                      <span style={{ fontSize: '10px', color: 'var(--muted)' }}>📍 Grounded</span>
-                                    )}
-                                  </div>
+                                      <span>Conf {confPct}% · {x.src === 'ocr' ? 'OCR' : (x.src || 'OCR')} · Page {x.page || 1}</span>
+                                      {isUnsure && !isNotFound && (
+                                        <span className="pill warn" style={{ fontSize: '10px', padding: '1px 5px' }}>unsure</span>
+                                      )}
+                                      {isNotFound && (
+                                        <span className="pill warn" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontSize: '10px', padding: '1px 5px' }}>not found</span>
+                                      )}
+                                      {isRowEdited && (
+                                        <span className="pill warn" style={{ background: '#fef08a', color: '#854d0e', fontSize: '10px', padding: '1px 5px', fontWeight: 600 }}>edited</span>
+                                      )}
+                                      {x.grounding_span && (
+                                        <span style={{ fontSize: '10px', color: 'var(--muted)' }}>📍 Grounded</span>
+                                      )}
+                                      <select
+                                        value={x.structure_type || 'label_value_pair'}
+                                        onChange={(e) => {
+                                          e.stopPropagation();
+                                          handleReclassifyRegion(f.id, x.region_id || `region_${i}`, e.target.value, i);
+                                        }}
+                                        style={{
+                                          fontSize: '10px',
+                                          padding: '1px 3px',
+                                          borderRadius: '3px',
+                                          border: '1px solid var(--border)',
+                                          background: 'var(--panel)',
+                                          color: 'var(--fg)',
+                                          marginLeft: 'auto'
+                                        }}
+                                        title="Change structure type"
+                                      >
+                                        {STRUCTURE_TYPES.map((st) => (
+                                          <option key={st.value} value={st.value}>{st.label}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  )}
                                 </div>
                               );
                             };
@@ -2260,155 +2295,193 @@ export default function App() {
 
                             return (
                               <div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                  <h2 style={{ margin: 0 }}>Details found</h2>
-                                  <button
-                                    type="button"
-                                    className="btn"
-                                    style={{ padding: '4px 10px', fontSize: '13px' }}
-                                    onClick={handleCopyJson}
-                                  >
-                                    📋 Copy JSON
-                                  </button>
-                                </div>
 
-                                {f.document_summary && (
-                                  <div style={{ padding: '8px 12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border)', borderRadius: '6px', marginBottom: '12px' }}>
-                                    <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase' }}>Summary</div>
-                                    <div style={{ fontSize: '13px', marginTop: '3px' }}>{f.document_summary}</div>
-                                    {f.tags && f.tags.length > 0 && (
-                                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
-                                        {f.tags.map((t, tidx) => (
-                                          <span key={tidx} className="pill" style={{ fontSize: '11px' }}>#{t}</span>
-                                        ))}
+                                {/* Tables Section: Render table only if document really has one */}
+                                {(() => {
+                                  if (!draftTables || draftTables.length === 0) return null;
+
+                                  const validTables = draftTables.filter((tbl) =>
+                                    tbl &&
+                                    tbl.headers &&
+                                    tbl.headers.length > 0 &&
+                                    tbl.rows &&
+                                    tbl.rows.some((row) =>
+                                      Object.values(row).some((v) => v && String(v).trim().length > 0)
+                                    )
+                                  );
+
+                                  if (validTables.length === 0) return null;
+
+                                  return (
+                                    <div style={{ marginBottom: '20px' }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <h3 style={{ margin: 0, fontSize: '15px' }}>Structured Tables ({validTables.length})</h3>
                                       </div>
-                                    )}
-                                  </div>
-                                )}
+                                      {validTables.map((tbl, tIdx) => {
+                                        const isSummaryRow = (row: Record<string, string>) => {
+                                          const text = Object.values(row).join(' ').toLowerCase();
+                                          return /subtotal|sub-total|total tax|tax\b|vat\b|sales tax|grand total|^total\b|balance due|amount due/i.test(text);
+                                        };
+                                        const lineItems = tbl.rows.filter((r) => !isSummaryRow(r) && Object.values(r).some((v) => v && String(v).trim().length > 0));
+                                        const tableSummaryRows = tbl.rows.filter((r) => isSummaryRow(r));
 
-                                {/* Findings Panel: Always show 'detectors run: N, findings: M' */}
-                                <div
-                                  className="findings-panel"
-                                  style={{
-                                    background: 'rgba(255, 255, 255, 0.04)',
-                                    border: '1px solid var(--border)',
-                                    borderRadius: '6px',
-                                    padding: '10px 14px',
-                                    marginBottom: '16px',
-                                  }}
-                                >
-                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontSize: '13px', fontWeight: 600 }}>
-                                      🛡️ Sensitive Data Panel: detectors run: {detectorsRunCount}, findings: {findingsCount}
-                                    </span>
-                                    {(f as any).is_restricted && (
-                                      <span className="pill warn" style={{ background: '#7f1d1d', color: '#fca5a5' }}>
-                                        RESTRICTED
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
+                                        // Extract summary totals: Subtotal, Tax, Total
+                                        const summaryTotals: Array<{ label: string; value: string }> = [];
+                                        tableSummaryRows.forEach((row) => {
+                                          const keys = Object.keys(row);
+                                          const labelKey = keys.find((k) => /desc|item|particular|name|type|label/i.test(k)) || keys[0];
+                                          const valKey = keys.find((k) => /amount|total|price|val/i.test(k)) || keys[keys.length - 1];
+                                          if (row[labelKey] || row[valKey]) {
+                                            summaryTotals.push({ label: row[labelKey] || 'Total', value: row[valKey] || '' });
+                                          }
+                                        });
+                                        tableTotalsGroup.forEach(({ item }) => {
+                                          if (!summaryTotals.some((st) => st.label.toLowerCase() === item.label.toLowerCase())) {
+                                            summaryTotals.push({ label: item.label || 'Total', value: item.value || '' });
+                                          }
+                                        });
 
-                                {/* Tables Section */}
-                                {draftTables && draftTables.length > 0 && (
-                                  <div style={{ marginBottom: '20px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                      <h3 style={{ margin: 0, fontSize: '15px' }}>Structured Tables ({draftTables.length})</h3>
-                                    </div>
-                                    {draftTables.map((tbl, tIdx) => (
-                                      <div key={tIdx} style={{ marginBottom: '16px', border: '1px solid var(--border)', borderRadius: '6px', padding: '12px', background: 'var(--card)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                          <span style={{ fontWeight: 600, fontSize: '13px' }}>Table {tIdx + 1} (Page {tbl.page || 1}) · {tbl.rows.length} rows</span>
-                                          <div style={{ display: 'flex', gap: '6px' }}>
-                                            <button type="button" className="btn" style={{ fontSize: '11px', padding: '2px 8px' }} onClick={() => addTableColumn(tIdx)}>+ Column</button>
-                                            <button type="button" className="btn" style={{ fontSize: '11px', padding: '2px 8px' }} onClick={() => addTableRow(tIdx)}>+ Row</button>
-                                          </div>
-                                        </div>
+                                        // Count unsure cells
+                                        let unsureCellCount = 0;
+                                        lineItems.forEach((row) => {
+                                          tbl.headers.forEach((h) => {
+                                            const val = row[h];
+                                            if (!val || !val.trim() || val === '?' || val === '[unclear]') {
+                                              unsureCellCount++;
+                                            }
+                                          });
+                                        });
 
-                                        {/* Arithmetic check status badges */}
-                                        {tbl.arithmetic_checks && tbl.arithmetic_checks.length > 0 && (
-                                          <div style={{ marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                            {tbl.arithmetic_checks.map((chk, cIdx) => (
-                                              <div
-                                                key={cIdx}
-                                                style={{
-                                                  fontSize: '11px',
-                                                  padding: '3px 6px',
-                                                  borderRadius: '4px',
-                                                  background: chk.status === 'verified' ? '#f0fdf4' : '#fef2f2',
-                                                  color: chk.status === 'verified' ? '#166534' : '#991b1b',
-                                                  border: `1px solid ${chk.status === 'verified' ? '#bbf7d0' : '#fecaca'}`,
-                                                }}
-                                              >
-                                                <span>{chk.status === 'verified' ? '✓ ' : '⚠️ '}</span>
-                                                <span><strong>{chk.type.toUpperCase()}:</strong> {chk.message}</span>
+                                        return (
+                                          <div key={tIdx} style={{ marginBottom: '16px', border: '1px solid var(--border)', borderRadius: '6px', padding: '12px', background: 'var(--card)' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontWeight: 600, fontSize: '13px' }}>
+                                                  Table {tIdx + 1} (Page {tbl.page || 1}) · {lineItems.length} line items
+                                                </span>
+                                                {unsureCellCount > 0 && (
+                                                  <span className="pill warn" style={{ fontSize: '11px', padding: '2px 6px' }}>
+                                                    ⚠️ {unsureCellCount} unsure cell{unsureCellCount > 1 ? 's' : ''}
+                                                  </span>
+                                                )}
                                               </div>
-                                            ))}
-                                          </div>
-                                        )}
+                                              <div style={{ display: 'flex', gap: '6px' }}>
+                                                <button type="button" className="btn" style={{ fontSize: '11px', padding: '2px 8px' }} onClick={() => addTableColumn(tIdx)}>+ Column</button>
+                                                <button type="button" className="btn" style={{ fontSize: '11px', padding: '2px 8px' }} onClick={() => addTableRow(tIdx)}>+ Line Item</button>
+                                              </div>
+                                            </div>
 
-                                        {/* Grid Table */}
-                                        <div style={{ overflowX: 'auto' }}>
-                                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                                            <thead>
-                                              <tr style={{ background: 'var(--card-hover)', borderBottom: '1px solid var(--border)' }}>
-                                                <th style={{ width: '28px', padding: '4px', textAlign: 'center' }}>#</th>
-                                                {tbl.headers.map((h, hIdx) => (
-                                                  <th key={hIdx} style={{ padding: '6px', textAlign: 'left' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                      <input
-                                                        type="text"
-                                                        value={h}
-                                                        onChange={(e) => updateTableHeader(tIdx, hIdx, e.target.value)}
-                                                        style={{ fontWeight: 600, padding: '2px 4px', width: '100%', fontSize: '11px' }}
-                                                      />
-                                                      <button
-                                                        type="button"
-                                                        onClick={() => removeTableColumn(tIdx, hIdx)}
-                                                        title="Delete column"
-                                                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '11px' }}
-                                                      >
-                                                        ✕
-                                                     </button>
-                                                    </div>
-                                                  </th>
+                                            {/* Arithmetic check status badges */}
+                                            {tbl.arithmetic_checks && tbl.arithmetic_checks.length > 0 && (
+                                              <div style={{ marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                {tbl.arithmetic_checks.map((chk, cIdx) => (
+                                                  <div
+                                                    key={cIdx}
+                                                    style={{
+                                                      fontSize: '11px',
+                                                      padding: '3px 6px',
+                                                      borderRadius: '4px',
+                                                      background: chk.status === 'verified' ? '#f0fdf4' : '#fef2f2',
+                                                      color: chk.status === 'verified' ? '#166534' : '#991b1b',
+                                                      border: `1px solid ${chk.status === 'verified' ? '#bbf7d0' : '#fecaca'}`,
+                                                    }}
+                                                  >
+                                                    <span>{chk.status === 'verified' ? '✓ ' : '⚠️ '}</span>
+                                                    <span><strong>{chk.type.toUpperCase()}:</strong> {chk.message}</span>
+                                                  </div>
                                                 ))}
-                                                <th style={{ width: '32px', padding: '4px' }}></th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              {tbl.rows.map((row, rIdx) => (
-                                                <tr key={rIdx} style={{ borderBottom: '1px solid var(--border)' }}>
-                                                  <td style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '11px' }}>{rIdx + 1}</td>
-                                                  {tbl.headers.map((h, hIdx) => (
-                                                    <td key={hIdx} style={{ padding: '3px' }}>
-                                                      <input
-                                                        type="text"
-                                                        value={row[h] || ''}
-                                                        onChange={(e) => updateTableCell(tIdx, rIdx, h, e.target.value)}
-                                                        style={{ width: '100%', padding: '3px 5px', fontSize: '12px' }}
-                                                      />
-                                                    </td>
+                                              </div>
+                                            )}
+
+                                            {/* Grid Table for Line Items */}
+                                            <div style={{ overflowX: 'auto' }}>
+                                              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                                                <thead>
+                                                  <tr style={{ background: 'var(--card-hover)', borderBottom: '1px solid var(--border)' }}>
+                                                    <th style={{ width: '28px', padding: '4px', textAlign: 'center' }}>#</th>
+                                                    {tbl.headers.map((h, hIdx) => (
+                                                      <th key={hIdx} style={{ padding: '6px', textAlign: 'left' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                          <input
+                                                            type="text"
+                                                            value={h}
+                                                            onChange={(e) => updateTableHeader(tIdx, hIdx, e.target.value)}
+                                                            style={{ fontWeight: 600, padding: '2px 4px', width: '100%', fontSize: '11px' }}
+                                                          />
+                                                          <button
+                                                            type="button"
+                                                            onClick={() => removeTableColumn(tIdx, hIdx)}
+                                                            title="Delete column"
+                                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '11px' }}
+                                                          >
+                                                            ✕
+                                                          </button>
+                                                        </div>
+                                                      </th>
+                                                    ))}
+                                                    <th style={{ width: '32px', padding: '4px' }}></th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  {lineItems.map((row, rIdx) => (
+                                                    <tr key={rIdx} style={{ borderBottom: '1px solid var(--border)' }}>
+                                                      <td style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '11px' }}>{rIdx + 1}</td>
+                                                      {tbl.headers.map((h, hIdx) => {
+                                                        const cellVal = row[h] || '';
+                                                        const isCellUnsure = !cellVal || !cellVal.trim() || cellVal === '?' || cellVal === '[unclear]';
+                                                        return (
+                                                          <td key={hIdx} style={{ padding: '3px' }}>
+                                                            <input
+                                                              type="text"
+                                                              value={cellVal}
+                                                              onChange={(e) => updateTableCell(tIdx, rIdx, h, e.target.value)}
+                                                              style={{
+                                                                width: '100%',
+                                                                padding: '3px 5px',
+                                                                fontSize: '12px',
+                                                                border: isCellUnsure ? '1px solid #f59e0b' : '1px solid var(--border)',
+                                                                background: isCellUnsure ? 'rgba(245, 158, 11, 0.08)' : 'var(--panel)',
+                                                              }}
+                                                            />
+                                                          </td>
+                                                        );
+                                                      })}
+                                                      <td style={{ textAlign: 'center', padding: '3px' }}>
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => removeTableRow(tIdx, rIdx)}
+                                                          title="Delete line item"
+                                                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '12px' }}
+                                                        >
+                                                          ✕
+                                                        </button>
+                                                      </td>
+                                                    </tr>
                                                   ))}
-                                                  <td style={{ textAlign: 'center', padding: '3px' }}>
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => removeTableRow(tIdx, rIdx)}
-                                                      title="Delete row"
-                                                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: '12px' }}
-                                                    >
-                                                      🗑️
-                                                    </button>
-                                                  </td>
-                                                </tr>
-                                              ))}
-                                            </tbody>
-                                          </table>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
+                                                </tbody>
+                                              </table>
+                                            </div>
+
+                                            {/* Summary block under table: Subtotal, Tax, Total shown once */}
+                                            {summaryTotals.length > 0 && (
+                                              <div style={{ marginTop: '14px', display: 'flex', justifyContent: 'flex-end' }}>
+                                                <div style={{ minWidth: '240px', maxWidth: '320px', padding: '10px 14px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--border)', borderRadius: '6px' }}>
+                                                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '6px' }}>Summary Totals</div>
+                                                  {summaryTotals.map((tot, sIdx) => (
+                                                    <div key={sIdx} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '13px', borderTop: sIdx > 0 ? '1px dashed var(--border)' : 'none' }}>
+                                                      <span style={{ color: 'var(--muted)', fontWeight: 500 }}>{tot.label}:</span>
+                                                      <span style={{ fontWeight: 600, fontFamily: 'monospace' }}>{tot.value}</span>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  );
+                                })()}
 
                                 <datalist id="doc-label-suggestions">
                                   {labelSuggestions.map((sug, sIdx) => (
@@ -2420,94 +2493,61 @@ export default function App() {
                                   <p className="sub">No details extracted.</p>
                                 )}
 
-                                {/* 1. Fields & Details */}
-                                {fieldsGroup.length > 0 && (
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <h3 style={{ margin: '14px 0 8px 0', fontSize: '15px' }}>📝 Fields & Details ({fieldsGroup.length})</h3>
-                                    {keyDetailsWithIdx.map(({ item, idx }) =>
-                                      renderFieldRow(item, idx, false)
-                                    )}
+                                {detailsViewMode === 'table' ? (
+                                  <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: '6px', marginBottom: '16px' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                                      <thead>
+                                        <tr style={{ background: 'var(--card-hover)', borderBottom: '1px solid var(--border)' }}>
+                                          <th style={{ width: '35%', padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Label</th>
+                                          <th style={{ width: '65%', padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Value</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {draftFields.map((fld, idx) => {
+                                          const isSens = Boolean(fld.is_sensitive);
+                                          const isUnm = Boolean(unmaskedFieldIndices[idx]);
+                                          const dispVal = (isSens && !isUnm) ? (fld.masked_value || '***-**-****') : fld.value;
+                                          return (
+                                            <tr
+                                              key={idx}
+                                              style={{
+                                                borderBottom: '1px solid var(--border)',
+                                                background: activeDetailIdx === idx ? 'rgba(2, 132, 199, 0.08)' : 'transparent',
+                                                cursor: 'pointer',
+                                              }}
+                                              onClick={() => handleDetailClick(idx, fld.bbox)}
+                                            >
+                                              <td style={{ padding: '6px 10px', fontWeight: 500, color: 'var(--muted)', verticalAlign: 'top' }}>
+                                                {fld.label || <span style={{ color: '#f59e0b', fontStyle: 'italic' }}>needs label</span>}
+                                              </td>
+                                              <td style={{ padding: '6px 10px', verticalAlign: 'top' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                                                  <span style={{ fontFamily: isSens && !isUnm ? 'monospace' : 'inherit' }}>{dispVal}</span>
+                                                  {isSens && (
+                                                    <button
+                                                      type="button"
+                                                      className="btn"
+                                                      style={{ fontSize: '11px', padding: '1px 6px' }}
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setUnmaskedFieldIndices(prev => ({ ...prev, [idx]: !prev[idx] }));
+                                                      }}
+                                                    >
+                                                      {isUnm ? 'Hide' : 'Show'}
+                                                    </button>
+                                                  )}
+                                                </div>
+                                              </td>
+                                            </tr>
+                                          );
+                                        })}
+                                      </tbody>
+                                    </table>
                                   </div>
-                                )}
-
-                                {/* 2. Lists */}
-                                {listsGroup.length > 0 && (
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <h3 style={{ margin: '16px 0 8px 0', fontSize: '15px' }}>📋 Lists ({listsGroup.length})</h3>
-                                    {listsGroup.map(({ item, idx }) =>
+                                ) : (
+                                  <div>
+                                    {draftFields.map((item, idx) =>
                                       renderFieldRow(item, idx, false)
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* 3. Checkboxes & Options */}
-                                {checkboxesGroup.length > 0 && (
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <h3 style={{ margin: '16px 0 8px 0', fontSize: '15px' }}>☑️ Checkboxes & Options ({checkboxesGroup.length})</h3>
-                                    {checkboxesGroup.map(({ item, idx }) =>
-                                      renderFieldRow(item, idx, false)
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* 4. Signatures & Stamps */}
-                                {signaturesGroup.length > 0 && (
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <h3 style={{ margin: '16px 0 8px 0', fontSize: '15px' }}>✍️ Signatures & Stamps ({signaturesGroup.length})</h3>
-                                    {signaturesGroup.map(({ item, idx }) =>
-                                      renderFieldRow(item, idx, false)
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* 5. Images & Charts */}
-                                {imagesGroup.length > 0 && (
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <h3 style={{ margin: '16px 0 8px 0', fontSize: '15px' }}>🖼️ Images & Charts ({imagesGroup.length})</h3>
-                                    {imagesGroup.map(({ item, idx }) =>
-                                      renderFieldRow(item, idx, false)
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* 6. Barcodes & Codes */}
-                                {codesGroup.length > 0 && (
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <h3 style={{ margin: '16px 0 8px 0', fontSize: '15px' }}>📱 Barcodes & Codes ({codesGroup.length})</h3>
-                                    {codesGroup.map(({ item, idx }) =>
-                                      renderFieldRow(item, idx, false)
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* 7. Attached Table Totals */}
-                                {tableTotalsGroup.length > 0 && (
-                                  <div style={{ marginBottom: '16px' }}>
-                                    <h3 style={{ margin: '16px 0 8px 0', fontSize: '15px' }}>Attached Table Totals ({tableTotalsGroup.length})</h3>
-                                    {tableTotalsGroup.map(({ item, idx }) =>
-                                      renderFieldRow(item, idx, false)
-                                    )}
-                                  </div>
-                                )}
-
-                                {/* Render Collapsible More Details if present */}
-                                {moreDetailsWithIdx.length > 0 && (
-                                  <div style={{ marginTop: '16px', borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
-                                    <button
-                                      type="button"
-                                      className="btn"
-                                      style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px' }}
-                                      onClick={() => setShowMoreDetails((prev) => !prev)}
-                                    >
-                                      <span>More details ({moreDetailsWithIdx.length})</span>
-                                      <span>{showMoreDetails ? '▲ Collapse' : '▼ Expand'}</span>
-                                    </button>
-                                    {showMoreDetails && (
-                                      <div style={{ marginTop: '10px' }}>
-                                        {moreDetailsWithIdx.map(({ item, idx }) =>
-                                          renderFieldRow(item, idx, true)
-                                        )}
-                                      </div>
                                     )}
                                   </div>
                                 )}

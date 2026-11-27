@@ -1,0 +1,1772 @@
+{
+  "eval_01_form.pdf": {
+    "doc_id": "eval_01_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Patient Registration Form",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Patient Registration Form",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_1 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024000",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-001-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "991-24-1409",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant1@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$45,000.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "100 North Elm Boulevard Suite 1",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_02_form.pdf": {
+    "doc_id": "eval_02_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Employee Onboarding Form",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Employee Onboarding Form",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_2 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024013",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-002-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "945-41-4657",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant2@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$49,200.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "125 North Elm Boulevard Suite 2",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_03_form.pdf": {
+    "doc_id": "eval_03_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Credit Card Application",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Credit Card Application",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_3 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024026",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-003-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "927-23-9935",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant3@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$53,400.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "150 North Elm Boulevard Suite 3",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_04_form.pdf": {
+    "doc_id": "eval_04_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "KYC Identity Verification",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "KYC Identity Verification",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_4 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024039",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-004-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "921-85-7912",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant4@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$57,600.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "175 North Elm Boulevard Suite 4",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_05_form.pdf": {
+    "doc_id": "eval_05_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Commercial Loan Request",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Commercial Loan Request",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_5 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024052",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-005-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "914-13-2535",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant5@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$61,800.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "200 North Elm Boulevard Suite 5",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_06_form.pdf": {
+    "doc_id": "eval_06_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Health Insurance Claim",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Health Insurance Claim",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_6 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024065",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-006-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "937-39-9279",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant6@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$66,000.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "225 North Elm Boulevard Suite 6",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_07_form.pdf": {
+    "doc_id": "eval_07_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Membership Enrollment",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Membership Enrollment",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_7 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024078",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-007-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "987-13-4257",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant7@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$70,200.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "250 North Elm Boulevard Suite 7",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_08_form.pdf": {
+    "doc_id": "eval_08_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Student Admission Record",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Student Admission Record",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_8 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024091",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-008-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "993-99-9928",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant8@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$74,400.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "275 North Elm Boulevard Suite 8",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_09_form.pdf": {
+    "doc_id": "eval_09_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Equipment Permit Application",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Equipment Permit Application",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_9 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024104",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-009-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "963-38-8359",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant9@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$78,600.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "300 North Elm Boulevard Suite 9",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_10_form.pdf": {
+    "doc_id": "eval_10_form",
+    "format_type": "digital_pdf",
+    "category": "form",
+    "title": "Vendor Vendor Compliance Form",
+    "line_count": 10,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Vendor Vendor Compliance Form",
+        "type": "heading"
+      },
+      {
+        "label": "Applicant Name",
+        "value": "Person_10 Alexander Smith",
+        "type": "pair"
+      },
+      {
+        "label": "Reference ID",
+        "value": "APP-2024117",
+        "type": "pair"
+      },
+      {
+        "label": "Submission Date",
+        "value": "2024-001-15",
+        "type": "pair"
+      },
+      {
+        "label": "Social Security Number",
+        "value": "985-45-1106",
+        "type": "pair"
+      },
+      {
+        "label": "Contact Email",
+        "value": "applicant10@examplecorp.org",
+        "type": "pair"
+      },
+      {
+        "label": "Annual Income",
+        "value": "$82,800.00",
+        "type": "pair"
+      },
+      {
+        "label": "Residential Address",
+        "value": "325 North Elm Boulevard Suite 10",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Authorization and Agreement Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Agreement Status",
+        "value": "Accepted and Signed in Full",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_11_invoice.pdf": {
+    "doc_id": "eval_11_invoice",
+    "format_type": "digital_pdf",
+    "category": "invoice",
+    "title": "Enterprise Consulting Invoice",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Enterprise Consulting Invoice",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88000",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-10-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 1 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director1@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1000",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$12,500.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$850.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$13,350.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990000",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_12_invoice.pdf": {
+    "doc_id": "eval_12_invoice",
+    "format_type": "digital_pdf",
+    "category": "invoice",
+    "title": "Hardware Lease Invoice",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Hardware Lease Invoice",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88019",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-11-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 2 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director2@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1111",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$13,850.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$945.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$14,795.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990031",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_13_invoice.pdf": {
+    "doc_id": "eval_13_invoice",
+    "format_type": "digital_pdf",
+    "category": "invoice",
+    "title": "Legal Advisory Remittance",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Legal Advisory Remittance",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88038",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-12-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 3 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director3@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1222",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$15,200.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$1,040.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$16,240.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990062",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_14_invoice.pdf": {
+    "doc_id": "eval_14_invoice",
+    "format_type": "digital_pdf",
+    "category": "invoice",
+    "title": "Freight Shipping Billing",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Freight Shipping Billing",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88057",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-10-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 4 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director4@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1333",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$16,550.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$1,135.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$17,685.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990093",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_15_invoice.pdf": {
+    "doc_id": "eval_15_invoice",
+    "format_type": "digital_pdf",
+    "category": "invoice",
+    "title": "Cloud Infrastructure Bill",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Cloud Infrastructure Bill",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88076",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-11-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 5 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director5@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1444",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$17,900.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$1,230.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$19,130.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990124",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_16_invoice_scan.png": {
+    "doc_id": "eval_16_invoice",
+    "format_type": "clean_scan_image",
+    "category": "invoice",
+    "title": "Facility Maintenance Invoice",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Facility Maintenance Invoice",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88095",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-12-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 6 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director6@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1555",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$19,250.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$1,325.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$20,575.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990155",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_17_invoice_scan.png": {
+    "doc_id": "eval_17_invoice",
+    "format_type": "clean_scan_image",
+    "category": "invoice",
+    "title": "Office Supplies Remittance",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Office Supplies Remittance",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88114",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-10-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 7 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director7@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1666",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$20,600.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$1,420.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$22,020.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990186",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_18_invoice_scan.png": {
+    "doc_id": "eval_18_invoice",
+    "format_type": "clean_scan_image",
+    "category": "invoice",
+    "title": "Software License Invoice",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Software License Invoice",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88133",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-11-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 8 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director8@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1777",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$21,950.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$1,515.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$23,465.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990217",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_19_invoice_scan.png": {
+    "doc_id": "eval_19_invoice",
+    "format_type": "clean_scan_image",
+    "category": "invoice",
+    "title": "Marketing Services Invoice",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Marketing Services Invoice",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88152",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-12-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 9 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director9@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1888",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$23,300.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$1,610.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$24,910.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990248",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_20_invoice_scan.png": {
+    "doc_id": "eval_20_invoice",
+    "format_type": "clean_scan_image",
+    "category": "invoice",
+    "title": "Security Audit Billing",
+    "line_count": 11,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Security Audit Billing",
+        "type": "heading"
+      },
+      {
+        "label": "Invoice Number",
+        "value": "INV-88171",
+        "type": "pair"
+      },
+      {
+        "label": "Invoice Date",
+        "value": "2024-10-10",
+        "type": "pair"
+      },
+      {
+        "label": "Client Organization",
+        "value": "Global Enterprise Partners 10 LLC",
+        "type": "pair"
+      },
+      {
+        "label": "Billing Contact",
+        "value": "billing.director10@globalpartners.net",
+        "type": "pair"
+      },
+      {
+        "label": "Payment Card",
+        "value": "4111 1111 1111 1999",
+        "type": "pair"
+      },
+      {
+        "label": "Subtotal Due",
+        "value": "$24,650.00",
+        "type": "pair"
+      },
+      {
+        "label": "Tax Surcharge",
+        "value": "$1,705.00",
+        "type": "pair"
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "$26,355.00",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Payment Remittance Instructions",
+        "type": "heading"
+      },
+      {
+        "label": "Bank Account Number",
+        "value": "ACCT-990279",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_21_letter_rot90.png": {
+    "doc_id": "eval_21_letter",
+    "format_type": "rotated_90",
+    "category": "letter",
+    "title": "Formal Employment Verification",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Formal Employment Verification",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 1",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-10",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 1",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 1",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "930-99-7924",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 1",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55000",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_22_letter_rot180.png": {
+    "doc_id": "eval_22_letter",
+    "format_type": "rotated_180",
+    "category": "letter",
+    "title": "Commercial Inquiry Letter",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Commercial Inquiry Letter",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 2",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-11",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 2",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 2",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "953-45-3547",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 2",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55047",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_23_letter_rot270.png": {
+    "doc_id": "eval_23_letter",
+    "format_type": "rotated_270",
+    "category": "letter",
+    "title": "Legal Settlement Notice",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Legal Settlement Notice",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 3",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-12",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 3",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 3",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "937-53-2674",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 3",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55094",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_24_letter_rot90.png": {
+    "doc_id": "eval_24_letter",
+    "format_type": "rotated_90",
+    "category": "letter",
+    "title": "Strategic Partnership Memo",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Strategic Partnership Memo",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 4",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-13",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 4",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 4",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "921-58-2584",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 4",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55141",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_25_letter_rot270.png": {
+    "doc_id": "eval_25_letter",
+    "format_type": "rotated_270",
+    "category": "letter",
+    "title": "Employment Termination Notice",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Employment Termination Notice",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 5",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-14",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 5",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 5",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "955-54-5333",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 5",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55188",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_26_letter_photo.png": {
+    "doc_id": "eval_26_letter",
+    "format_type": "tilted_photo",
+    "category": "letter",
+    "title": "Executive Resignation Letter",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Executive Resignation Letter",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 6",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-15",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 6",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 6",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "915-68-9785",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 6",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55235",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_27_letter_photo.png": {
+    "doc_id": "eval_27_letter",
+    "format_type": "tilted_photo",
+    "category": "letter",
+    "title": "Academic Recommendation Letter",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Academic Recommendation Letter",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 7",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-16",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 7",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 7",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "925-58-2291",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 7",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55282",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_28_letter_photo.png": {
+    "doc_id": "eval_28_letter",
+    "format_type": "tilted_photo",
+    "category": "letter",
+    "title": "Annual Audit Confirmation",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Annual Audit Confirmation",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 8",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-17",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 8",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 8",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "980-47-6925",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 8",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55329",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_29_letter_photo.png": {
+    "doc_id": "eval_29_letter",
+    "format_type": "tilted_photo",
+    "category": "letter",
+    "title": "Account Closure Notification",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Account Closure Notification",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 9",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-18",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 9",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 9",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "983-34-2139",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 9",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55376",
+        "type": "pair"
+      }
+    ]
+  },
+  "eval_30_letter_photo.png": {
+    "doc_id": "eval_30_letter",
+    "format_type": "tilted_photo",
+    "category": "letter",
+    "title": "Research Grant Award Letter",
+    "line_count": 9,
+    "expected_fields": [
+      {
+        "label": "",
+        "value": "Research Grant Award Letter",
+        "type": "heading"
+      },
+      {
+        "label": "Sender Organization",
+        "value": "Apex Advisory Group 10",
+        "type": "pair"
+      },
+      {
+        "label": "Dispatch Date",
+        "value": "2024-05-19",
+        "type": "pair"
+      },
+      {
+        "label": "Recipient Name",
+        "value": "Dr. Jordan Taylor 10",
+        "type": "pair"
+      },
+      {
+        "label": "Official Subject",
+        "value": "Official Notice Regarding Contract Review 10",
+        "type": "pair"
+      },
+      {
+        "label": "Taxpayer ID",
+        "value": "915-94-4733",
+        "type": "pair"
+      },
+      {
+        "label": "",
+        "value": "Detailed Statement and Formal Terms",
+        "type": "heading"
+      },
+      {
+        "label": "Authorized Signature",
+        "value": "Chief Legal Counsel Officer 10",
+        "type": "pair"
+      },
+      {
+        "label": "Confirmation Code",
+        "value": "AUTH-SEC-55423",
+        "type": "pair"
+      }
+    ]
+  }
+}
