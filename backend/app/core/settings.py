@@ -53,7 +53,7 @@ class AppSettings(BaseSettings):
 
     # Security & CORS
     CORS_ORIGINS: str = Field(
-        default="http://localhost:5173,http://127.0.0.1:5173",
+        default="http://localhost:5173,http://127.0.0.1:5173,https://ai-driven-ingestion-and-classificat.vercel.app,https://ai-driven-ingestion-and-classification.vercel.app",
         description="Comma-separated list of allowed CORS browser origins",
     )
     DATA_ENCRYPTION_KEY: Optional[str] = Field(
